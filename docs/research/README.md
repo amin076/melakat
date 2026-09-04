@@ -2,6 +2,11 @@
 
 هدف این پوشه یادگیری از پروژه‌هایی است که دربارهٔ self-replication، digital organisms، artificial life، artificial chemistry و evolution کار کرده‌اند.
 
+## اسناد این پوشه
+
+- [گزارش اصلی پژوهش](report-source.md)
+- [ماتریس شواهد و پیامدهای طراحی](evidence-matrix.md)
+
 ## خانواده‌های اصلی برای مطالعه
 
 - Tierra
@@ -9,11 +14,13 @@
 - Avida
 - Aevol
 - Stringmol
-- MABE
+- Squirm3
+- MABE2
 - von Neumann self-reproducing automata
 - artificial chemistry
 - open-ended evolution
 - cellular automata و digital physics
+- Computational Life و BFF
 
 ## سؤال‌های مشترک
 
@@ -49,4 +56,4 @@
 
 ## وضعیت
 
-این agenda هنوز در حال تکمیل است. گزارش پژوهشی کامل پس از بررسی منابع اولیه و مستندات رسمی در همین پوشه اضافه خواهد شد.
+مرور اولیه و ماتریس شواهد ثبت شده‌اند. گام بعدی، تبدیل نتیجه‌های گزارش به specificationهای Phase 0 و سپس بررسی انتقادی آن‌ها قبل از شروع implementation است.
