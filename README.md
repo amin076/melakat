@@ -25,6 +25,23 @@ Melakat یک پروژهٔ پژوهشی برای بررسی امکان شکل‌�
 
 هر analogy باید جداگانه بررسی و توجیه شود؛ هیچ تشبیهی فقط به‌دلیل شباهت ظاهری پذیرفته نمی‌شود.
 
+## مبانی محیط دیجیتال
+
+پیش از مطالعه‌ی organism، باید خودِ محیط محاسباتی را بشناسیم:
+
+- bit، byte و نمایش عدد؛
+- memory، address و state؛
+- CPU، register، ALU و program counter؛
+- program، process، compiler و interpreter؛
+- fetch، decode و execute؛
+- copy، clone، snapshot و replication؛
+- محدودیت سخت‌افزار و محدودیت نرم‌افزار؛
+- VM، scheduler، randomness و sandbox.
+
+سند پایه:
+
+- [Digital Environment Basics](docs/foundations/digital-environment-basics.md)
+
 ## محدودیت‌های الزام‌آور
 
 - جهان باید یک VM/sandbox مصنوعی و غیرقابل‌خروج باشد.
@@ -38,11 +55,11 @@ Melakat یک پروژهٔ پژوهشی برای بررسی امکان شکل‌�
 
 ## ترتیب کار
 
-1. Phase 0A — Digital–Natural Analogy Audit
-2. Phase 0B — Digital Physics v0
-3. Phase 0C — Minimal Instruction Set
-4. Phase 0D — Energy & Resource Model
-5. Phase 0E — Reproduction & Mutation Model
+1. Phase 0A — Digital substrate and Digital–Natural Analogy Audit
+2. Phase 0B — Genome representation and interpreter
+3. Phase 0C — Virtual cell/body
+4. Phase 0D — Signals, energy and reproduction
+5. Phase 0E — Variation, competition and selection
 6. Phase 0F — Experiment 0 Protocol
 7. Phase 1 — Python prototype، فقط پس از اعتبارسنجی مراحل قبل
 
@@ -54,17 +71,22 @@ Research → Hypothesis → Minimal World Rule → Implementation → Validation
 
 ## وضعیت فعلی
 
-این repository در مرحلهٔ Research / Pre-Implementation قرار دارد. فایل اولیهٔ ایده در مسیر زیر نگهداری می‌شود:
+این repository در مرحلهٔ Research / Pre-Implementation قرار دارد.
 
-docs/foundations/digital-evolution-world-v0.md
+اسناد اصلی:
 
-اسناد مرحلهٔ صفر و پژوهش تطبیقی به‌تدریج تکمیل خواهند شد.
+- [Digital Environment Basics](docs/foundations/digital-environment-basics.md)
+- [Digital Evolution World v0](docs/foundations/digital-evolution-world-v0.md)
+- [Phase 0](docs/phase-0/README.md)
+- [Research README](docs/research/README.md)
+- [Research Report](docs/research/report-source.md)
+- [Evidence Matrix](docs/research/evidence-matrix.md)
 
 ## ساختار repository
 
-- docs/foundations/ — اصول و سند مادر پروژه
+- docs/foundations/ — مبانی محیط دیجیتال و سند مادر پروژه
 - docs/phase-0/ — مشخصات پیش از کدنویسی
-- docs/research/ — منابع، مقایسهٔ پروژه‌ها و gap matrix
+- docs/research/ — منابع، مقایسهٔ پروژه‌ها و evidence matrix
 - src/ — شبیه‌ساز آینده، پس از تأیید مشخصات
 - tests/ — آزمون‌های تعیین‌کنندهٔ قوانین جهان
 
