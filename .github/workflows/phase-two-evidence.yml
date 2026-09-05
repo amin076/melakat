@@ -1,0 +1,94 @@
+name: Phase Two evidence campaign
+
+on:
+  push:
+    branches:
+      - feat/phase-two-completion
+    paths:
+      - ".github/workflows/phase-two-evidence.yml"
+      - "desktop/src/melakat_desktop/phase_two_*.py"
+      - "desktop/src/melakat_desktop/world_contract.py"
+      - "desktop/src/melakat_desktop/resources.py"
+      - "desktop/src/melakat_desktop/spatial.py"
+      - "desktop/src/melakat_desktop/parameters.py"
+      - "desktop/src/melakat_desktop/artifacts.py"
+      - "desktop/tests/test_phase_two*.py"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Melakat package without GUI dependencies
+        run: python -m pip install -e desktop --no-deps
+
+      - name: Run unit tests before campaign
+        working-directory: desktop
+        run: python -m unittest discover -s tests -v
+
+      - name: Run full Phase Two evidence gate
+        run: >-
+          melakat-phase-two-evidence
+          --runs 30
+          --ticks 2000
+          --seed-start 1
+          --output-dir results/phase-two/evidence-gate
+
+      - name: Record campaign provenance
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import platform
+          from pathlib import Path
+
+          output = Path("results/phase-two/evidence-gate")
+          payload = {
+              "format": "melakat-phase-two-provenance-0.1",
+              "repository": os.environ.get("GITHUB_REPOSITORY"),
+              "source_commit": os.environ.get("GITHUB_SHA"),
+              "source_branch": os.environ.get("GITHUB_REF_NAME"),
+              "workflow": os.environ.get("GITHUB_WORKFLOW"),
+              "workflow_run_id": os.environ.get("GITHUB_RUN_ID"),
+              "workflow_run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
+              "runner_os": os.environ.get("RUNNER_OS"),
+              "python_version": platform.python_version(),
+              "command": "melakat-phase-two-evidence --runs 30 --ticks 2000 --seed-start 1 --output-dir results/phase-two/evidence-gate",
+          }
+          path = output / "provenance.json"
+          path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          PY
+          sha256sum results/phase-two/evidence-gate/provenance.json >> results/phase-two/evidence-gate/SHA256SUMS.txt
+
+      - name: Upload evidence artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-two-evidence-gate
+          path: results/phase-two/evidence-gate
+          if-no-files-found: error
+
+      - name: Archive evidence on the current branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results/phase-two/evidence-gate
+          if git diff --cached --quiet; then
+            echo "Evidence output is already archived."
+          else
+            git commit -m "[evidence-output] archive Phase Two evidence campaign"
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi

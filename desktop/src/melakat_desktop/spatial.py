@@ -8,32 +8,70 @@ from typing import Any
 
 SPATIAL_OCCUPANCY_GRID_SIZE = 10
 SPATIAL_RNG_STREAM = "offspring-placement-v1"
+SUPPORTED_BOUNDARIES = ("reflective", "toroidal")
 
 
 def derive_spatial_seed(seed: int, world_contract_version: str) -> int:
-    """Derive a stable RNG seed for spatial-only stochastic decisions.
-
-    Phase Two keeps this stream separate from the historical engine RNG so
-    spatial placement cannot silently change scheduler or mutation randomness.
-    """
-
     payload = f"{int(seed)}:{world_contract_version}:{SPATIAL_RNG_STREAM}"
     digest = hashlib.sha256(payload.encode("utf-8")).digest()
     return int.from_bytes(digest[:8], "big", signed=False)
 
 
 def reflect_coordinate(value: float, maximum: float) -> float:
-    """Reflect a continuous coordinate into the closed interval [0, maximum]."""
-
     maximum = float(maximum)
     if maximum <= 0.0:
         raise ValueError("reflective boundary maximum must be positive")
-
     period = 2.0 * maximum
     wrapped = float(value) % period
     if wrapped <= maximum:
         return wrapped
     return period - wrapped
+
+
+def toroidal_coordinate(value: float, maximum: float) -> float:
+    maximum = float(maximum)
+    if maximum <= 0.0:
+        raise ValueError("toroidal boundary maximum must be positive")
+    return float(value) % maximum
+
+
+def apply_boundary(
+    value: float,
+    maximum: float,
+    model: str,
+) -> tuple[float, int]:
+    contacted = int(float(value) < 0.0 or float(value) > float(maximum))
+    if model == "reflective":
+        return reflect_coordinate(value, maximum), contacted
+    if model == "toroidal":
+        return toroidal_coordinate(value, maximum), contacted
+    raise ValueError(f"unsupported_boundary_model:{model}")
+
+
+def spatial_distance(
+    x1: float,
+    y1: float,
+    x2: float,
+    y2: float,
+    *,
+    width: float,
+    height: float,
+    boundary_model: str,
+) -> float:
+    """Return the metric distance implied by the active boundary model."""
+
+    width = float(width)
+    height = float(height)
+    if width <= 0.0 or height <= 0.0:
+        raise ValueError("spatial_distance_extent_must_be_positive")
+    dx = abs(float(x1) - float(x2))
+    dy = abs(float(y1) - float(y2))
+    if boundary_model == "toroidal":
+        dx = min(dx, width - min(dx, width))
+        dy = min(dy, height - min(dy, height))
+    elif boundary_model != "reflective":
+        raise ValueError(f"unsupported_boundary_model:{boundary_model}")
+    return math.hypot(dx, dy)
 
 
 def local_radial_position(
@@ -44,27 +82,42 @@ def local_radial_position(
     width: float,
     height: float,
     rng: random.Random,
+    boundary_model: str = "reflective",
 ) -> tuple[float, float, int]:
-    """Place an offspring uniformly by area inside a radius around its parent.
-
-    Any attempted crossing of the rectangular world is reflected. The returned
-    contact count records how many coordinate axes crossed a boundary before
-    reflection (0, 1, or 2 for this placement event).
-    """
-
     radius = max(0.0, float(radius))
     angle = 2.0 * math.pi * rng.random()
     distance = radius * math.sqrt(rng.random())
     raw_x = float(parent_x) + distance * math.cos(angle)
     raw_y = float(parent_y) + distance * math.sin(angle)
+    x, x_contact = apply_boundary(raw_x, width, boundary_model)
+    y, y_contact = apply_boundary(raw_y, height, boundary_model)
+    return x, y, x_contact + y_contact
 
-    contacts = int(raw_x < 0.0 or raw_x > width) + int(
-        raw_y < 0.0 or raw_y > height
-    )
-    return (
-        reflect_coordinate(raw_x, width),
-        reflect_coordinate(raw_y, height),
-        contacts,
+
+def local_neighbor_count(
+    organism: Any,
+    organisms: Iterable[Any],
+    radius: float,
+    *,
+    width: float,
+    height: float,
+    boundary_model: str,
+) -> int:
+    radius = max(0.0, float(radius))
+    return sum(
+        bool(other.alive)
+        and other.organism_id != organism.organism_id
+        and spatial_distance(
+            organism.x,
+            organism.y,
+            other.x,
+            other.y,
+            width=width,
+            height=height,
+            boundary_model=boundary_model,
+        )
+        <= radius
+        for other in organisms
     )
 
 
@@ -74,10 +127,9 @@ def population_spatial_metrics(
     width: float,
     height: float,
     neighborhood_radius: float,
+    boundary_model: str = "reflective",
     grid_size: int = SPATIAL_OCCUPANCY_GRID_SIZE,
 ) -> dict[str, float | int]:
-    """Measure continuous-space occupancy and local crowding for active organisms."""
-
     active = [organism for organism in organisms if organism.alive]
     if not active:
         return {
@@ -88,14 +140,20 @@ def population_spatial_metrics(
         }
 
     radius = max(0.0, float(neighborhood_radius))
+    width = float(width)
+    height = float(height)
     neighbor_counts: list[int] = []
     nearest_distances: list[float] = []
-
     for index, organism in enumerate(active):
         distances = [
-            math.hypot(
-                organism.x - other.x,
-                organism.y - other.y,
+            spatial_distance(
+                organism.x,
+                organism.y,
+                other.x,
+                other.y,
+                width=width,
+                height=height,
+                boundary_model=boundary_model,
             )
             for other_index, other in enumerate(active)
             if other_index != index
@@ -104,32 +162,19 @@ def population_spatial_metrics(
         nearest_distances.append(min(distances) if distances else 0.0)
 
     grid_size = max(1, int(grid_size))
-    width = float(width)
-    height = float(height)
     occupied: set[tuple[int, int]] = set()
     for organism in active:
-        x_index = min(
-            grid_size - 1,
-            max(0, int((organism.x / width) * grid_size)),
-        )
-        y_index = min(
-            grid_size - 1,
-            max(0, int((organism.y / height) * grid_size)),
-        )
+        x_index = min(grid_size - 1, max(0, int((organism.x / width) * grid_size)))
+        y_index = min(grid_size - 1, max(0, int((organism.y / height) * grid_size)))
         occupied.add((x_index, y_index))
 
     return {
-        "mean_local_neighbors": round(
-            sum(neighbor_counts) / len(neighbor_counts),
-            6,
-        ),
+        "mean_local_neighbors": round(sum(neighbor_counts) / len(neighbor_counts), 6),
         "mean_nearest_neighbor_distance": round(
-            sum(nearest_distances) / len(nearest_distances),
-            6,
+            sum(nearest_distances) / len(nearest_distances), 6
         ),
         "occupied_spatial_bins": len(occupied),
         "spatial_occupancy_fraction": round(
-            len(occupied) / float(grid_size * grid_size),
-            6,
+            len(occupied) / float(grid_size * grid_size), 6
         ),
     }

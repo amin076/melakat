@@ -1,0 +1,20 @@
+{
+  "condition_count": 12,
+  "energy_tolerance": 1e-07,
+  "expected_runs": 360,
+  "failure_count": 0,
+  "failures": [],
+  "max_abs_energy_balance_error": 1.02e-08,
+  "max_abs_local_resource_balance_error": 4.2e-09,
+  "passed": true,
+  "reproducibility": {
+    "condition": "movement_enabled",
+    "identical": true,
+    "reference_checksum": "858e5ffa6b77d7f71067af1e9422a7873f3cff85e4b26735987c5ee5162a4dd3",
+    "repeat_checksum": "858e5ffa6b77d7f71067af1e9422a7873f3cff85e4b26735987c5ee5162a4dd3",
+    "seed": 1
+  },
+  "resource_tolerance": 1e-07,
+  "seed_count": 30,
+  "total_runs": 360
+}

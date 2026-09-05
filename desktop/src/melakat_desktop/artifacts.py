@@ -26,6 +26,16 @@ SPATIAL_FIELDS = (
     "mean_nearest_neighbor_distance",
     "occupied_spatial_bins",
     "spatial_occupancy_fraction",
+    "local_resources_enabled",
+    "organism_actions_enabled",
+    "local_resource_total",
+    "local_resource_minimum",
+    "local_resource_balance_error",
+    "resource_ledger",
+    "resource_sense_operations",
+    "movement_operations",
+    "movement_distance",
+    "movement_energy_cost",
 )
 
 HISTORY_FIELDS = (
@@ -54,6 +64,7 @@ HISTORY_FIELDS = (
 )
 
 SUMMARY_FIELDS = (
+    "condition",
     "control",
     "seed",
     "config_hash",

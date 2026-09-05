@@ -1,0 +1,15 @@
+{
+  "artifact_json_bytes": 369035,
+  "deterministic_repeat": true,
+  "event_count": 4077,
+  "event_log_json_bytes": 993985,
+  "final_snapshot_json_bytes": 1138,
+  "peak_tracemalloc_bytes": 2748358,
+  "reference_checksum": "858e5ffa6b77d7f71067af1e9422a7873f3cff85e4b26735987c5ee5162a4dd3",
+  "repeat_checksum": "858e5ffa6b77d7f71067af1e9422a7873f3cff85e4b26735987c5ee5162a4dd3",
+  "runtime_seconds": 0.33087740699998847,
+  "serialization_seconds": 0.028106078999996953,
+  "summary_json_bytes": 364409,
+  "ticks": 2000,
+  "ticks_per_second": 6044.534796538918
+}
