@@ -23,6 +23,8 @@ class DemoOrganism:
 class DemoEngine:
     """Architecture smoke engine, not the final scientific VM."""
 
+    engine_version = "demo-0.1"
+
     def __init__(self, config: dict[str, Any], emit: Callable[[dict[str, Any]], None]):
         self.config = config
         self.emit = emit
@@ -33,13 +35,18 @@ class DemoEngine:
         self.next_lineage = 1
         self.births = 0
         self.deaths = 0
+        self.finished = False
         self.organisms: list[DemoOrganism] = []
         self._make_initial_population()
 
     def _make_initial_population(self) -> None:
         width = float(self.config["world.width"])
         height = float(self.config["world.height"])
-        for _ in range(int(self.config["population.initial_size"])):
+        capacity = int(self.config["world.memory_capacity"])
+        per_organism = int(self.config["population.memory_per_organism"])
+        maximum = max(1, capacity // max(1, per_organism))
+        requested = int(self.config["population.initial_size"])
+        for _ in range(min(requested, maximum)):
             self.organisms.append(
                 DemoOrganism(
                     organism_id=self.next_id,
@@ -53,6 +60,13 @@ class DemoEngine:
             self.next_id += 1
             self.next_lineage += 1
 
+    def _memory_used(self) -> int:
+        return sum(
+            int(self.config["population.memory_per_organism"])
+            for organism in self.organisms
+            if organism.alive
+        )
+
     def _mutate_genome(self, genome: list[int]) -> list[int]:
         rate = float(self.config["mutation.substitution_rate"])
         result = list(genome)
@@ -62,7 +76,12 @@ class DemoEngine:
         return result
 
     def step(self) -> None:
-        if self.tick >= int(self.config["run.max_ticks"]):
+        if self.finished:
+            return
+
+        maximum_ticks = int(self.config["run.max_ticks"])
+        if self.tick >= maximum_ticks:
+            self.finished = True
             self.emit(make_event("finished", reason="max_ticks", snapshot=self.snapshot()))
             return
 
@@ -82,11 +101,16 @@ class DemoEngine:
                 organism.energy += captured
                 self.energy_pool -= captured
 
-            if (
+            capacity = int(self.config["world.memory_capacity"])
+            per_organism = int(self.config["population.memory_per_organism"])
+            has_memory = self._memory_used() + per_organism <= capacity
+            can_reproduce = (
                 self.config["reproduction.enabled"]
+                and has_memory
                 and organism.energy >= float(self.config["reproduction.threshold"])
                 and organism.age % int(self.config["reproduction.interval"]) == 0
-            ):
+            )
+            if can_reproduce:
                 cost = float(self.config["reproduction.cost"])
                 if organism.energy >= cost:
                     organism.energy -= cost
@@ -109,36 +133,44 @@ class DemoEngine:
                 self.deaths += 1
                 self.emit(make_event("organism_died", organism_id=organism.organism_id))
 
-        self.emit(make_event("tick", snapshot=self.snapshot(), metrics=self.metrics()))
+        snapshot = self.snapshot()
+        self.emit(make_event("tick", snapshot=snapshot, metrics=self.metrics()))
+        if self.tick >= maximum_ticks:
+            self.finished = True
+            self.emit(make_event("finished", reason="max_ticks", snapshot=snapshot))
 
     def snapshot(self) -> dict[str, Any]:
         visible = [
             {
-                "id": o.organism_id,
-                "parent_id": o.parent_id,
-                "lineage_id": o.lineage_id,
-                "x": o.x,
-                "y": o.y,
-                "energy": round(o.energy, 4),
-                "age": o.age,
-                "alive": o.alive,
-                "genome": o.genome,
+                "id": organism.organism_id,
+                "parent_id": organism.parent_id,
+                "lineage_id": organism.lineage_id,
+                "x": organism.x,
+                "y": organism.y,
+                "energy": round(organism.energy, 4),
+                "age": organism.age,
+                "alive": organism.alive,
+                "genome": organism.genome,
             }
-            for o in self.organisms
-            if o.alive
+            for organism in self.organisms
+            if organism.alive
         ][: int(self.config["visual.max_rendered_organisms"])]
         return {
             "tick": self.tick,
+            "world_width": self.config["world.width"],
+            "world_height": self.config["world.height"],
             "energy_pool": round(self.energy_pool, 4),
+            "memory_used": self._memory_used(),
             "organisms": visible,
         }
 
     def metrics(self) -> dict[str, Any]:
-        active = sum(1 for o in self.organisms if o.alive)
+        active = sum(1 for organism in self.organisms if organism.alive)
         return {
             "tick": self.tick,
             "active_population": active,
             "births": self.births,
             "deaths": self.deaths,
             "energy_pool": round(self.energy_pool, 4),
+            "memory_used": self._memory_used(),
         }
