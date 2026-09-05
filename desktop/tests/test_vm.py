@@ -1,5 +1,6 @@
 import unittest
 
+from melakat_desktop.phase_zero_engine import PhaseZeroEngine
 from melakat_desktop.vm import (
     Instruction,
     Opcode,
@@ -66,6 +67,19 @@ class VirtualMachineTests(unittest.TestCase):
 
         self.assertEqual(result.status, "fault")
         self.assertEqual(result.fault, "invalid_register:99")
+
+    def test_default_ancestor_copies_its_program(self) -> None:
+        genome = PhaseZeroEngine.default_genome()
+        vm = VirtualMachine(
+            genome,
+            VMConfig(register_count=4, memory_size=8),
+        )
+
+        result = vm.run(200)
+
+        self.assertEqual(result.status, "division_requested")
+        self.assertEqual(vm.state.replication_buffer, list(genome))
+        self.assertEqual(vm.replication_progress(), len(genome))
 
 
 if __name__ == "__main__":
