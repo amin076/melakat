@@ -48,6 +48,32 @@ def apply_boundary(
     raise ValueError(f"unsupported_boundary_model:{model}")
 
 
+def spatial_distance(
+    x1: float,
+    y1: float,
+    x2: float,
+    y2: float,
+    *,
+    width: float,
+    height: float,
+    boundary_model: str,
+) -> float:
+    """Return the metric distance implied by the active boundary model."""
+
+    width = float(width)
+    height = float(height)
+    if width <= 0.0 or height <= 0.0:
+        raise ValueError("spatial_distance_extent_must_be_positive")
+    dx = abs(float(x1) - float(x2))
+    dy = abs(float(y1) - float(y2))
+    if boundary_model == "toroidal":
+        dx = min(dx, width - min(dx, width))
+        dy = min(dy, height - min(dy, height))
+    elif boundary_model != "reflective":
+        raise ValueError(f"unsupported_boundary_model:{boundary_model}")
+    return math.hypot(dx, dy)
+
+
 def local_radial_position(
     *,
     parent_x: float,
@@ -72,12 +98,25 @@ def local_neighbor_count(
     organism: Any,
     organisms: Iterable[Any],
     radius: float,
+    *,
+    width: float,
+    height: float,
+    boundary_model: str,
 ) -> int:
     radius = max(0.0, float(radius))
     return sum(
-        other.alive
+        bool(other.alive)
         and other.organism_id != organism.organism_id
-        and math.hypot(organism.x - other.x, organism.y - other.y) <= radius
+        and spatial_distance(
+            organism.x,
+            organism.y,
+            other.x,
+            other.y,
+            width=width,
+            height=height,
+            boundary_model=boundary_model,
+        )
+        <= radius
         for other in organisms
     )
 
@@ -88,6 +127,7 @@ def population_spatial_metrics(
     width: float,
     height: float,
     neighborhood_radius: float,
+    boundary_model: str = "reflective",
     grid_size: int = SPATIAL_OCCUPANCY_GRID_SIZE,
 ) -> dict[str, float | int]:
     active = [organism for organism in organisms if organism.alive]
@@ -100,11 +140,21 @@ def population_spatial_metrics(
         }
 
     radius = max(0.0, float(neighborhood_radius))
+    width = float(width)
+    height = float(height)
     neighbor_counts: list[int] = []
     nearest_distances: list[float] = []
     for index, organism in enumerate(active):
         distances = [
-            math.hypot(organism.x - other.x, organism.y - other.y)
+            spatial_distance(
+                organism.x,
+                organism.y,
+                other.x,
+                other.y,
+                width=width,
+                height=height,
+                boundary_model=boundary_model,
+            )
             for other_index, other in enumerate(active)
             if other_index != index
         ]
@@ -112,8 +162,6 @@ def population_spatial_metrics(
         nearest_distances.append(min(distances) if distances else 0.0)
 
     grid_size = max(1, int(grid_size))
-    width = float(width)
-    height = float(height)
     occupied: set[tuple[int, int]] = set()
     for organism in active:
         x_index = min(grid_size - 1, max(0, int((organism.x / width) * grid_size)))
