@@ -7,9 +7,9 @@ on:
     paths:
       - ".github/workflows/phase-two-evidence.yml"
       - "desktop/src/melakat_desktop/phase_two_*.py"
-      - "desktop/src/melakat_desktop/topology.py"
-      - "desktop/src/melakat_desktop/resource_field.py"
-      - "desktop/src/melakat_desktop/spatial_metrics.py"
+      - "desktop/src/melakat_desktop/world_contract.py"
+      - "desktop/src/melakat_desktop/resources.py"
+      - "desktop/src/melakat_desktop/spatial.py"
       - "desktop/src/melakat_desktop/parameters.py"
       - "desktop/src/melakat_desktop/artifacts.py"
       - "desktop/tests/test_phase_two*.py"
