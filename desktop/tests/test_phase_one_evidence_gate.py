@@ -1,5 +1,8 @@
+import json
 import unittest
+from pathlib import Path
 
+from melakat_desktop.evidence_audit import audit_campaign
 from melakat_desktop.parameters import CORE_SCHEMA
 from melakat_desktop.phase_one_evidence import (
     EVIDENCE_CAMPAIGN_FORMAT,
@@ -200,6 +203,26 @@ class PhaseOneEvidenceGateTests(unittest.TestCase):
         self.assertTrue(campaign["validation"]["passed"])
         self.assertTrue(campaign["reproducibility_check"]["identical"])
         self.assertEqual(campaign["validation"]["total_runs"], 33)
+
+    def test_archived_phase_one_campaign_passes_all_audits(self) -> None:
+        root = Path(__file__).resolve().parents[2]
+        path = root / "results" / "phase-one" / "evidence-gate" / "campaign.json"
+        campaign = json.loads(path.read_text(encoding="utf-8"))
+
+        validation = validate_campaign(campaign)
+        audit = audit_campaign(campaign)
+
+        self.assertTrue(validation["passed"])
+        self.assertEqual(validation["total_runs"], 990)
+        self.assertEqual(validation["seed_count"], 30)
+        self.assertTrue(audit["passed"])
+        self.assertEqual(audit["audited_runs"], 990)
+        self.assertEqual(audit["unique_config_seed_pairs"], 690)
+        self.assertEqual(audit["population_accounting_failures"], 0)
+        self.assertEqual(audit["negative_energy_pool_failures"], 0)
+        self.assertEqual(audit["negative_free_memory_failures"], 0)
+        self.assertEqual(audit["version_mismatch_failures"], 0)
+        self.assertEqual(audit["duplicate_config_result_mismatches"], 0)
 
 
 if __name__ == "__main__":
