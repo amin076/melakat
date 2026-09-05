@@ -32,7 +32,12 @@ from PySide6.QtWidgets import (
     QGraphicsView,
 )
 
-from .artifacts import config_hash, make_run_artifact, write_json
+from .artifacts import (
+    config_hash,
+    load_run_artifact,
+    make_run_artifact,
+    write_json,
+)
 from .parameters import CORE_SCHEMA, ParameterSchema, ParameterSpec
 from .protocol import make_command
 from .worker import engine_process_main
@@ -196,6 +201,17 @@ class MetricsPanel(QWidget):
         self.waiting_for_memory = QLabel("Waiting for memory: 0")
         self.waiting_for_energy = QLabel("Waiting for energy: 0")
         self.balance = QLabel("Energy balance error: 0")
+        self.organism_selector = QComboBox()
+        self.organism_selector.setPlaceholderText(
+            "Select an organism..."
+        )
+        self.organism_selector.currentTextChanged.connect(
+            self._show_organism
+        )
+        self.organism_details = QPlainTextEdit()
+        self.organism_details.setReadOnly(True)
+        self.organism_details.setMaximumHeight(170)
+        self._organisms: dict[str, dict[str, Any]] = {}
         self.plot = pg.PlotWidget()
         self.plot.setBackground("#101820")
         self.plot.addLegend()
@@ -231,6 +247,9 @@ class MetricsPanel(QWidget):
             self.balance,
         ):
             layout.addWidget(widget)
+        layout.addWidget(QLabel("Organism inspector"))
+        layout.addWidget(self.organism_selector)
+        layout.addWidget(self.organism_details)
         layout.addWidget(self.plot)
 
     def update_metrics(self, metrics: dict[str, Any]) -> None:
@@ -282,6 +301,46 @@ class MetricsPanel(QWidget):
         self.energy_data.append(float(metrics.get("energy_pool", 0)))
         self.population_curve.setData(self.population_data)
         self.energy_curve.setData(self.energy_data)
+
+
+    def update_snapshot(self, snapshot: dict[str, Any]) -> None:
+        organisms = snapshot.get("organisms", [])
+        self._organisms = {
+            str(organism.get("id")): organism
+            for organism in organisms
+            if organism.get("id") is not None
+        }
+        selected = self.organism_selector.currentText()
+        self.organism_selector.blockSignals(True)
+        self.organism_selector.clear()
+        self.organism_selector.addItems(
+            sorted(
+                self._organisms,
+                key=lambda value: int(value),
+            )
+        )
+        if selected in self._organisms:
+            self.organism_selector.setCurrentText(selected)
+        elif self._organisms:
+            self.organism_selector.setCurrentIndex(0)
+        self.organism_selector.blockSignals(False)
+        self._show_organism(self.organism_selector.currentText())
+
+    def _show_organism(self, organism_id: str) -> None:
+        organism = self._organisms.get(organism_id)
+        if organism is None:
+            self.organism_details.setPlainText(
+                "No rendered organism is available."
+            )
+            return
+        self.organism_details.setPlainText(
+            json.dumps(
+                organism,
+                ensure_ascii=False,
+                indent=2,
+                sort_keys=True,
+            )
+        )
 
 
 class EngineController(QWidget):
@@ -377,6 +436,7 @@ class MainWindow(QMainWindow):
         toolbar.addSeparator()
         self._add_action(toolbar, "Export config", self._export_config)
         self._add_action(toolbar, "Export result", self._export_result)
+        self._add_action(toolbar, "Open result", self._open_result)
 
         self.parameters = ParameterPanel(CORE_SCHEMA)
         self.world = WorldView()
@@ -473,11 +533,40 @@ class MainWindow(QMainWindow):
             return
         self.log.appendPlainText(f"Result exported: {path}")
 
+
+    def _open_result(self) -> None:
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Open result",
+            "",
+            "JSON files (*.json)",
+        )
+        if not path:
+            return
+        try:
+            artifact = load_run_artifact(Path(path))
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            QMessageBox.critical(self, "Open failed", str(exc))
+            return
+        self.current_config = artifact["config"]
+        self.last_summary = artifact["summary"]
+        snapshot = self.last_summary.get("final_snapshot", {})
+        self.world.render_snapshot(snapshot)
+        self.metrics.update_metrics(self.last_summary)
+        self.metrics.update_snapshot(snapshot)
+        self.metrics.status.setText("loaded")
+        self.log.appendPlainText(
+            "Result loaded: "
+            f"{path}; "
+            f"config_hash={artifact.get('config_hash')}"
+        )
+
     def _handle_event(self, event: dict[str, Any]) -> None:
         name = event.get("name")
         payload = event.get("payload", {})
         if name == "tick":
             self.world.render_snapshot(payload.get("snapshot", {}))
+            self.metrics.update_snapshot(payload.get("snapshot", {}))
             self.metrics.update_metrics(payload.get("metrics", {}))
         elif name == "ready":
             self.world.render_snapshot(payload.get("snapshot", {}))
@@ -494,6 +583,7 @@ class MainWindow(QMainWindow):
             self.world.render_snapshot(payload.get("snapshot", {}))
             self.metrics.update_metrics(payload.get("metrics", {}))
             self.last_summary = payload.get("summary")
+            self.metrics.update_snapshot(payload.get("snapshot", {}))
             self.metrics.status.setText("finished")
             self.log.appendPlainText(
                 "finished: "
