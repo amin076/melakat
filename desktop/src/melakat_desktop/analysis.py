@@ -208,6 +208,15 @@ def enrich_summary(summary: Mapping[str, Any]) -> dict[str, Any]:
     return enriched
 
 
+def _comparison_summary(artifact: Mapping[str, Any]) -> Mapping[str, Any]:
+    summary = artifact.get("summary")
+    if isinstance(summary, Mapping):
+        return summary
+    aggregate = artifact.get("aggregate")
+    if isinstance(aggregate, Mapping):
+        return aggregate
+    return {}
+
 def compare_artifacts(
     first: Mapping[str, Any],
     second: Mapping[str, Any],
@@ -225,8 +234,8 @@ def compare_artifacts(
         if first_config.get(key) != second_config.get(key)
     ]
 
-    first_summary = first.get("summary", {})
-    second_summary = second.get("summary", {})
+    first_summary = _comparison_summary(first)
+    second_summary = _comparison_summary(second)
     metric_differences = [
         {
             "metric": metric,
