@@ -7,6 +7,7 @@ class ParameterSchemaTests(unittest.TestCase):
     def test_defaults_are_valid(self) -> None:
         values = CORE_SCHEMA.validate(CORE_SCHEMA.defaults())
         self.assertEqual(values["population.initial_size"], 12)
+        self.assertEqual(values["run.engine_backend"], "phase-zero-vm")
 
     def test_schema_can_grow_without_ui_changes(self) -> None:
         self.assertGreaterEqual(len(CORE_SCHEMA.specs), 20)
