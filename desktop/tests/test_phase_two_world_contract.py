@@ -1,9 +1,14 @@
 import hashlib
 import unittest
 
-from melakat_desktop.artifacts import canonical_json
+from melakat_desktop.artifacts import (
+    SPATIAL_RUN_ARTIFACT_FORMAT,
+    canonical_json,
+    make_run_artifact,
+)
 from melakat_desktop.parameters import CORE_SCHEMA
 from melakat_desktop.phase_two_engine import PhaseTwoEngine
+from melakat_desktop.worker import create_engine
 from melakat_desktop.world_contract import (
     BASELINE_SCIENTIFIC_SHA256,
     BASELINE_SNAPSHOT_SHA256,
@@ -44,6 +49,12 @@ class PhaseTwoWorldContractTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "spatial_rules_not_implemented"):
             PhaseTwoEngine(config, lambda _event: None)
 
+    def test_worker_exposes_phase_two_backend(self) -> None:
+        config = CORE_SCHEMA.defaults()
+        config["run.engine_backend"] = "phase-two-vm"
+        engine = create_engine(config, lambda _event: None)
+        self.assertIsInstance(engine, PhaseTwoEngine)
+
     def test_disabled_spatial_mode_preserves_phase_one_baseline(self) -> None:
         config = CORE_SCHEMA.defaults()
         config["run.engine_backend"] = "phase-two-vm"
@@ -72,17 +83,26 @@ class PhaseTwoWorldContractTests(unittest.TestCase):
         self.assertEqual(scientific_digest, BASELINE_SCIENTIFIC_SHA256)
         self.assertEqual(snapshot_digest, BASELINE_SNAPSHOT_SHA256)
 
-    def test_world_contract_metadata_is_exposed(self) -> None:
+    def test_world_contract_metadata_is_exposed_and_artifact_versioned(self) -> None:
         config = CORE_SCHEMA.defaults()
         config["run.engine_backend"] = "phase-two-vm"
         engine = PhaseTwoEngine(config, lambda _event: None)
+        summary = engine.summary()
+
         self.assertEqual(
-            engine.metrics()["world_contract_version"],
+            summary["world_contract_version"],
             WORLD_CONTRACT_VERSION,
         )
-        self.assertFalse(engine.metrics()["spatial_enabled"])
+        self.assertFalse(summary["spatial_enabled"])
         self.assertEqual(
             engine.snapshot()["world_contract_version"],
+            WORLD_CONTRACT_VERSION,
+        )
+
+        artifact = make_run_artifact(config, summary)
+        self.assertEqual(artifact["format"], SPATIAL_RUN_ARTIFACT_FORMAT)
+        self.assertEqual(
+            artifact["world_contract_version"],
             WORLD_CONTRACT_VERSION,
         )
 
