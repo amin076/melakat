@@ -1,6 +1,6 @@
 # مستندات ملاکات
 
-[English](README.md)
+[نسخهٔ انگلیسی](README.md)
 
 این پوشه، مستندات اصلی پروژه را نگهداری می‌کند. هر سند مهم یک نسخهٔ انگلیسی و یک نسخهٔ فارسی دارد.
 
@@ -12,16 +12,16 @@
 ## اسناد اصلی
 
 - [نتایج مرحلهٔ صفر — فارسی](doc-farsi/phase-zero-results.md)
-- [Phase Zero results — English](doc-english/phase-zero-results.md)
+- [نتایج مرحلهٔ صفر — انگلیسی](doc-english/phase-zero-results.md)
 - [نقشهٔ راه مرحلهٔ یک — فارسی](doc-farsi/phase-one-roadmap.md)
-- [Phase One roadmap — English](doc-english/phase-one-roadmap.md)
+- [نقشهٔ راه مرحلهٔ یک — انگلیسی](doc-english/phase-one-roadmap.md)
 
 ## اسناد فنی
 
 - [معماری آزمایشگاه دسکتاپ — فارسی](desktop/desktop-lab-architecture.fa.md)
-- [Desktop lab architecture — English](desktop/desktop-lab-architecture.md)
+- [معماری آزمایشگاه دسکتاپ — انگلیسی](desktop/desktop-lab-architecture.md)
 - [قرارداد ماشین مجازی مرحلهٔ صفر — فارسی](desktop/phase-zero-vm.fa.md)
-- [Phase Zero VM contract — English](desktop/phase-zero-vm.md)
+- [قرارداد ماشین مجازی مرحلهٔ صفر — انگلیسی](desktop/phase-zero-vm.md)
 
 ## سیاست نگهداری مستندات
 
