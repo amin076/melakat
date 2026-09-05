@@ -78,7 +78,7 @@ CORE_SCHEMA = ParameterSchema(
             "Run",
             "choice",
             "phase-zero-vm",
-            choices=("phase-zero-vm", "demo"),
+            choices=("phase-zero-vm", "phase-two-vm", "demo"),
             description="Execution engine used by the GUI",
         ),
         ParameterSpec(
@@ -127,6 +127,18 @@ CORE_SCHEMA = ParameterSchema(
             70,
             10,
             10_000,
+        ),
+        ParameterSpec(
+            "world.spatial_enabled",
+            "Enable spatial rules",
+            "World",
+            "boolean",
+            False,
+            description=(
+                "P2.1 compatibility switch. Spatial rules are intentionally "
+                "unavailable until P2.2; enabling this value is rejected."
+            ),
+            advanced=True,
         ),
         ParameterSpec(
             "world.memory_capacity",

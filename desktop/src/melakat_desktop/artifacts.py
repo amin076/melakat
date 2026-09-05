@@ -9,8 +9,15 @@ from typing import Any, Iterable, Mapping
 from .analysis import enrich_summary
 
 RUN_ARTIFACT_FORMAT = "melakat-run-artifact-0.1"
+SPATIAL_RUN_ARTIFACT_FORMAT = "melakat-run-artifact-0.2"
+SUPPORTED_RUN_ARTIFACT_FORMATS = (
+    RUN_ARTIFACT_FORMAT,
+    SPATIAL_RUN_ARTIFACT_FORMAT,
+)
 
 HISTORY_FIELDS = (
+    "world_contract_version",
+    "spatial_enabled",
     "tick",
     "active_population",
     "births",
@@ -38,6 +45,8 @@ SUMMARY_FIELDS = (
     "config_hash",
     "engine_version",
     "measurement_version",
+    "world_contract_version",
+    "spatial_enabled",
     "mutation_events",
     "lineage_count",
     "genotype_count",
@@ -81,14 +90,23 @@ def make_run_artifact(
     summary: Mapping[str, Any],
 ) -> dict[str, Any]:
     enriched_summary = enrich_summary(summary)
-    return {
-        "format": RUN_ARTIFACT_FORMAT,
+    world_contract_version = enriched_summary.get("world_contract_version")
+    artifact_format = (
+        SPATIAL_RUN_ARTIFACT_FORMAT
+        if world_contract_version
+        else RUN_ARTIFACT_FORMAT
+    )
+    artifact = {
+        "format": artifact_format,
         "config_hash": config_hash(config),
         "config": dict(config),
         "engine_version": enriched_summary.get("engine_version"),
         "measurement_version": enriched_summary.get("measurement_version"),
         "summary": enriched_summary,
     }
+    if world_contract_version:
+        artifact["world_contract_version"] = world_contract_version
+    return artifact
 
 
 def write_json(path: Path, payload: Mapping[str, Any]) -> None:
@@ -146,11 +164,12 @@ def write_history_csv(
                 )
                 writer.writerow(row)
 
+
 def load_run_artifact(path: Path) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise ValueError("Run artifact must contain a JSON object")
-    if payload.get("format") != RUN_ARTIFACT_FORMAT:
+    if payload.get("format") not in SUPPORTED_RUN_ARTIFACT_FORMATS:
         raise ValueError(
             "Unsupported run artifact format: "
             f"{payload.get('format')!r}"
@@ -167,4 +186,10 @@ def load_run_artifact(path: Path) -> dict[str, Any]:
     aggregate = payload.get("aggregate")
     if not isinstance(summary, dict) and not isinstance(aggregate, dict):
         raise ValueError("Run artifact is missing its summary or aggregate")
+    if payload.get("format") == SPATIAL_RUN_ARTIFACT_FORMAT:
+        version = payload.get("world_contract_version")
+        if not isinstance(version, str) or not version:
+            raise ValueError(
+                "Spatial run artifact is missing its world contract version"
+            )
     return payload

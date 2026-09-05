@@ -91,10 +91,20 @@ def _effective_run_config(
     condition_config: Mapping[str, Any],
     seed: int,
 ) -> dict[str, Any]:
+    """Validate a run without injecting defaults added after its archive.
+
+    Phase One artifacts are historical records. Later schema growth, such as
+    the Phase Two spatial switch, must not retroactively change their
+    configuration hashes. Values are validated against the current schema,
+    then projected back to the exact key set that existed in the archived
+    condition plus the two runtime keys used by the Phase One runner.
+    """
+
     run_config = dict(condition_config)
     run_config["run.seed"] = seed
     run_config["run.emit_snapshots"] = False
-    return CORE_SCHEMA.validate(run_config)
+    validated = CORE_SCHEMA.validate(run_config)
+    return {key: validated[key] for key in run_config}
 
 
 def _run_condition(
