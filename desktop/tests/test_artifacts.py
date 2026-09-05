@@ -13,6 +13,8 @@ from melakat_desktop.artifacts import (
     write_json,
     write_summary_csv,
 )
+from melakat_desktop.parameters import CORE_SCHEMA
+from melakat_desktop.phase_two_engine import PhaseTwoEngine
 
 
 class ArtifactTests(unittest.TestCase):
@@ -135,6 +137,50 @@ class ArtifactTests(unittest.TestCase):
                 history_rows = list(csv.DictReader(handle))
             self.assertEqual(len(history_rows), 2)
             self.assertEqual(history_rows[-1]["tick"], "5")
+
+    def test_spatial_csv_exports_keep_p2_2_measurements(self) -> None:
+        config = CORE_SCHEMA.defaults()
+        config["run.engine_backend"] = "phase-two-vm"
+        config["run.max_ticks"] = 100
+        config["run.seed"] = 5
+        config["run.emit_snapshots"] = False
+        config["world.spatial_enabled"] = True
+        config = CORE_SCHEMA.validate(config)
+
+        engine = PhaseTwoEngine(config, lambda _event: None)
+        while not engine.finished:
+            engine.step()
+        summary = engine.summary()
+        summary["seed"] = 5
+        summary["control"] = "p2.2-reflective"
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            summary_path = root / "summary.csv"
+            history_path = root / "history.csv"
+            write_summary_csv(summary_path, [summary])
+            write_history_csv(history_path, [summary])
+
+            with summary_path.open(encoding="utf-8", newline="") as handle:
+                summary_row = next(csv.DictReader(handle))
+            with history_path.open(encoding="utf-8", newline="") as handle:
+                history_rows = list(csv.DictReader(handle))
+
+            required = (
+                "boundary_model",
+                "spatial_births",
+                "boundary_contacts",
+                "mean_parent_child_distance",
+                "mean_local_neighbors",
+                "mean_nearest_neighbor_distance",
+                "occupied_spatial_bins",
+                "spatial_occupancy_fraction",
+            )
+            for field in required:
+                self.assertIn(field, summary_row)
+                self.assertNotEqual(summary_row[field], "")
+                self.assertIn(field, history_rows[-1])
+                self.assertNotEqual(history_rows[-1][field], "")
 
 
 if __name__ == "__main__":
