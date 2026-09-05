@@ -91,6 +91,7 @@ CORE_SCHEMA = ParameterSchema(
         ParameterSpec("reproduction.enabled", "Enable demo reproduction", "Reproduction", "boolean", True),
         ParameterSpec("reproduction.threshold", "Reproduction energy threshold", "Reproduction", "number", 35.0, 0.0, 1_000_000.0, 0.1),
         ParameterSpec("reproduction.cost", "Reproduction cost", "Reproduction", "number", 12.0, 0.0, 1_000_000.0, 0.1),
+        ParameterSpec("reproduction.offspring_energy", "Offspring initial energy", "Reproduction", "number", 8.0, 0.0, 1_000_000.0, 0.1),
         ParameterSpec("reproduction.interval", "Reproduction interval", "Reproduction", "integer", 25, 1, 1_000_000),
         ParameterSpec("mutation.substitution_rate", "Substitution rate", "Mutation", "number", 0.01, 0.0, 1.0, 0.001),
         ParameterSpec("visual.max_rendered_organisms", "Maximum rendered organisms", "Interface", "integer", 200, 1, 10_000),
