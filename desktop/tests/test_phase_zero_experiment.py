@@ -5,6 +5,7 @@ from melakat_desktop.phase_zero_experiment import (
     aggregate,
     run_control_suite,
     run_replicates,
+    run_sensitivity_sweep,
 )
 
 
@@ -52,6 +53,28 @@ class PhaseZeroExperimentTests(unittest.TestCase):
                 run["control"] == control
                 for control, result in controls.items()
                 for run in result["runs"]
+            )
+        )
+
+    def test_sensitivity_sweep_reuses_seed_set(self) -> None:
+        config = CORE_SCHEMA.defaults()
+        config["run.max_ticks"] = 2
+
+        sweeps = run_sensitivity_sweep(config, [7])
+
+        self.assertIn("mutation.substitution_rate", sweeps)
+        cases = sweeps["mutation.substitution_rate"]["cases"]
+        self.assertEqual(set(cases), {"0.0", "0.01", "0.05"})
+        self.assertTrue(
+            all(len(case["runs"]) == 1 for case in cases.values())
+        )
+        self.assertTrue(
+            all(
+                run["control"].startswith(
+                    "mutation.substitution_rate="
+                )
+                for case in cases.values()
+                for run in case["runs"]
             )
         )
 
