@@ -46,6 +46,33 @@ jobs:
           --seed-start 1
           --output-dir results/phase-two/evidence-gate
 
+      - name: Record campaign provenance
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import platform
+          from pathlib import Path
+
+          output = Path("results/phase-two/evidence-gate")
+          payload = {
+              "format": "melakat-phase-two-provenance-0.1",
+              "repository": os.environ.get("GITHUB_REPOSITORY"),
+              "source_commit": os.environ.get("GITHUB_SHA"),
+              "source_branch": os.environ.get("GITHUB_REF_NAME"),
+              "workflow": os.environ.get("GITHUB_WORKFLOW"),
+              "workflow_run_id": os.environ.get("GITHUB_RUN_ID"),
+              "workflow_run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
+              "runner_os": os.environ.get("RUNNER_OS"),
+              "python_version": platform.python_version(),
+              "command": "melakat-phase-two-evidence --runs 30 --ticks 2000 --seed-start 1 --output-dir results/phase-two/evidence-gate",
+          }
+          path = output / "provenance.json"
+          path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          PY
+          sha256sum results/phase-two/evidence-gate/provenance.json >> results/phase-two/evidence-gate/SHA256SUMS.txt
+
       - name: Upload evidence artifact
         uses: actions/upload-artifact@v4
         with:
