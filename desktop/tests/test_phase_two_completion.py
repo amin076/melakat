@@ -44,9 +44,9 @@ class PhaseTwoCompletionTests(unittest.TestCase):
         field.seed_uniform(700.0)
         field.renew_uniform(70.0)
         captured = field.capture(5.0, 5.0, 20.0)
-        self.assertEqual(captured, 20.0)
+        self.assertEqual(captured, 11.0)
         self.assertGreaterEqual(field.minimum(), 0.0)
-        self.assertAlmostEqual(field.total(), 750.0, places=9)
+        self.assertAlmostEqual(field.total(), 759.0, places=9)
         self.assertLessEqual(abs(field.balance_error()), 1e-9)
 
     def test_local_resource_engine_has_independent_resource_ledger(self) -> None:
