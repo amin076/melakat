@@ -28,7 +28,7 @@ class PhaseZeroEngineTests(unittest.TestCase):
 
         self.assertTrue(engine.finished)
         self.assertEqual(engine.tick, 2)
-        self.assertTrue(any(event["type"] == "finished" for event in events))
+        self.assertTrue(any(event["name"] == "finished" for event in events))
 
 
 if __name__ == "__main__":
