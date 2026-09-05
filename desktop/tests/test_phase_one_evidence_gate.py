@@ -1,9 +1,11 @@
 import unittest
 
+from melakat_desktop.parameters import CORE_SCHEMA
 from melakat_desktop.phase_one_evidence import (
     EVIDENCE_CAMPAIGN_FORMAT,
     REQUIRED_CONTROL_NAMES,
     compact_run_record,
+    run_evidence_campaign,
     validate_campaign,
 )
 from melakat_desktop.phase_zero_experiment import CONTROL_PRESETS
@@ -182,6 +184,22 @@ class PhaseOneEvidenceGateTests(unittest.TestCase):
 
         self.assertFalse(validation["passed"])
         self.assertGreater(validation["energy_invariant_failures"], 0)
+
+    def test_real_smoke_campaign_passes(self) -> None:
+        config = CORE_SCHEMA.defaults()
+        config.update(
+            {
+                "run.max_ticks": 2,
+                "population.initial_size": 1,
+                "world.initial_energy": 100.0,
+            }
+        )
+
+        campaign = run_evidence_campaign(config, [3])
+
+        self.assertTrue(campaign["validation"]["passed"])
+        self.assertTrue(campaign["reproducibility_check"]["identical"])
+        self.assertEqual(campaign["validation"]["total_runs"], 33)
 
 
 if __name__ == "__main__":
