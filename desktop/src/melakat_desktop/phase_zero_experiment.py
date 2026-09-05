@@ -216,8 +216,6 @@ def main() -> None:
 
     if args.runs < 1:
         parser.error("--runs must be positive")
-    if args.ticks < 1:
-        parser.error("--ticks must be positive")
     if args.controls and args.sweep:
         parser.error("--controls and --sweep are mutually exclusive")
 
