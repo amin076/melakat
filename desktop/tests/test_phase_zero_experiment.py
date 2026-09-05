@@ -1,8 +1,12 @@
+import json
+import tempfile
 import unittest
+from pathlib import Path
 
 from melakat_desktop.parameters import CORE_SCHEMA
 from melakat_desktop.phase_zero_experiment import (
     aggregate,
+    load_config_file,
     run_control_suite,
     run_replicates,
     run_sensitivity_sweep,
@@ -10,6 +14,30 @@ from melakat_desktop.phase_zero_experiment import (
 
 
 class PhaseZeroExperimentTests(unittest.TestCase):
+    def test_config_file_loader_accepts_export_shape(self) -> None:
+        config = CORE_SCHEMA.defaults()
+        config["run.max_ticks"] = 3
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "saved-config.json"
+            path.write_text(
+                json.dumps(
+                    {
+                        "format": "melakat-config-0.1",
+                        "config": config,
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            loaded = load_config_file(path)
+
+        self.assertEqual(loaded["run.max_ticks"], 3)
+        self.assertEqual(
+            loaded["run.engine_backend"],
+            "phase-zero-vm",
+        )
+
     def test_replicates_return_reproducible_summaries(self) -> None:
         config = CORE_SCHEMA.defaults()
         config.update(
