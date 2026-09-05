@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-WORLD_CONTRACT_VERSION = "phase-two-spatial-0.1"
-PHASE_TWO_ENGINE_VERSION = "phase-two-vm-0.1"
+WORLD_CONTRACT_VERSION = "phase-two-spatial-0.2"
+PHASE_TWO_ENGINE_VERSION = "phase-two-vm-0.2"
 BASELINE_ENGINE_VERSION = "phase-zero-vm-0.2"
 BASELINE_MEASUREMENT_VERSION = "phase-one-measurement-0.1"
 BASELINE_SEED = 1
@@ -24,8 +24,9 @@ PHASE_TWO_WORLD_CONTRACT: dict[str, Any] = {
         "x_domain": "0 <= x <= world.width",
         "y_domain": "0 <= y <= world.height",
         "phase_one_semantics": (
-            "Coordinates are inherited baseline state only; with spatial rules "
-            "disabled they do not affect execution, resources, reproduction, or death."
+            "When spatial rules are disabled, coordinates remain inherited "
+            "baseline state and have no causal effect on execution, resources, "
+            "reproduction, mutation, or death."
         ),
     },
     "observation_model": "sequential",
@@ -42,9 +43,24 @@ PHASE_TWO_WORLD_CONTRACT: dict[str, Any] = {
         "division_attempt",
         "history_snapshot_and_finish",
     ],
-    "boundary_model": "inactive_when_spatial_disabled",
-    "movement_model": "not_implemented_in_p2_1",
-    "local_resource_model": "not_implemented_in_p2_1",
+    "boundary_model": "reflective",
+    "boundary_activation": "active_only_when_spatial_enabled",
+    "offspring_placement_model": "local_radial_dispersion_with_reflection",
+    "movement_model": "none",
+    "local_resource_model": "none",
+    "spatial_randomness": {
+        "stream": "offspring-placement-v1",
+        "seed_derivation": "sha256(run.seed, world_contract_version, stream)",
+        "independent_from_engine_rng": True,
+        "legacy_engine_rng_position_draws_preserved": True,
+    },
+    "spatial_measurement": {
+        "neighborhood": "euclidean radius from world.neighborhood_radius",
+        "nearest_neighbor": "euclidean distance",
+        "occupancy_grid": "10x10 normalized bins over the rectangular world",
+        "parent_child_distance": "euclidean final birth-position distance",
+        "boundary_contacts": "axis crossings by attempted offspring placement",
+    },
     "resource_precision": {
         "energy_internal": "python_float_unrounded",
         "energy_output": "rounded_for_serialization_only",
@@ -88,11 +104,12 @@ def _baseline_normalize(value: Any, *, root: bool = False) -> Any:
 
 
 def scientific_baseline_projection(summary: Mapping[str, Any]) -> dict[str, Any]:
-    """Project a P2.1 disabled-spatial result onto the frozen Phase One state.
+    """Project a disabled-spatial Phase Two result onto the frozen Phase One state.
 
-    Only configuration/version metadata introduced by P2.1 is normalized.
-    Scientific state, history, genealogy, genotype records, VM state,
-    coordinates, resource ledger, and final snapshot remain checksum-covered.
+    Only configuration/version metadata introduced after Phase One is
+    normalized. Scientific state, history, genealogy, genotype records, VM
+    state, coordinates, resource ledger, and final snapshot remain checksum
+    covered. This projection is valid only for world.spatial_enabled=false.
     """
 
     projected = _baseline_normalize(summary, root=True)
