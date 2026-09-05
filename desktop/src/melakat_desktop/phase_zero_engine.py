@@ -7,6 +7,7 @@ from collections import Counter
 from dataclasses import dataclass
 from typing import Any, Callable
 
+from .artifacts import config_hash
 from .protocol import make_event
 from .vm import (
     Instruction,
@@ -25,6 +26,7 @@ class PhaseZeroOrganism:
     lineage_id: int
     generation: int
     birth_tick: int
+    birth_energy: float
     x: float
     y: float
     energy: float
@@ -34,7 +36,10 @@ class PhaseZeroOrganism:
     alive: bool = True
     death_tick: int | None = None
     death_reason: str | None = None
+    death_released_energy: float = 0.0
     offspring_count: int = 0
+    pending_child_genome: tuple[Instruction, ...] | None = None
+    reproduction_block_reason: str | None = None
 
 
 def mutate_genome(
@@ -59,18 +64,21 @@ def mutate_genome(
 
 
 class PhaseZeroEngine:
-    """Complete baseline engine for the Digital Petri Dish.
+    """Phase Zero world plus the Phase One measurement contract.
 
     The baseline has a homogeneous well-mixed environment, finite memory,
     sequential energy input, costly bounded computation, costly reproduction,
     blind substitution mutation, heredity, genealogy, and death by resource
     exhaustion or invalid execution.
 
-    It deliberately has no explicit fitness, learning, ML, injected parasite,
-    attack, cooperation, geography, catastrophe, or fixed lifespan rule.
+    A completed replication request remains pending when memory or energy is
+    unavailable. The request is retried on later ticks, and the proposed child
+    genome is held stable while it waits. This is the explicit Phase One
+    baseline policy for blocked division.
     """
 
     engine_version = "phase-zero-vm-0.2"
+    measurement_version = "phase-one-measurement-0.1"
 
     def __init__(
         self,
@@ -80,6 +88,10 @@ class PhaseZeroEngine:
         self.config = config
         self.emit = emit
         self.emit_snapshots = bool(config.get("run.emit_snapshots", True))
+        self.history_interval = max(
+            1,
+            int(config.get("run.snapshot_interval", 10)),
+        )
         self.rng = random.Random(int(config["run.seed"]))
         self.tick = 0
         self.energy_pool = float(config["world.initial_energy"])
@@ -94,6 +106,8 @@ class PhaseZeroEngine:
         self.death_reasons: Counter[str] = Counter()
         self.genealogy: dict[int, dict[str, Any]] = {}
         self.historical_genomes: set[str] = set()
+        self.genotype_catalog: dict[str, dict[str, Any]] = {}
+        self.history: list[dict[str, Any]] = []
         self.ledger: dict[str, float] = {
             "energy_input": 0.0,
             "energy_captured": 0.0,
@@ -115,6 +129,7 @@ class PhaseZeroEngine:
             organism.energy for organism in self.organisms
         )
         self.max_population = len(self.organisms)
+        self._record_history(force=True)
 
     @staticmethod
     def default_genome() -> tuple[Instruction, ...]:
@@ -151,14 +166,29 @@ class PhaseZeroEngine:
             replication_buffer=[None] * len(genome),
         )
 
+    def _record_genotype(
+        self,
+        genome: tuple[Instruction, ...],
+        first_seen_tick: int,
+    ) -> str:
+        genome_hash = self.genome_hash(genome)
+        self.historical_genomes.add(genome_hash)
+        if genome_hash not in self.genotype_catalog:
+            self.genotype_catalog[genome_hash] = {
+                "genome_hash": genome_hash,
+                "genome_length": len(genome),
+                "first_seen_tick": first_seen_tick,
+                "genome": program_records(genome),
+            }
+        return genome_hash
+
     def _make_initial_population(self) -> None:
         genome = self.default_genome()
         allocation = self._allocation_for_genome(genome)
         capacity = int(self.config["world.memory_capacity"])
         requested = int(self.config["population.initial_size"])
         count = min(requested, capacity // max(1, allocation))
-        genome_hash = self.genome_hash(genome)
-        self.historical_genomes.add(genome_hash)
+        self._record_genotype(genome, first_seen_tick=0)
 
         for _ in range(count):
             organism = PhaseZeroOrganism(
@@ -167,6 +197,7 @@ class PhaseZeroEngine:
                 lineage_id=1,
                 generation=0,
                 birth_tick=0,
+                birth_energy=float(self.config["population.initial_energy"]),
                 x=self.rng.uniform(0, float(self.config["world.width"])),
                 y=self.rng.uniform(0, float(self.config["world.height"])),
                 energy=float(self.config["population.initial_energy"]),
@@ -185,8 +216,13 @@ class PhaseZeroEngine:
             "lineage_id": organism.lineage_id,
             "generation": organism.generation,
             "birth_tick": organism.birth_tick,
+            "birth_energy": organism.birth_energy,
             "death_tick": organism.death_tick,
             "death_reason": organism.death_reason,
+            "death_released_energy": round(
+                organism.death_released_energy,
+                6,
+            ),
             "genome_hash": self.genome_hash(organism.genome),
             "genome_length": len(organism.genome),
             "offspring_count": organism.offspring_count,
@@ -204,7 +240,10 @@ class PhaseZeroEngine:
         )
 
     def _free_memory(self) -> int:
-        return max(0, int(self.config["world.memory_capacity"]) - self._memory_used())
+        return max(
+            0,
+            int(self.config["world.memory_capacity"]) - self._memory_used(),
+        )
 
     def _active(self) -> list[PhaseZeroOrganism]:
         return [organism for organism in self.organisms if organism.alive]
@@ -229,6 +268,7 @@ class PhaseZeroEngine:
         organism.alive = False
         organism.death_tick = self.tick
         organism.death_reason = reason
+        organism.death_released_energy = released
         self.energy_pool += released
         self.ledger["energy_released_on_death"] += released
         self.deaths += 1
@@ -245,23 +285,55 @@ class PhaseZeroEngine:
             )
         )
 
+    def _set_reproduction_block_reason(
+        self,
+        parent: PhaseZeroOrganism,
+        reason: str,
+        *,
+        free_memory: int | None = None,
+    ) -> None:
+        if parent.reproduction_block_reason == reason:
+            return
+        parent.reproduction_block_reason = reason
+        self.emit(
+            make_event(
+                "reproduction_blocked",
+                organism_id=parent.organism_id,
+                reason=reason,
+                free_memory=(
+                    self._free_memory() if free_memory is None else free_memory
+                ),
+            )
+        )
+
     def _try_reproduction(self, parent: PhaseZeroOrganism) -> bool:
         if not bool(self.config["reproduction.enabled"]):
+            self._set_reproduction_block_reason(parent, "disabled")
             return False
 
-        child_genome = mutate_genome(
-            parent.genome,
-            self.rng,
-            float(self.config["mutation.substitution_rate"]),
-        )
+        if parent.pending_child_genome is None:
+            parent.pending_child_genome = mutate_genome(
+                parent.genome,
+                self.rng,
+                float(self.config["mutation.substitution_rate"]),
+            )
+
+        child_genome = parent.pending_child_genome
         allocation = self._allocation_for_genome(child_genome)
-        if self._free_memory() < allocation:
+        free_memory = self._free_memory()
+        if free_memory < allocation:
+            self._set_reproduction_block_reason(
+                parent,
+                "memory",
+                free_memory=free_memory,
+            )
             return False
 
         reproduction_cost = float(self.config["reproduction.cost"])
         offspring_energy = float(self.config["reproduction.offspring_energy"])
         total_required = reproduction_cost + offspring_energy
         if parent.energy < total_required:
+            self._set_reproduction_block_reason(parent, "energy")
             return False
 
         parent.energy -= total_required
@@ -269,14 +341,13 @@ class PhaseZeroEngine:
         self.ledger["energy_transferred_to_offspring"] += offspring_energy
 
         parent_hash = self.genome_hash(parent.genome)
-        child_hash = self.genome_hash(child_genome)
+        child_hash = self._record_genotype(child_genome, self.tick)
         mutated = child_hash != parent_hash
         if mutated:
             lineage_id = self.next_lineage
             self.next_lineage += 1
         else:
             lineage_id = parent.lineage_id
-        self.historical_genomes.add(child_hash)
 
         child = PhaseZeroOrganism(
             organism_id=self.next_id,
@@ -284,6 +355,7 @@ class PhaseZeroEngine:
             lineage_id=lineage_id,
             generation=parent.generation + 1,
             birth_tick=self.tick,
+            birth_energy=offspring_energy,
             x=self.rng.uniform(0, float(self.config["world.width"])),
             y=self.rng.uniform(0, float(self.config["world.height"])),
             energy=offspring_energy,
@@ -293,6 +365,8 @@ class PhaseZeroEngine:
         )
         self.organisms.append(child)
         parent.offspring_count += 1
+        parent.pending_child_genome = None
+        parent.reproduction_block_reason = None
         self._record_genealogy(parent)
         self._record_genealogy(child)
         self.next_id += 1
@@ -356,14 +430,33 @@ class PhaseZeroEngine:
         if result.status == "division_requested":
             self._try_reproduction(organism)
 
+    def _record_history(self, *, force: bool = False) -> None:
+        if not force and self.tick % self.history_interval != 0:
+            return
+        self.history.append(self.metrics())
+
+    def _finish(self, reason: str) -> None:
+        if self.finished:
+            return
+        self.finished = True
+        self._record_history(force=True)
+        self.emit(
+            make_event(
+                "finished",
+                reason=reason,
+                snapshot=self.snapshot(),
+                metrics=self.metrics(),
+                summary=self.summary(),
+            )
+        )
+
     def step(self) -> None:
         if self.finished:
             return
 
         maximum_ticks = int(self.config["run.max_ticks"])
         if self.tick >= maximum_ticks:
-            self.finished = True
-            self.emit(make_event("finished", reason="max_ticks", snapshot=self.snapshot()))
+            self._finish("max_ticks")
             return
 
         self.tick += 1
@@ -375,9 +468,11 @@ class PhaseZeroEngine:
         self.rng.shuffle(schedule)
         for organism in schedule:
             if organism.alive:
+                organism.age += 1
                 self._execute_one(organism)
 
         self.max_population = max(self.max_population, len(self._active()))
+        self._record_history(force=self.tick >= maximum_ticks)
         if self.emit_snapshots:
             self.emit(
                 make_event(
@@ -387,14 +482,7 @@ class PhaseZeroEngine:
                 )
             )
         if self.tick >= maximum_ticks:
-            self.finished = True
-            self.emit(
-                make_event(
-                    "finished",
-                    reason="max_ticks",
-                    snapshot=self.snapshot(),
-                )
-            )
+            self._finish("max_ticks")
 
     def energy_balance_error(self) -> float:
         dissipated = (
@@ -402,7 +490,11 @@ class PhaseZeroEngine:
             + self.ledger["energy_maintenance"]
             + self.ledger["energy_reproduction_cost"]
         )
-        expected = self.initial_total_energy + self.ledger["energy_input"] - dissipated
+        expected = (
+            self.initial_total_energy
+            + self.ledger["energy_input"]
+            - dissipated
+        )
         actual = self.energy_pool + sum(
             organism.energy for organism in self.organisms if organism.alive
         )
@@ -432,6 +524,13 @@ class PhaseZeroEngine:
                     for item in organism.vm_state.replication_buffer
                 ),
                 "division_requested": organism.vm_state.division_requested,
+                "blocked_on_division": organism.vm_state.blocked_on_division,
+                "reproduction_block_reason": organism.reproduction_block_reason,
+                "pending_child_genome_hash": (
+                    self.genome_hash(organism.pending_child_genome)
+                    if organism.pending_child_genome is not None
+                    else None
+                ),
                 "instructions_executed": organism.vm_state.instructions_executed,
                 "fault": organism.vm_state.fault,
                 "offspring_count": organism.offspring_count,
@@ -441,6 +540,7 @@ class PhaseZeroEngine:
         return {
             "tick": self.tick,
             "engine_version": self.engine_version,
+            "measurement_version": self.measurement_version,
             "world_width": self.config["world.width"],
             "world_height": self.config["world.height"],
             "energy_pool": round(self.energy_pool, 6),
@@ -455,9 +555,28 @@ class PhaseZeroEngine:
         active_hashes = {
             self.genome_hash(organism.genome) for organism in active
         }
-        executed = self.total_instructions_executed
+        active_lineages = {organism.lineage_id for organism in active}
+        pending = [
+            organism
+            for organism in active
+            if organism.vm_state.division_requested
+        ]
+        waiting_for_memory = sum(
+            organism.reproduction_block_reason == "memory"
+            for organism in pending
+        )
+        waiting_for_energy = sum(
+            organism.reproduction_block_reason == "energy"
+            for organism in pending
+        )
+        waiting_disabled = sum(
+            organism.reproduction_block_reason == "disabled"
+            for organism in pending
+        )
         return {
             "engine_version": self.engine_version,
+            "measurement_version": self.measurement_version,
+            "config_hash": config_hash(self.config),
             "tick": self.tick,
             "active_population": len(active),
             "births": self.births,
@@ -465,19 +584,48 @@ class PhaseZeroEngine:
             "max_population": self.max_population,
             "active_genotypes": len(active_hashes),
             "historical_genotypes": len(self.historical_genomes),
-            "instructions_executed": executed,
+            "active_lineages": len(active_lineages),
+            "max_generation": max(
+                (organism.generation for organism in active),
+                default=0,
+            ),
+            "instructions_executed": self.total_instructions_executed,
             "faults": self.faults,
+            "pending_divisions": len(pending),
+            "blocked_divisions": sum(
+                organism.reproduction_block_reason is not None
+                for organism in pending
+            ),
+            "waiting_for_memory": waiting_for_memory,
+            "waiting_for_energy": waiting_for_energy,
+            "waiting_disabled": waiting_disabled,
             "energy_pool": round(self.energy_pool, 6),
             "memory_used": self._memory_used(),
             "free_memory": self._free_memory(),
-            "energy_balance_error": round(self.energy_balance_error(), 10),
-            "ledger": {key: round(value, 6) for key, value in self.ledger.items()},
+            "energy_balance_error": round(
+                self.energy_balance_error(),
+                10,
+            ),
+            "death_reasons": dict(self.death_reasons),
+            "ledger": {
+                key: round(value, 6)
+                for key, value in self.ledger.items()
+            },
         }
 
     def summary(self) -> dict[str, Any]:
         return {
             **self.metrics(),
             "death_reasons": dict(self.death_reasons),
+            "genealogy": [
+                self.genealogy[organism_id]
+                for organism_id in sorted(self.genealogy)
+            ],
+            "genotype_catalog": [
+                self.genotype_catalog[genome_hash]
+                for genome_hash in sorted(self.genotype_catalog)
+            ],
+            "history": list(self.history),
             "genealogy_size": len(self.genealogy),
             "final_snapshot": self.snapshot(),
         }
