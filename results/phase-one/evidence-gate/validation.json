@@ -1,0 +1,21 @@
+{
+  "config_hash_failures": 0,
+  "control_conditions": 6,
+  "energy_balance_tolerance": 1e-07,
+  "energy_invariant_failures": 0,
+  "extra_controls": [],
+  "malformed_sweep_parameters": 0,
+  "max_abs_energy_balance_error": 2.5e-08,
+  "memory_invariant_failures": 0,
+  "missing_controls": [],
+  "passed": true,
+  "reproducibility_failure": false,
+  "result_checksum_failures": 0,
+  "run_count_failures": 0,
+  "seed_count": 30,
+  "seed_coverage_failures": 0,
+  "sensitivity_cases": 27,
+  "sensitivity_parameters": 9,
+  "tick_failures": 0,
+  "total_runs": 990
+}

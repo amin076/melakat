@@ -32,6 +32,9 @@ CONTROL_PRESETS: dict[str, dict[str, Any]] = {
     "maintenance_zero": {
         "execution.maintenance_cost": 0.0,
     },
+    "reproduction_cost_zero": {
+        "reproduction.cost": 0.0,
+    },
 }
 
 SENSITIVITY_SWEEPS: dict[str, tuple[Any, ...]] = {

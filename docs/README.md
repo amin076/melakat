@@ -15,8 +15,15 @@ This directory contains the canonical project documentation. Every major documen
 - [نتایج مرحلهٔ صفر — فارسی](doc-farsi/phase-zero-results.md)
 - [Phase One roadmap — English](doc-english/phase-one-roadmap.md)
 - [نقشهٔ راه مرحلهٔ یک — فارسی](doc-farsi/phase-one-roadmap.md)
+- [Phase One evidence report — English](doc-english/phase-one-evidence-report.md)
+- [گزارش شواهد مرحلهٔ یک — فارسی](doc-farsi/phase-one-evidence-report.md)
+- [Phase One evidence archive](../results/phase-one/evidence-gate/README.md)
 - [Phase Two roadmap — English](doc-english/phase-two-roadmap.md)
 - [نقشهٔ راه مرحلهٔ دو — فارسی](doc-farsi/phase-two-roadmap.md)
+
+## Current research gate
+
+The Phase One implementation gate and the Phase One scientific evidence gate are complete for the defined homogeneous baseline. The accepted archive contains 990 runs across 30 seeds, six controls, and 27 one-factor sensitivity cases. Phase Two may begin only while preserving this homogeneous baseline as the permanent comparison control.
 
 ## Technical documents
 

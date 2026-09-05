@@ -1,0 +1,29 @@
+{
+  "config": {
+    "execution.instruction_cost": 0.05,
+    "execution.instructions_per_tick": 8,
+    "execution.maintenance_cost": 0.2,
+    "mutation.substitution_rate": 0.01,
+    "population.initial_energy": 25.0,
+    "population.initial_size": 12,
+    "population.max_age": 500,
+    "population.memory_per_organism": 8,
+    "reproduction.cost": 12.0,
+    "reproduction.enabled": true,
+    "reproduction.interval": 25,
+    "reproduction.offspring_energy": 8.0,
+    "reproduction.threshold": 35.0,
+    "run.engine_backend": "phase-zero-vm",
+    "run.max_ticks": 2000,
+    "run.seed": 1,
+    "run.snapshot_interval": 10,
+    "visual.max_rendered_organisms": 200,
+    "world.energy_input_per_tick": 10.0,
+    "world.height": 70,
+    "world.initial_energy": 1000.0,
+    "world.memory_capacity": 500,
+    "world.width": 100
+  },
+  "config_hash": "b90c2df4f218b285",
+  "format": "melakat-config-0.1"
+}

@@ -15,8 +15,15 @@
 - [نتایج مرحلهٔ صفر — انگلیسی](doc-english/phase-zero-results.md)
 - [نقشهٔ راه مرحلهٔ یک — فارسی](doc-farsi/phase-one-roadmap.md)
 - [نقشهٔ راه مرحلهٔ یک — انگلیسی](doc-english/phase-one-roadmap.md)
+- [گزارش شواهد مرحلهٔ یک — فارسی](doc-farsi/phase-one-evidence-report.md)
+- [گزارش شواهد مرحلهٔ یک — انگلیسی](doc-english/phase-one-evidence-report.md)
+- [آرشیو شواهد مرحلهٔ یک](../results/phase-one/evidence-gate/README.fa.md)
 - [نقشهٔ راه مرحلهٔ دو — فارسی](doc-farsi/phase-two-roadmap.md)
 - [نقشهٔ راه مرحلهٔ دو — انگلیسی](doc-english/phase-two-roadmap.md)
+
+## دروازهٔ پژوهشی فعلی
+
+دروازهٔ پیاده‌سازی و دروازهٔ شواهد علمی مرحلهٔ یک برای خط پایهٔ همگن تعریف‌شده کامل شده‌اند. آرشیو پذیرفته‌شده شامل ۹۹۰ اجرا با ۳۰ <code>seed</code>، شش کنترل و ۲۷ حالت حساسیت تک‌عاملی است. مرحلهٔ دو فقط در صورتی مجاز است که این خط پایهٔ همگن به‌عنوان کنترل دائمی و بدون تغییر قابل‌اجرا و مقایسه باقی بماند.
 
 ## اسناد فنی
 
