@@ -16,6 +16,7 @@ dependencies = [
 [project.scripts]
 melakat-desktop = "melakat_desktop.main:main"
 melakat-phase-zero = "melakat_desktop.phase_zero_experiment:main"
+melakat-compare = "melakat_desktop.compare:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
