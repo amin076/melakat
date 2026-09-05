@@ -1,0 +1,12 @@
+{
+  "command": "melakat-phase-two-evidence --runs 30 --ticks 2000 --seed-start 1 --output-dir results/phase-two/evidence-gate",
+  "format": "melakat-phase-two-provenance-0.1",
+  "python_version": "3.12.14",
+  "repository": "amin076/melakat",
+  "runner_os": "Linux",
+  "source_branch": "feat/phase-two-completion",
+  "source_commit": "8c20824912f5e829ea65b9ea527295e22de636f0",
+  "workflow": "Phase Two evidence campaign",
+  "workflow_run_attempt": "1",
+  "workflow_run_id": "33969445079"
+}
