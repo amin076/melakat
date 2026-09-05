@@ -8,24 +8,27 @@ from typing import Any
 
 import pyqtgraph as pg
 from PySide6.QtCore import QTimer, Qt, Signal
-from PySide6.QtGui import QAction, QColor, QBrush, QPen
+from PySide6.QtGui import QAction, QBrush, QColor, QPainter, QPen
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QDoubleSpinBox,
     QFileDialog,
-    QFormLayout,
-    QGroupBox,
+    QFrame,
+    QGridLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QMainWindow,
     QMessageBox,
     QPlainTextEdit,
+    QPushButton,
     QScrollArea,
+    QSizePolicy,
     QSpinBox,
     QSplitter,
     QToolBar,
+    QToolButton,
     QVBoxLayout,
     QWidget,
     QGraphicsScene,
@@ -39,6 +42,137 @@ from .protocol import make_command
 from .worker import engine_process_main
 
 
+APP_STYLE = """
+QMainWindow, QWidget {
+    background: #f4f7fb;
+    color: #172033;
+    font-size: 13px;
+}
+QToolBar {
+    background: #ffffff;
+    border: none;
+    border-bottom: 1px solid #dfe6ef;
+    spacing: 6px;
+    padding: 8px 10px;
+}
+QToolButton, QPushButton {
+    background: #ffffff;
+    border: 1px solid #cfd8e5;
+    border-radius: 7px;
+    padding: 7px 11px;
+    color: #1d2a3a;
+}
+QToolButton:hover, QPushButton:hover {
+    background: #eef4fb;
+    border-color: #9fb4cc;
+}
+QToolButton#primaryButton, QPushButton#primaryButton {
+    background: #1f6feb;
+    color: #ffffff;
+    border-color: #1f6feb;
+    font-weight: 600;
+}
+QToolButton#dangerButton, QPushButton#dangerButton {
+    background: #fff3f2;
+    color: #a12622;
+    border-color: #efb2ad;
+}
+QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QPlainTextEdit {
+    background: #ffffff;
+    border: 1px solid #cfd8e5;
+    border-radius: 6px;
+    padding: 6px;
+    selection-background-color: #cfe2ff;
+}
+QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QDoubleSpinBox:focus, QPlainTextEdit:focus {
+    border-color: #1f6feb;
+}
+QScrollArea {
+    border: none;
+    background: transparent;
+}
+QFrame#panelCard {
+    background: #ffffff;
+    border: 1px solid #dde5ef;
+    border-radius: 10px;
+}
+QFrame#parameterRow {
+    background: #ffffff;
+    border: 1px solid #edf1f6;
+    border-radius: 7px;
+}
+QLabel#sectionTitle {
+    font-size: 14px;
+    font-weight: 700;
+    color: #182338;
+}
+QLabel#panelTitle {
+    font-size: 16px;
+    font-weight: 700;
+    color: #172033;
+}
+QLabel#mutedLabel {
+    color: #637083;
+}
+QLabel#statusBadge {
+    background: #e8f1ff;
+    color: #1f5fad;
+    border: 1px solid #c8dcf7;
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-weight: 600;
+}
+QToolButton#accordionButton {
+    text-align: left;
+    background: #ffffff;
+    border: 1px solid #dce5ef;
+    border-radius: 8px;
+    padding: 9px 10px;
+    font-weight: 700;
+}
+QToolButton#accordionButton:checked {
+    background: #eef5ff;
+    border-color: #bdd2ed;
+}
+QSplitter::handle {
+    background: #e4eaf2;
+}
+"""
+
+
+class CollapsibleSection(QWidget):
+    def __init__(self, title: str, *, expanded: bool = False, parent: QWidget | None = None):
+        super().__init__(parent)
+        self.toggle = QToolButton()
+        self.toggle.setObjectName("accordionButton")
+        self.toggle.setText(title)
+        self.toggle.setCheckable(True)
+        self.toggle.setChecked(expanded)
+        self.toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.toggle.toggled.connect(self._set_expanded)
+
+        self.content = QWidget()
+        self.content_layout = QVBoxLayout(self.content)
+        self.content_layout.setContentsMargins(4, 6, 4, 8)
+        self.content_layout.setSpacing(6)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(3)
+        layout.addWidget(self.toggle)
+        layout.addWidget(self.content)
+        self._set_expanded(expanded)
+
+    def _set_expanded(self, expanded: bool) -> None:
+        self.content.setVisible(expanded)
+        self.toggle.setArrowType(
+            Qt.ArrowType.DownArrow if expanded else Qt.ArrowType.RightArrow
+        )
+
+    def set_expanded(self, expanded: bool) -> None:
+        self.toggle.setChecked(expanded)
+
+
 class ParameterPanel(QWidget):
     values_changed = Signal(dict)
 
@@ -47,18 +181,40 @@ class ParameterPanel(QWidget):
         self.schema = schema
         self.widgets: dict[str, QWidget] = {}
         self.rows: dict[str, QWidget] = {}
+        self.sections: dict[str, CollapsibleSection] = {}
+
+        title = QLabel("Experiment setup")
+        title.setObjectName("panelTitle")
+        subtitle = QLabel("Configure the run without changing the scientific engine contract.")
+        subtitle.setObjectName("mutedLabel")
+        subtitle.setWordWrap(True)
+
         self.search = QLineEdit()
-        self.search.setPlaceholderText("Search parameters...")
+        self.search.setPlaceholderText("Search parameters…")
         self.search.textChanged.connect(self._filter)
+
+        self.show_advanced = QCheckBox("Show advanced settings")
+        self.show_advanced.setChecked(False)
+        self.show_advanced.toggled.connect(lambda _checked: self._filter(self.search.text()))
+
         self.body = QWidget()
         self.body_layout = QVBoxLayout(self.body)
+        self.body_layout.setContentsMargins(0, 0, 0, 0)
+        self.body_layout.setSpacing(7)
         self._build()
+
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setWidget(self.body)
+
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(12, 12, 10, 12)
+        layout.setSpacing(8)
+        layout.addWidget(title)
+        layout.addWidget(subtitle)
         layout.addWidget(self.search)
-        layout.addWidget(scroll)
+        layout.addWidget(self.show_advanced)
+        layout.addWidget(scroll, 1)
 
     def _build(self) -> None:
         grouped: dict[str, list[ParameterSpec]] = {
@@ -66,23 +222,48 @@ class ParameterPanel(QWidget):
         }
         for spec in self.schema.specs:
             grouped[spec.group].append(spec)
+
         for group, specs in grouped.items():
-            box = QGroupBox(group)
-            form = QFormLayout(box)
+            section = CollapsibleSection(
+                group,
+                expanded=group in {"Run", "World"},
+            )
+            self.sections[group] = section
             for spec in specs:
+                row = QFrame()
+                row.setObjectName("parameterRow")
+                row_layout = QGridLayout(row)
+                row_layout.setContentsMargins(9, 7, 9, 7)
+                row_layout.setHorizontalSpacing(8)
+                row_layout.setVerticalSpacing(3)
+
+                label = QLabel(spec.label)
+                label.setWordWrap(True)
+                if spec.advanced:
+                    label.setText(f"{spec.label}  ·  Advanced")
                 widget = self._widget_for(spec)
                 widget.setToolTip(spec.description)
-                row = QWidget()
-                row_layout = QHBoxLayout(row)
-                row_layout.setContentsMargins(0, 0, 0, 0)
-                row_layout.addWidget(widget)
+                widget.setMinimumWidth(115)
+                widget.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+                label.setToolTip(spec.description)
+
+                row_layout.addWidget(label, 0, 0)
+                row_layout.addWidget(widget, 0, 1)
+                row_layout.setColumnStretch(0, 1)
+                row_layout.setColumnStretch(1, 0)
+
                 if spec.description:
-                    row_layout.addWidget(QLabel(spec.description))
-                form.addRow(spec.label, row)
+                    description = QLabel(spec.description)
+                    description.setObjectName("mutedLabel")
+                    description.setWordWrap(True)
+                    row_layout.addWidget(description, 1, 0, 1, 2)
+
+                section.content_layout.addWidget(row)
                 self.widgets[spec.path] = widget
                 self.rows[spec.path] = row
-            self.body_layout.addWidget(box)
+            self.body_layout.addWidget(section)
         self.body_layout.addStretch()
+        self._filter("")
 
     def _widget_for(self, spec: ParameterSpec) -> QWidget:
         if spec.kind == "boolean":
@@ -144,14 +325,27 @@ class ParameterPanel(QWidget):
 
     def _filter(self, text: str) -> None:
         query = text.strip().lower()
+        show_advanced = self.show_advanced.isChecked()
+        group_has_visible: dict[str, bool] = {group: False for group in self.sections}
+
         for spec in self.schema.specs:
-            visible = (
+            matches = (
                 not query
                 or query in spec.path.lower()
                 or query in spec.label.lower()
                 or query in spec.group.lower()
+                or query in spec.description.lower()
             )
+            advanced_allowed = show_advanced or not spec.advanced or bool(query)
+            visible = matches and advanced_allowed
             self.rows[spec.path].setVisible(visible)
+            if visible:
+                group_has_visible[spec.group] = True
+
+        for group, section in self.sections.items():
+            section.setVisible(group_has_visible[group])
+            if query and group_has_visible[group]:
+                section.set_expanded(True)
 
 
 class WorldView(QGraphicsView):
@@ -159,8 +353,10 @@ class WorldView(QGraphicsView):
         super().__init__(parent)
         self.scene = QGraphicsScene(self)
         self.setScene(self.scene)
-        self.setMinimumSize(480, 360)
-        self.setBackgroundBrush(QBrush(QColor("#101820")))
+        self.setMinimumSize(520, 420)
+        self.setBackgroundBrush(QBrush(QColor("#0d1621")))
+        self.setFrameShape(QFrame.Shape.NoFrame)
+        self.setRenderHint(QPainter.RenderHint.Antialiasing, True)
         self.show_organisms = True
         self.show_boundaries = True
         self.show_resources = True
@@ -189,13 +385,13 @@ class WorldView(QGraphicsView):
             for col in range(cols):
                 value = values[row * cols + col]
                 intensity = 0.0 if maximum <= 0.0 else min(1.0, value / maximum)
-                color = QColor.fromHsvF(0.55, 0.75, 0.15 + 0.55 * intensity, 0.7)
+                color = QColor.fromHsvF(0.55, 0.72, 0.14 + 0.52 * intensity, 0.72)
                 self.scene.addRect(
                     col * cell_width,
                     row * cell_height,
                     cell_width,
                     cell_height,
-                    QPen(Qt.PenStyle.NoPen),
+                    QPen(QColor("#19334a"), 0.08),
                     QBrush(color),
                 )
 
@@ -213,25 +409,25 @@ class WorldView(QGraphicsView):
                 0.0,
                 width,
                 height,
-                QPen(QColor("#e4edf2"), 0.35),
+                QPen(QColor("#dfe9f3"), 0.42),
                 QBrush(Qt.BrushStyle.NoBrush),
             )
         if self.show_organisms:
             for organism in snapshot.get("organisms", []):
                 radius = max(0.45, min(2.5, float(organism["energy"]) / 18.0))
-                color = QColor("#63d8ff") if int(organism["age"]) % 2 == 0 else QColor("#f8c15c")
+                color = QColor("#5fd4ff") if int(organism["age"]) % 2 == 0 else QColor("#ffc86a")
                 self.scene.addEllipse(
                     float(organism["x"]) - radius,
                     float(organism["y"]) - radius,
                     radius * 2,
                     radius * 2,
-                    QPen(Qt.PenStyle.NoPen),
+                    QPen(QColor("#d9f5ff"), 0.12),
                     QBrush(color),
                 )
         self.fitInView(self.scene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
 
 
-class MetricsPanel(QWidget):
+class ChartWindow(QWidget):
     PLOT_METRICS = (
         "active_population",
         "energy_pool",
@@ -242,131 +438,262 @@ class MetricsPanel(QWidget):
     )
 
     def __init__(self, parent: QWidget | None = None):
-        super().__init__(parent)
-        self.status = QLabel("Ready")
-        self.engine = QLabel("Engine: —")
-        self.measurement = QLabel("Measurement: —")
-        self.world_contract = QLabel("World contract: —")
-        self.config = QLabel("Config hash: —")
-        self.tick = QLabel("Tick: 0")
-        self.population = QLabel("Population: 0")
-        self.memory = QLabel("Memory: 0")
-        self.instructions = QLabel("Instructions: 0")
-        self.faults = QLabel("Faults: 0")
-        self.births = QLabel("Births: 0")
-        self.deaths = QLabel("Deaths: 0")
-        self.genotypes = QLabel("Active genotypes: 0")
-        self.historical_genotypes = QLabel("Historical genotypes: 0")
-        self.lineages = QLabel("Active lineages: 0")
-        self.blocked_divisions = QLabel("Blocked divisions: 0")
-        self.waiting_for_memory = QLabel("Waiting for memory: 0")
-        self.waiting_for_energy = QLabel("Waiting for energy: 0")
-        self.balance = QLabel("Energy balance error: 0")
-        self.resource = QLabel("Local resource: —")
-        self.resource_balance = QLabel("Resource balance error: —")
-        self.neighbors = QLabel("Mean local neighbors: —")
-        self.movement = QLabel("Movement operations/distance: —")
-        self.boundary = QLabel("Boundary contacts: —")
+        super().__init__(parent, Qt.WindowType.Window)
+        self.setWindowTitle("Melakat — Live time-series")
+        self.resize(940, 600)
+        self.series: dict[str, list[float]] = {key: [] for key in self.PLOT_METRICS}
 
-        self.organism_selector = QComboBox()
-        self.organism_selector.setPlaceholderText("Select an organism...")
-        self.organism_selector.currentTextChanged.connect(self._show_organism)
-        self.organism_details = QPlainTextEdit()
-        self.organism_details.setReadOnly(True)
-        self.organism_details.setMaximumHeight(180)
-        self._organisms: dict[str, dict[str, Any]] = {}
+        title = QLabel("Live simulation chart")
+        title.setObjectName("panelTitle")
+        note = QLabel("The chart is presentation-only; it does not alter the simulation state.")
+        note.setObjectName("mutedLabel")
 
         self.metric_selector = QComboBox()
         self.metric_selector.addItems(list(self.PLOT_METRICS))
-        self.metric_selector.currentTextChanged.connect(self._refresh_plot)
+        self.metric_selector.currentTextChanged.connect(self.refresh)
+
         self.plot = pg.PlotWidget()
-        self.plot.setBackground("#101820")
-        self.curve = self.plot.plot()
-        self.series: dict[str, list[float]] = {key: [] for key in self.PLOT_METRICS}
+        self.plot.setBackground("#0d1621")
+        self.plot.showGrid(x=True, y=True, alpha=0.18)
+        self.plot.setLabel("bottom", "Recorded samples")
+        self.curve = self.plot.plot(pen=pg.mkPen(width=2.2))
+
+        header = QHBoxLayout()
+        header.addWidget(title)
+        header.addStretch()
+        header.addWidget(QLabel("Metric"))
+        header.addWidget(self.metric_selector)
 
         layout = QVBoxLayout(self)
-        for widget in (
-            self.status,
-            self.engine,
-            self.measurement,
-            self.world_contract,
-            self.config,
-            self.tick,
-            self.population,
-            self.memory,
-            self.instructions,
-            self.faults,
-            self.births,
-            self.deaths,
-            self.genotypes,
-            self.historical_genotypes,
-            self.lineages,
-            self.blocked_divisions,
-            self.waiting_for_memory,
-            self.waiting_for_energy,
-            self.balance,
-            self.resource,
-            self.resource_balance,
-            self.neighbors,
-            self.movement,
-            self.boundary,
-        ):
-            layout.addWidget(widget)
-        layout.addWidget(QLabel("Organism inspector — includes position, local resource and neighbors"))
-        layout.addWidget(self.organism_selector)
-        layout.addWidget(self.organism_details)
-        layout.addWidget(QLabel("Time-series metric"))
-        layout.addWidget(self.metric_selector)
-        layout.addWidget(self.plot)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.addLayout(header)
+        layout.addWidget(note)
+        layout.addWidget(self.plot, 1)
+
+    def set_series(self, series: dict[str, list[float]]) -> None:
+        self.series = series
+        self.refresh()
+
+    def refresh(self) -> None:
+        key = self.metric_selector.currentText()
+        values = self.series.get(key, [])
+        self.curve.setData(values)
+        self.plot.setTitle(key.replace("_", " ").title())
+        self.plot.setLabel("left", key.replace("_", " "))
+
+
+class MetricsPanel(QWidget):
+    PLOT_METRICS = ChartWindow.PLOT_METRICS
+
+    def __init__(self, parent: QWidget | None = None):
+        super().__init__(parent)
+        self.series: dict[str, list[float]] = {key: [] for key in self.PLOT_METRICS}
+        self.chart_window: ChartWindow | None = None
+        self._organisms: dict[str, dict[str, Any]] = {}
+
+        header = QWidget()
+        header_layout = QHBoxLayout(header)
+        header_layout.setContentsMargins(0, 0, 0, 0)
+        heading = QLabel("Research monitor")
+        heading.setObjectName("panelTitle")
+        self.status = QLabel("Ready")
+        self.status.setObjectName("statusBadge")
+        header_layout.addWidget(heading)
+        header_layout.addStretch()
+        header_layout.addWidget(self.status)
+
+        self.engine = QLabel("—")
+        self.measurement = QLabel("—")
+        self.world_contract = QLabel("—")
+        self.config = QLabel("—")
+        self.tick = QLabel("0")
+
+        self.population = QLabel("0")
+        self.memory = QLabel("0")
+        self.instructions = QLabel("0")
+        self.faults = QLabel("0")
+        self.births = QLabel("0")
+        self.deaths = QLabel("0")
+        self.genotypes = QLabel("0")
+        self.historical_genotypes = QLabel("0")
+        self.lineages = QLabel("0")
+        self.blocked_divisions = QLabel("0")
+        self.waiting_for_memory = QLabel("0")
+        self.waiting_for_energy = QLabel("0")
+
+        self.balance = QLabel("0")
+        self.resource = QLabel("—")
+        self.resource_balance = QLabel("—")
+        self.neighbors = QLabel("—")
+        self.movement = QLabel("—")
+        self.boundary = QLabel("—")
+
+        runtime_card = self._card(
+            "Run",
+            (
+                ("Engine", self.engine),
+                ("Measurement", self.measurement),
+                ("World contract", self.world_contract),
+                ("Config hash", self.config),
+                ("Tick", self.tick),
+            ),
+        )
+        population_card = self._card(
+            "Population & execution",
+            (
+                ("Population", self.population),
+                ("Memory used", self.memory),
+                ("Instructions", self.instructions),
+                ("Births", self.births),
+                ("Deaths", self.deaths),
+                ("Faults", self.faults),
+                ("Active genotypes", self.genotypes),
+                ("Historical genotypes", self.historical_genotypes),
+                ("Active lineages", self.lineages),
+                ("Blocked divisions", self.blocked_divisions),
+                ("Waiting for memory", self.waiting_for_memory),
+                ("Waiting for energy", self.waiting_for_energy),
+            ),
+        )
+        spatial_card = self._card(
+            "Energy, resources & space",
+            (
+                ("Energy balance error", self.balance),
+                ("Local resource total", self.resource),
+                ("Resource balance error", self.resource_balance),
+                ("Mean local neighbors", self.neighbors),
+                ("Movement ops / distance", self.movement),
+                ("Boundary contacts", self.boundary),
+            ),
+        )
+
+        self.organism_selector = QComboBox()
+        self.organism_selector.setPlaceholderText("Select an organism…")
+        self.organism_selector.currentTextChanged.connect(self._show_organism)
+        self.organism_details = QPlainTextEdit()
+        self.organism_details.setReadOnly(True)
+        self.organism_details.setMinimumHeight(140)
+
+        inspector = QFrame()
+        inspector.setObjectName("panelCard")
+        inspector_layout = QVBoxLayout(inspector)
+        inspector_layout.setContentsMargins(12, 12, 12, 12)
+        inspector_title = QLabel("Organism inspector")
+        inspector_title.setObjectName("sectionTitle")
+        inspector_note = QLabel("Position, local resource, neighborhood and VM-visible state.")
+        inspector_note.setObjectName("mutedLabel")
+        inspector_note.setWordWrap(True)
+        inspector_layout.addWidget(inspector_title)
+        inspector_layout.addWidget(inspector_note)
+        inspector_layout.addWidget(self.organism_selector)
+        inspector_layout.addWidget(self.organism_details)
+
+        chart_card = QFrame()
+        chart_card.setObjectName("panelCard")
+        chart_layout = QVBoxLayout(chart_card)
+        chart_layout.setContentsMargins(12, 12, 12, 12)
+        chart_title = QLabel("Time-series")
+        chart_title.setObjectName("sectionTitle")
+        chart_note = QLabel("Open the graph in a dedicated resizable window for readable inspection.")
+        chart_note.setObjectName("mutedLabel")
+        chart_note.setWordWrap(True)
+        self.open_chart_button = QPushButton("Open live chart window")
+        self.open_chart_button.setObjectName("primaryButton")
+        self.open_chart_button.clicked.connect(self.open_chart)
+        chart_layout.addWidget(chart_title)
+        chart_layout.addWidget(chart_note)
+        chart_layout.addWidget(self.open_chart_button)
+
+        body = QWidget()
+        body_layout = QVBoxLayout(body)
+        body_layout.setContentsMargins(0, 0, 0, 0)
+        body_layout.setSpacing(9)
+        body_layout.addWidget(header)
+        body_layout.addWidget(runtime_card)
+        body_layout.addWidget(population_card)
+        body_layout.addWidget(spatial_card)
+        body_layout.addWidget(inspector)
+        body_layout.addWidget(chart_card)
+        body_layout.addStretch()
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(body)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 12, 12, 12)
+        layout.addWidget(scroll)
+
+    def _card(self, title: str, rows: tuple[tuple[str, QLabel], ...]) -> QFrame:
+        card = QFrame()
+        card.setObjectName("panelCard")
+        layout = QGridLayout(card)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setHorizontalSpacing(12)
+        layout.setVerticalSpacing(7)
+        heading = QLabel(title)
+        heading.setObjectName("sectionTitle")
+        layout.addWidget(heading, 0, 0, 1, 2)
+        for row_index, (name, value) in enumerate(rows, start=1):
+            label = QLabel(name)
+            label.setObjectName("mutedLabel")
+            value.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+            value.setWordWrap(True)
+            layout.addWidget(label, row_index, 0)
+            layout.addWidget(value, row_index, 1)
+        layout.setColumnStretch(0, 0)
+        layout.setColumnStretch(1, 1)
+        return card
+
+    def open_chart(self) -> None:
+        if self.chart_window is None:
+            self.chart_window = ChartWindow(self)
+        self.chart_window.set_series(self.series)
+        self.chart_window.show()
+        self.chart_window.raise_()
+        self.chart_window.activateWindow()
 
     def reset_series(self) -> None:
         for values in self.series.values():
             values.clear()
-        self.curve.setData([])
-
-    def _refresh_plot(self) -> None:
-        key = self.metric_selector.currentText()
-        self.curve.setData(self.series.get(key, []))
-        self.plot.setTitle(key)
+        if self.chart_window is not None:
+            self.chart_window.refresh()
 
     def update_metrics(self, metrics: dict[str, Any]) -> None:
-        self.engine.setText(f"Engine: {metrics.get('engine_version', 'unknown')}")
-        self.measurement.setText(f"Measurement: {metrics.get('measurement_version', 'unknown')}")
-        self.world_contract.setText(f"World contract: {metrics.get('world_contract_version', '—')}")
-        self.config.setText(f"Config hash: {metrics.get('config_hash', 'unknown')}")
-        self.tick.setText(f"Tick: {metrics.get('tick', 0)}")
-        self.population.setText(f"Population: {metrics.get('active_population', 0)}")
-        self.memory.setText(f"Memory: {metrics.get('memory_used', 0)}")
-        self.instructions.setText(f"Instructions: {metrics.get('instructions_executed', 0)}")
-        self.faults.setText(f"Faults: {metrics.get('faults', 0)}")
-        self.births.setText(f"Births: {metrics.get('births', 0)}")
-        self.deaths.setText(f"Deaths: {metrics.get('deaths', 0)}")
-        self.genotypes.setText(f"Active genotypes: {metrics.get('active_genotypes', 0)}")
-        self.historical_genotypes.setText(
-            f"Historical genotypes: {metrics.get('historical_genotypes', 0)}"
-        )
-        self.lineages.setText(f"Active lineages: {metrics.get('active_lineages', 0)}")
-        self.blocked_divisions.setText(f"Blocked divisions: {metrics.get('blocked_divisions', 0)}")
-        self.waiting_for_memory.setText(f"Waiting for memory: {metrics.get('waiting_for_memory', 0)}")
-        self.waiting_for_energy.setText(f"Waiting for energy: {metrics.get('waiting_for_energy', 0)}")
-        self.balance.setText(f"Energy balance error: {metrics.get('energy_balance_error', 0)}")
-        self.resource.setText(f"Local resource total: {metrics.get('local_resource_total', '—')}")
-        self.resource_balance.setText(
-            f"Resource balance error: {metrics.get('local_resource_balance_error', '—')}"
-        )
-        self.neighbors.setText(f"Mean local neighbors: {metrics.get('mean_local_neighbors', '—')}")
+        self.engine.setText(str(metrics.get("engine_version", "unknown")))
+        self.measurement.setText(str(metrics.get("measurement_version", "unknown")))
+        self.world_contract.setText(str(metrics.get("world_contract_version", "—")))
+        self.config.setText(str(metrics.get("config_hash", "unknown")))
+        self.tick.setText(str(metrics.get("tick", 0)))
+        self.population.setText(str(metrics.get("active_population", 0)))
+        self.memory.setText(str(metrics.get("memory_used", 0)))
+        self.instructions.setText(str(metrics.get("instructions_executed", 0)))
+        self.faults.setText(str(metrics.get("faults", 0)))
+        self.births.setText(str(metrics.get("births", 0)))
+        self.deaths.setText(str(metrics.get("deaths", 0)))
+        self.genotypes.setText(str(metrics.get("active_genotypes", 0)))
+        self.historical_genotypes.setText(str(metrics.get("historical_genotypes", 0)))
+        self.lineages.setText(str(metrics.get("active_lineages", 0)))
+        self.blocked_divisions.setText(str(metrics.get("blocked_divisions", 0)))
+        self.waiting_for_memory.setText(str(metrics.get("waiting_for_memory", 0)))
+        self.waiting_for_energy.setText(str(metrics.get("waiting_for_energy", 0)))
+        self.balance.setText(str(metrics.get("energy_balance_error", 0)))
+        self.resource.setText(str(metrics.get("local_resource_total", "—")))
+        self.resource_balance.setText(str(metrics.get("local_resource_balance_error", "—")))
+        self.neighbors.setText(str(metrics.get("mean_local_neighbors", "—")))
         self.movement.setText(
-            "Movement operations/distance: "
             f"{metrics.get('movement_operations', '—')} / {metrics.get('movement_distance', '—')}"
         )
-        self.boundary.setText(f"Boundary contacts: {metrics.get('boundary_contacts', '—')}")
+        self.boundary.setText(str(metrics.get("boundary_contacts", "—")))
+
         for key in self.PLOT_METRICS:
             value = metrics.get(key, 0.0)
             try:
                 self.series[key].append(float(value))
             except (TypeError, ValueError):
                 self.series[key].append(0.0)
-        self._refresh_plot()
+        if self.chart_window is not None and self.chart_window.isVisible():
+            self.chart_window.refresh()
 
     def update_snapshot(self, snapshot: dict[str, Any]) -> None:
         organisms = snapshot.get("organisms", [])
@@ -451,56 +778,117 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Melakat Desktop Lab — Phase Two")
-        self.resize(1550, 920)
+        self.resize(1600, 940)
+        self.setStyleSheet(APP_STYLE)
         self.controller = EngineController(self)
         self.controller.event_received.connect(self._handle_event)
         self.current_config: dict[str, Any] = {}
         self.last_summary: dict[str, Any] | None = None
 
         toolbar = QToolBar("Simulation", self)
+        toolbar.setMovable(False)
         self.addToolBar(toolbar)
-        self._add_action(toolbar, "Start", self._start)
-        self._add_action(toolbar, "Pause", lambda: self.controller.send("pause"))
-        self._add_action(toolbar, "Resume", lambda: self.controller.send("resume"))
-        self._add_action(toolbar, "Step", lambda: self.controller.send("step"))
-        self._add_action(toolbar, "Reset", lambda: self.controller.send("reset"))
-        self._add_action(toolbar, "Stop", self.controller.stop)
+        self._add_toolbar_button(toolbar, "Start", self._start, role="primary")
+        self._add_toolbar_button(toolbar, "Pause", lambda: self.controller.send("pause"))
+        self._add_toolbar_button(toolbar, "Resume", lambda: self.controller.send("resume"))
+        self._add_toolbar_button(toolbar, "Step", lambda: self.controller.send("step"))
+        self._add_toolbar_button(toolbar, "Reset", lambda: self.controller.send("reset"))
+        self._add_toolbar_button(toolbar, "Stop", self.controller.stop, role="danger")
         toolbar.addSeparator()
         self._add_action(toolbar, "Export config", self._export_config)
         self._add_action(toolbar, "Export result", self._export_result)
         self._add_action(toolbar, "Open result", self._open_result)
         self._add_action(toolbar, "Compare results", self._compare_results)
-        toolbar.addSeparator()
-        toolbar.addWidget(QLabel(" Layers: "))
-        self.organism_layer = QCheckBox("Organisms")
-        self.boundary_layer = QCheckBox("Boundaries")
-        self.resource_layer = QCheckBox("Resources")
-        for checkbox in (self.organism_layer, self.boundary_layer, self.resource_layer):
-            checkbox.setChecked(True)
-            checkbox.toggled.connect(self._update_layers)
-            toolbar.addWidget(checkbox)
-        toolbar.addSeparator()
-        toolbar.addWidget(QLabel(" Events: "))
-        self.event_filter = QComboBox()
-        self.event_filter.addItems(("all", "birth/death", "movement", "resource", "reproduction"))
-        toolbar.addWidget(self.event_filter)
 
         self.parameters = ParameterPanel(CORE_SCHEMA)
         self.world = WorldView()
         self.metrics = MetricsPanel()
         self.log = QPlainTextEdit()
         self.log.setReadOnly(True)
+        self.log.setMaximumBlockCount(4000)
+
+        self.organism_layer = QCheckBox("Organisms")
+        self.boundary_layer = QCheckBox("Boundaries")
+        self.resource_layer = QCheckBox("Resources")
+        for checkbox in (self.organism_layer, self.boundary_layer, self.resource_layer):
+            checkbox.setChecked(True)
+            checkbox.toggled.connect(self._update_layers)
+
+        world_panel = QFrame()
+        world_panel.setObjectName("panelCard")
+        world_layout = QVBoxLayout(world_panel)
+        world_layout.setContentsMargins(10, 10, 10, 10)
+        world_layout.setSpacing(8)
+        world_header = QHBoxLayout()
+        world_title = QLabel("World")
+        world_title.setObjectName("panelTitle")
+        world_hint = QLabel("Visible layers")
+        world_hint.setObjectName("mutedLabel")
+        world_header.addWidget(world_title)
+        world_header.addStretch()
+        world_header.addWidget(world_hint)
+        world_header.addWidget(self.organism_layer)
+        world_header.addWidget(self.boundary_layer)
+        world_header.addWidget(self.resource_layer)
+        world_layout.addLayout(world_header)
+        world_layout.addWidget(self.world, 1)
 
         split = QSplitter(Qt.Orientation.Horizontal)
         split.addWidget(self.parameters)
-        split.addWidget(self.world)
+        split.addWidget(world_panel)
         split.addWidget(self.metrics)
-        split.setSizes([350, 800, 400])
+        split.setStretchFactor(0, 0)
+        split.setStretchFactor(1, 1)
+        split.setStretchFactor(2, 0)
+        split.setSizes([330, 880, 390])
+
+        event_panel = QFrame()
+        event_panel.setObjectName("panelCard")
+        event_layout = QVBoxLayout(event_panel)
+        event_layout.setContentsMargins(10, 8, 10, 10)
+        event_layout.setSpacing(6)
+        event_header = QHBoxLayout()
+        event_title = QLabel("Event log")
+        event_title.setObjectName("sectionTitle")
+        self.event_filter = QComboBox()
+        self.event_filter.addItems(
+            ("all", "birth/death", "movement", "boundary", "resource", "reproduction")
+        )
+        clear_log = QPushButton("Clear")
+        clear_log.clicked.connect(self.log.clear)
+        event_header.addWidget(event_title)
+        event_header.addStretch()
+        event_header.addWidget(QLabel("Filter"))
+        event_header.addWidget(self.event_filter)
+        event_header.addWidget(clear_log)
+        event_layout.addLayout(event_header)
+        event_layout.addWidget(self.log)
+        event_panel.setMaximumHeight(220)
+
         root = QWidget()
         layout = QVBoxLayout(root)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(10)
         layout.addWidget(split, 1)
-        layout.addWidget(self.log, 0)
+        layout.addWidget(event_panel, 0)
         self.setCentralWidget(root)
+
+    def _add_toolbar_button(
+        self,
+        toolbar: QToolBar,
+        label: str,
+        callback: Any,
+        *,
+        role: str | None = None,
+    ) -> None:
+        button = QToolButton()
+        button.setText(label)
+        if role == "primary":
+            button.setObjectName("primaryButton")
+        elif role == "danger":
+            button.setObjectName("dangerButton")
+        button.clicked.connect(callback)
+        toolbar.addWidget(button)
 
     def _add_action(self, toolbar: QToolBar, label: str, callback: Any) -> None:
         action = QAction(label, self)
@@ -528,7 +916,7 @@ class MainWindow(QMainWindow):
         self.resource_layer.setChecked(bool(config.get("visual.show_resources", True)))
         self._update_layers()
         backend = config.get("run.engine_backend", "phase-zero-vm")
-        self.log.appendPlainText(f"Starting {backend} engine...")
+        self.log.appendPlainText(f"Starting {backend} engine…")
         self.controller.start(config)
 
     def _export_config(self) -> None:
@@ -592,7 +980,7 @@ class MainWindow(QMainWindow):
             self.metrics.update_metrics(sample)
         self.metrics.update_metrics(self.last_summary)
         self.metrics.update_snapshot(snapshot)
-        self.metrics.status.setText("loaded")
+        self.metrics.status.setText("Loaded")
         self.log.appendPlainText(
             f"Result loaded: {path}; config_hash={artifact.get('config_hash')}"
         )
@@ -621,7 +1009,7 @@ class MainWindow(QMainWindow):
             f"{report['same_config_except_seed']}",
         )
 
-    def _event_visible(self, name: str) -> bool:
+    def _event_visible(self, name: str, payload: dict[str, Any]) -> bool:
         selected = self.event_filter.currentText()
         if selected == "all":
             return True
@@ -631,6 +1019,10 @@ class MainWindow(QMainWindow):
             "resource": {"resource_captured", "resource_renewed"},
             "reproduction": {"reproduction_blocked", "organism_born"},
         }
+        if selected == "boundary":
+            return name in {"organism_born", "organism_moved"} and int(
+                payload.get("boundary_contacts", 0) or 0
+            ) > 0
         return name in groups.get(selected, set())
 
     def _handle_event(self, event: dict[str, Any]) -> None:
@@ -643,14 +1035,14 @@ class MainWindow(QMainWindow):
             self.metrics.update_snapshot(snapshot)
             self.metrics.update_metrics(metrics)
         if name == "ready":
-            self.metrics.status.setText("ready")
+            self.metrics.status.setText("Ready")
         elif name == "status":
-            self.metrics.status.setText(str(payload.get("status", "unknown")))
+            self.metrics.status.setText(str(payload.get("status", "Unknown")).title())
         elif name == "reset":
             self.metrics.status.setText("Paused")
         elif name == "finished":
             self.last_summary = payload.get("summary")
-            self.metrics.status.setText("finished")
+            self.metrics.status.setText("Finished")
             self.log.appendPlainText(
                 "finished: "
                 f"{payload.get('reason', 'unknown')}; "
@@ -667,7 +1059,7 @@ class MainWindow(QMainWindow):
             "resource_captured",
             "resource_renewed",
             "reproduction_blocked",
-        } and self._event_visible(name):
+        } and self._event_visible(name, payload):
             self.log.appendPlainText(f"{name}: {payload}")
 
     def closeEvent(self, event: Any) -> None:
