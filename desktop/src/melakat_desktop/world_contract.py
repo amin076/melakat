@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 WORLD_CONTRACT_VERSION = "phase-two-spatial-0.1"
+PHASE_TWO_ENGINE_VERSION = "phase-two-vm-0.1"
 BASELINE_ENGINE_VERSION = "phase-zero-vm-0.2"
 BASELINE_MEASUREMENT_VERSION = "phase-one-measurement-0.1"
 BASELINE_SEED = 1
@@ -16,6 +17,7 @@ BASELINE_SNAPSHOT_SHA256 = (
 
 PHASE_TWO_WORLD_CONTRACT: dict[str, Any] = {
     "version": WORLD_CONTRACT_VERSION,
+    "engine_version": PHASE_TWO_ENGINE_VERSION,
     "coordinate_system": {
         "dimensions": 2,
         "unit": "abstract_world_unit",
@@ -73,6 +75,9 @@ def _baseline_normalize(value: Any, *, root: bool = False) -> Any:
                     continue
                 result[key] = BASELINE_CONFIG_HASH
                 continue
+            if key == "engine_version" and item == PHASE_TWO_ENGINE_VERSION:
+                result[key] = BASELINE_ENGINE_VERSION
+                continue
             result[key] = _baseline_normalize(item)
         return result
     if isinstance(value, list):
@@ -85,9 +90,9 @@ def _baseline_normalize(value: Any, *, root: bool = False) -> Any:
 def scientific_baseline_projection(summary: Mapping[str, Any]) -> dict[str, Any]:
     """Project a P2.1 disabled-spatial result onto the frozen Phase One state.
 
-    Only version/config metadata introduced by P2.1 is normalized. Scientific
-    state, history, genealogy, genotype records, VM state, coordinates, ledger,
-    and the final snapshot remain in the checksum projection.
+    Only configuration/version metadata introduced by P2.1 is normalized.
+    Scientific state, history, genealogy, genotype records, VM state,
+    coordinates, resource ledger, and final snapshot remain checksum-covered.
     """
 
     projected = _baseline_normalize(summary, root=True)
