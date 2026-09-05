@@ -1,15 +1,23 @@
 # Melakat Desktop Lab
 
-This directory contains the first desktop interface scaffold for Melakat.
+[فارسی](README.fa.md) | English
+
+This directory contains the desktop research application and local Phase Zero engine.
+
+## Current status
+
+The default GUI backend is <code>phase-zero-vm-0.2</code>. The engine runs in a separate process from the PySide6 interface. The UI sends serializable commands and receives serializable snapshots, metrics, and lifecycle events.
+
+The earlier <code>demo</code> backend remains available for architecture comparison. It is not a scientific Phase Zero result.
 
 ## Design goals
 
-- The UI is schema-driven. Adding a parameter means adding a ParameterSpec, not redesigning the window.
-- The simulation engine runs in a separate process from the UI.
-- The UI sends commands and receives serializable events.
-- The default GUI backend is the bounded Phase Zero VM.
-- The demo engine remains available for architecture comparison.
-- The Phase Zero VM is an execution substrate, not yet the final biological rule set.
+- The UI is schema-driven.
+- Adding a parameter means adding a <code>ParameterSpec</code>, not redesigning the window.
+- The engine and UI remain process-isolated.
+- Scientific rules stay in the engine layer rather than the presentation layer.
+- The parameter structure can grow from 50 to 200 fields.
+- Saved configurations and results can become the interface between desktop and future web tools.
 
 ## Stack
 
@@ -21,41 +29,65 @@ This directory contains the first desktop interface scaffold for Melakat.
 
 ## Run locally
 
+Use a stable CPython release. An old alpha build such as <code>Python 3.12.0a4</code> can break modern packaging tools.
+
 ~~~powershell
 cd desktop
 python -m venv .venv
 .venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
 python -m pip install -e .
 cd ..
 python -m melakat_desktop.main
 ~~~
 
-The first window provides:
+Run tests:
+
+~~~powershell
+cd desktop
+python -m unittest discover -s tests -v
+~~~
+
+Run the headless experiment runner:
+
+~~~powershell
+cd desktop
+python -m melakat_desktop.phase_zero_experiment --runs 30 --ticks 2000 --output phase-zero-results.json
+~~~
+
+## Interface
+
+The first research interface provides:
 
 - grouped parameter editing;
 - parameter search;
-- start, pause, resume, step, stop and reset;
+- start, pause, resume, step, stop, and reset;
 - a live world view;
 - population and energy plots;
-- event log;
-- a process boundary between UI and engine.
+- birth and death events;
+- engine, population, memory, instruction, fault, genotype, and energy-balance metrics.
 
 ## Engine boundary
 
-The GUI now runs the bounded Phase Zero VM by default. The VM has finite registers, finite memory, finite word arithmetic, explicit faults, and an instruction budget. The DemoEngine remains available as a comparison backend.
+The VM accepts data-only instruction genomes. Organisms cannot execute host Python, import modules, access files, use the network, create subprocesses, or call external APIs.
 
-The Phase Zero VM currently does not claim final biological behavior. Reproduction, mutation, genome copying, sensing, and the final Experiment 0 rules remain separate research and implementation steps.
+The GUI must remain an observer and controller. It must not silently add rules that are absent from the engine contract.
 
-## Planned growth
+## Planned Phase One growth
 
-The parameter schema can grow from 20 to 50 or 200 fields without changing the main window. Later we can add:
+- configuration and result export;
+- lineage and genotype inspection;
+- active versus historical genotype metrics;
+- blocked-division visibility;
+- run comparison;
+- deterministic replay;
+- parameter sensitivity presets;
+- a concise event log with optional detailed inspection;
+- optional Esbiko result viewing in a later integration phase.
 
-- parameter presets and named experiments;
-- genome and register inspectors;
-- memory visualisation;
-- lineage tree;
-- snapshots and deterministic replay;
-- multiple-run comparison;
-- export to JSON, CSV and image;
-- validated VM rule modules;
-- optional Esbiko viewer integration.
+## Documentation
+
+- [Phase Zero results](../docs/doc-english/phase-zero-results.md)
+- [Phase One roadmap](../docs/doc-english/phase-one-roadmap.md)
+- [Desktop lab architecture](../docs/desktop/desktop-lab-architecture.md)
+- [Phase Zero VM contract](../docs/desktop/phase-zero-vm.md)
