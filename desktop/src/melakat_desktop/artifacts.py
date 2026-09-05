@@ -30,9 +30,11 @@ HISTORY_FIELDS = (
 )
 
 SUMMARY_FIELDS = (
+    "control",
     "seed",
     "config_hash",
     "engine_version",
+    "measurement_version",
     "tick",
     "active_population",
     "births",
@@ -77,11 +79,13 @@ def make_run_artifact(
         "config_hash": config_hash(config),
         "config": dict(config),
         "engine_version": summary.get("engine_version"),
+        "measurement_version": summary.get("measurement_version"),
         "summary": dict(summary),
     }
 
 
 def write_json(path: Path, payload: Mapping[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -98,6 +102,7 @@ def write_summary_csv(
     path: Path,
     runs: Iterable[Mapping[str, Any]],
 ) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     rows = list(runs)
     with path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(SUMMARY_FIELDS))
@@ -115,6 +120,7 @@ def write_history_csv(
     path: Path,
     runs: Iterable[Mapping[str, Any]],
 ) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     fields = ("control", "seed", *HISTORY_FIELDS)
     with path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(fields))
