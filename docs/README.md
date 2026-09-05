@@ -15,6 +15,8 @@ This directory contains the canonical project documentation. Every major documen
 - [نتایج مرحلهٔ صفر — فارسی](doc-farsi/phase-zero-results.md)
 - [Phase One roadmap — English](doc-english/phase-one-roadmap.md)
 - [نقشهٔ راه مرحلهٔ یک — فارسی](doc-farsi/phase-one-roadmap.md)
+- [Phase Two roadmap — English](doc-english/phase-two-roadmap.md)
+- [نقشهٔ راه مرحلهٔ دو — فارسی](doc-farsi/phase-two-roadmap.md)
 
 ## Technical documents
 
