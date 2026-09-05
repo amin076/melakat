@@ -3,7 +3,7 @@ import unittest
 
 from melakat_desktop.artifacts import canonical_json
 from melakat_desktop.parameters import CORE_SCHEMA
-from melakat_desktop.phase_zero_engine import PhaseZeroEngine
+from melakat_desktop.phase_two_engine import PhaseTwoEngine
 from melakat_desktop.world_contract import (
     BASELINE_SCIENTIFIC_SHA256,
     BASELINE_SNAPSHOT_SHA256,
@@ -42,17 +42,18 @@ class PhaseTwoWorldContractTests(unittest.TestCase):
         config = CORE_SCHEMA.defaults()
         config["world.spatial_enabled"] = True
         with self.assertRaisesRegex(ValueError, "spatial_rules_not_implemented"):
-            PhaseZeroEngine(config, lambda _event: None)
+            PhaseTwoEngine(config, lambda _event: None)
 
     def test_disabled_spatial_mode_preserves_phase_one_baseline(self) -> None:
         config = CORE_SCHEMA.defaults()
+        config["run.engine_backend"] = "phase-two-vm"
         config["run.max_ticks"] = 2000
         config["run.seed"] = 1
         config["run.emit_snapshots"] = False
         config["world.spatial_enabled"] = False
         config = CORE_SCHEMA.validate(config)
 
-        engine = PhaseZeroEngine(config, lambda _event: None)
+        engine = PhaseTwoEngine(config, lambda _event: None)
         while not engine.finished:
             engine.step()
         summary = engine.summary()
@@ -61,11 +62,11 @@ class PhaseTwoWorldContractTests(unittest.TestCase):
         scientific_digest = hashlib.sha256(
             canonical_json(projection).encode("utf-8")
         ).hexdigest()
-        snapshot = dict(summary["final_snapshot"])
-        snapshot.pop("world_contract_version", None)
-        snapshot.pop("spatial_enabled", None)
+        snapshot_projection = scientific_baseline_projection(
+            {"final_snapshot": summary["final_snapshot"]}
+        )["final_snapshot"]
         snapshot_digest = hashlib.sha256(
-            canonical_json(snapshot).encode("utf-8")
+            canonical_json(snapshot_projection).encode("utf-8")
         ).hexdigest()
 
         self.assertEqual(scientific_digest, BASELINE_SCIENTIFIC_SHA256)
@@ -73,7 +74,8 @@ class PhaseTwoWorldContractTests(unittest.TestCase):
 
     def test_world_contract_metadata_is_exposed(self) -> None:
         config = CORE_SCHEMA.defaults()
-        engine = PhaseZeroEngine(config, lambda _event: None)
+        config["run.engine_backend"] = "phase-two-vm"
+        engine = PhaseTwoEngine(config, lambda _event: None)
         self.assertEqual(
             engine.metrics()["world_contract_version"],
             WORLD_CONTRACT_VERSION,
