@@ -7,7 +7,23 @@ from threading import Event
 from typing import Any
 
 from .engine import DemoEngine
+from .phase_zero_engine import PhaseZeroEngine
 from .protocol import make_event
+
+
+ENGINE_BACKENDS = {
+    "demo": DemoEngine,
+    "phase-zero-vm": PhaseZeroEngine,
+}
+
+
+def create_engine(config: dict[str, Any], emit: Any) -> Any:
+    backend = str(config.get("run.engine_backend", "phase-zero-vm"))
+    try:
+        engine_type = ENGINE_BACKENDS[backend]
+    except KeyError as exc:
+        raise ValueError(f"unknown_engine_backend:{backend}") from exc
+    return engine_type(config, emit)
 
 
 def engine_process_main(
@@ -19,7 +35,7 @@ def engine_process_main(
     def emit(event: dict[str, Any]) -> None:
         event_queue.put(event)
 
-    engine = DemoEngine(config, emit)
+    engine = create_engine(config, emit)
     running = False
     emit(make_event("ready", snapshot=engine.snapshot(), metrics=engine.metrics()))
 
@@ -37,7 +53,7 @@ def engine_process_main(
                 engine.step()
                 emit(make_event("status", status="finished" if engine.finished else "paused"))
             elif name == "reset":
-                engine = DemoEngine(config, emit)
+                engine = create_engine(config, emit)
                 running = False
                 emit(make_event("reset", snapshot=engine.snapshot(), metrics=engine.metrics()))
             elif name == "stop":
