@@ -20,10 +20,14 @@ This directory contains the canonical project documentation. Every major documen
 - [Phase One evidence archive](../results/phase-one/evidence-gate/README.md)
 - [Phase Two roadmap — English](doc-english/phase-two-roadmap.md)
 - [نقشهٔ راه مرحلهٔ دو — فارسی](doc-farsi/phase-two-roadmap.md)
+- [Phase Two world contract 0.1 — English](phase-2/phase-two-world-contract-0.1.md)
+- [قرارداد جهان مرحلهٔ دو نسخهٔ ۰.۱ — فارسی](phase-2/phase-two-world-contract-0.1.fa.md)
 
 ## Current research gate
 
-The Phase One implementation gate and the Phase One scientific evidence gate are complete for the defined homogeneous baseline. The accepted archive contains 990 runs across 30 seeds, six controls, and 27 one-factor sensitivity cases. Phase Two may begin only while preserving this homogeneous baseline as the permanent comparison control.
+The Phase One implementation gate and the Phase One scientific evidence gate are complete for the defined homogeneous baseline. The accepted archive contains 990 runs across 30 seeds, six controls, and 27 one-factor sensitivity cases.
+
+Phase Two has started with P2.1, the versioned world-contract and baseline-compatibility layer. P2.1 deliberately keeps spatial dynamics disabled: the homogeneous baseline remains the permanent comparison control, while active topology, boundaries, movement, sensing, and local resources remain deferred to later work packages.
 
 ## Technical documents
 
