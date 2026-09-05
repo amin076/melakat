@@ -78,7 +78,7 @@ CORE_SCHEMA = ParameterSchema(
             "Run",
             "choice",
             "phase-zero-vm",
-            choices=("phase-zero-vm", "demo"),
+            choices=("phase-zero-vm", "phase-two-vm", "demo"),
             description="Execution engine used by the GUI",
         ),
         ParameterSpec(
