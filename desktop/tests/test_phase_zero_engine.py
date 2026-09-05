@@ -98,6 +98,24 @@ class PhaseZeroEngineTests(unittest.TestCase):
             [0, 2, 4, 5],
         )
 
+    def test_history_does_not_duplicate_interval_boundary(self) -> None:
+        config = self._config()
+        config.update(
+            {
+                "run.max_ticks": 4,
+                "run.snapshot_interval": 2,
+            }
+        )
+        engine = PhaseZeroEngine(config, lambda event: None)
+
+        while not engine.finished:
+            engine.step()
+
+        self.assertEqual(
+            [sample["tick"] for sample in engine.history],
+            [0, 2, 4],
+        )
+
     def test_blocked_division_is_observable_and_stable(self) -> None:
         config = self._config()
         config.update(
