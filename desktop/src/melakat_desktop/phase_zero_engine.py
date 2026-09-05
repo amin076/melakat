@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from dataclasses import dataclass
 from typing import Any, Callable
 
@@ -10,6 +11,8 @@ from .vm import Instruction, Opcode, VMConfig, VMState, VirtualMachine
 @dataclass
 class PhaseZeroOrganism:
     organism_id: int
+    x: float
+    y: float
     energy: float
     age: int
     genome: tuple[Instruction, ...]
@@ -30,6 +33,7 @@ class PhaseZeroEngine:
         self.config = config
         self.emit = emit
         self.tick = 0
+        self.rng = random.Random(int(config["run.seed"]))
         self.energy_pool = float(config["world.initial_energy"])
         self.births = 0
         self.deaths = 0
@@ -63,6 +67,8 @@ class PhaseZeroEngine:
             self.organisms.append(
                 PhaseZeroOrganism(
                     organism_id=organism_id,
+                    x=self.rng.uniform(0, float(self.config["world.width"])),
+                    y=self.rng.uniform(0, float(self.config["world.height"])),
                     energy=float(self.config["population.initial_energy"]),
                     age=0,
                     genome=genome,
@@ -156,6 +162,8 @@ class PhaseZeroEngine:
             "organisms": [
                 {
                     "id": organism.organism_id,
+                    "x": organism.x,
+                    "y": organism.y,
                     "energy": round(organism.energy, 4),
                     "age": organism.age,
                     "alive": organism.alive,
