@@ -163,6 +163,10 @@ class MetricsPanel(QWidget):
         self.memory = QLabel("Memory: 0")
         self.instructions = QLabel("Instructions: 0")
         self.faults = QLabel("Faults: 0")
+        self.births = QLabel("Births: 0")
+        self.deaths = QLabel("Deaths: 0")
+        self.genotypes = QLabel("Genotypes: 0")
+        self.balance = QLabel("Energy balance error: 0")
         self.plot = pg.PlotWidget()
         self.plot.setBackground("#101820")
         self.plot.addLegend()
@@ -178,6 +182,10 @@ class MetricsPanel(QWidget):
         layout.addWidget(self.memory)
         layout.addWidget(self.instructions)
         layout.addWidget(self.faults)
+        layout.addWidget(self.births)
+        layout.addWidget(self.deaths)
+        layout.addWidget(self.genotypes)
+        layout.addWidget(self.balance)
         layout.addWidget(self.plot)
 
     def update_metrics(self, metrics: dict[str, Any]) -> None:
@@ -189,6 +197,14 @@ class MetricsPanel(QWidget):
             f"Instructions: {metrics.get('instructions_executed', 0)}"
         )
         self.faults.setText(f"Faults: {metrics.get('faults', 0)}")
+        self.births.setText(f"Births: {metrics.get('births', 0)}")
+        self.deaths.setText(f"Deaths: {metrics.get('deaths', 0)}")
+        self.genotypes.setText(
+            f"Genotypes: {metrics.get('active_genotypes', 0)}"
+        )
+        self.balance.setText(
+            f"Energy balance error: {metrics.get('energy_balance_error', 0)}"
+        )
         self.population_data.append(float(metrics.get("active_population", 0)))
         self.energy_data.append(float(metrics.get("energy_pool", 0)))
         self.population_curve.setData(self.population_data)
