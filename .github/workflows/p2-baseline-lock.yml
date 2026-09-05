@@ -22,6 +22,17 @@ jobs:
           from melakat_desktop.parameters import CORE_SCHEMA
           from melakat_desktop.phase_zero_engine import PhaseZeroEngine
 
+          def normalize(value):
+              if isinstance(value, dict):
+                  return {
+                      key: normalize(item)
+                      for key, item in value.items()
+                      if key != "config_hash"
+                  }
+              if isinstance(value, list):
+                  return [normalize(item) for item in value]
+              return value
+
           config = CORE_SCHEMA.defaults()
           config["run.max_ticks"] = 2000
           config["run.seed"] = 1
@@ -31,9 +42,8 @@ jobs:
           while not engine.finished:
               engine.step()
           summary = engine.summary()
-          projection = dict(summary)
-          projection.pop("config_hash", None)
+          projection = normalize(summary)
           digest = hashlib.sha256(canonical_json(projection).encode("utf-8")).hexdigest()
-          print(f"P2_BASELINE_SCIENTIFIC_SHA256={digest}")
+          print(f"P2_BASELINE_NORMALIZED_SHA256={digest}")
           print(f"P2_BASELINE_FINAL_SNAPSHOT_SHA256={hashlib.sha256(canonical_json(summary['final_snapshot']).encode('utf-8')).hexdigest()}")
           PY
