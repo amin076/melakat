@@ -1,16 +1,13 @@
 name: Phase One evidence campaign
 
 on:
-  push:
-    branches:
-      - research/phase-one-evidence-gate
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
   evidence:
-    if: ${{ !contains(github.event.head_commit.message, '[evidence-output]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -44,7 +41,7 @@ jobs:
           path: results/phase-one/evidence-gate
           if-no-files-found: error
 
-      - name: Archive evidence on the research branch
+      - name: Archive evidence on the current branch
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
@@ -54,5 +51,5 @@ jobs:
             echo "Evidence output is already archived."
           else
             git commit -m "[evidence-output] archive Phase One evidence campaign"
-            git push origin HEAD:research/phase-one-evidence-gate
+            git push origin HEAD:${GITHUB_REF_NAME}
           fi
