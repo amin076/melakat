@@ -7,6 +7,7 @@ from pathlib import Path
 from melakat_desktop.artifacts import (
     RUN_ARTIFACT_FORMAT,
     config_hash,
+    load_run_artifact,
     make_run_artifact,
     write_history_csv,
     write_json,
@@ -105,6 +106,12 @@ class ArtifactTests(unittest.TestCase):
             loaded = json.loads(json_path.read_text(encoding="utf-8"))
             self.assertEqual(loaded["format"], RUN_ARTIFACT_FORMAT)
             self.assertEqual(loaded["config_hash"], config_hash(config))
+            self.assertIn("analysis", loaded["summary"])
+            self.assertEqual(loaded["summary"]["mutation_events"], 0)
+            self.assertEqual(
+                load_run_artifact(json_path),
+                loaded,
+            )
 
             with summary_path.open(encoding="utf-8", newline="") as handle:
                 rows = list(csv.DictReader(handle))
