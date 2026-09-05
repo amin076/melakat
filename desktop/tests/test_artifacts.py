@@ -113,6 +113,19 @@ class ArtifactTests(unittest.TestCase):
                 loaded,
             )
 
+            aggregate_path = root / "nested" / "aggregate.json"
+            aggregate_payload = {
+                "format": RUN_ARTIFACT_FORMAT,
+                "config_hash": config_hash(config),
+                "config": config,
+                "aggregate": {"active_population": 2},
+            }
+            write_json(aggregate_path, aggregate_payload)
+            self.assertEqual(
+                load_run_artifact(aggregate_path),
+                aggregate_payload,
+            )
+
             with summary_path.open(encoding="utf-8", newline="") as handle:
                 rows = list(csv.DictReader(handle))
             self.assertEqual(rows[0]["control"], "baseline")

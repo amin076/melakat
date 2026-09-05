@@ -164,6 +164,7 @@ def load_run_artifact(path: Path) -> dict[str, Any]:
             "Run artifact configuration hash does not match its configuration"
         )
     summary = payload.get("summary")
-    if not isinstance(summary, dict):
-        raise ValueError("Run artifact is missing its summary")
+    aggregate = payload.get("aggregate")
+    if not isinstance(summary, dict) and not isinstance(aggregate, dict):
+        raise ValueError("Run artifact is missing its summary or aggregate")
     return payload

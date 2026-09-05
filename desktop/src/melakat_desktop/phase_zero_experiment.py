@@ -271,6 +271,8 @@ def main() -> None:
             "runs": runs,
         }
 
+    payload["summary"] = aggregate(all_runs)
+
     if args.output:
         write_json(args.output, payload)
     else:
