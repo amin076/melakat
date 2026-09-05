@@ -88,6 +88,7 @@ class PhaseZeroEngine:
         self.births = 0
         self.deaths = 0
         self.faults = 0
+        self.total_instructions_executed = 0
         self.max_population = 0
         self.finished = False
         self.death_reasons: Counter[str] = Counter()
@@ -334,6 +335,7 @@ class PhaseZeroEngine:
         vm = VirtualMachine(organism.genome, self.vm_config, organism.vm_state)
         result = vm.run(int(self.config["execution.instructions_per_tick"]))
         organism.vm_state = vm.state
+        self.total_instructions_executed += result.instructions_executed
 
         execution_requested = (
             result.instructions_executed
@@ -425,9 +427,7 @@ class PhaseZeroEngine:
                 "instruction_pointer": organism.vm_state.instruction_pointer,
                 "registers": list(organism.vm_state.registers),
                 "memory": list(organism.vm_state.memory),
-                "replication_progress": organism.vm_state.replication_progress
-                if hasattr(organism.vm_state, "replication_progress")
-                else sum(
+                "replication_progress": sum(
                     item is not None
                     for item in organism.vm_state.replication_buffer
                 ),
@@ -455,10 +455,7 @@ class PhaseZeroEngine:
         active_hashes = {
             self.genome_hash(organism.genome) for organism in active
         }
-        executed = sum(
-            organism.vm_state.instructions_executed
-            for organism in self.organisms
-        )
+        executed = self.total_instructions_executed
         return {
             "engine_version": self.engine_version,
             "tick": self.tick,
