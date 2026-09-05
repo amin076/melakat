@@ -83,6 +83,26 @@ class AnalysisTests(unittest.TestCase):
             "active_population",
         )
 
+    def test_compare_accepts_experiment_aggregate(self) -> None:
+        first = {
+            "config": {"run.max_ticks": 10},
+            "config_hash": "first",
+            "aggregate": {"active_population": 2},
+        }
+        second = {
+            "config": {"run.max_ticks": 10},
+            "config_hash": "second",
+            "aggregate": {"active_population": 3},
+        }
+
+        report = compare_artifacts(first, second)
+
+        self.assertFalse(report["same_config_except_seed"])
+        self.assertEqual(
+            report["metric_differences"][0]["metric"],
+            "active_population",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
