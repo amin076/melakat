@@ -207,3 +207,25 @@ Phase One is complete only when:
 ## Research posture
 
 A stable low-complexity population, repeated extinction, a dominant short genome, or failure to produce long-term diversity are all valid results. Phase One should improve the quality of evidence rather than force the system toward a preferred outcome.
+
+## Phase One v0.1 implementation status
+
+The first implementation slice is now defined and test-covered:
+
+- versioned run artifacts use `melakat-run-artifact-0.1`;
+- canonical configuration hashes identify the exact validated configuration;
+- the headless runner exports JSON, per-run summary CSV, and sampled history CSV;
+- the engine records active and historical genotypes, lineages, generations, death reasons, and energy-ledger values;
+- the GUI displays measurement version, configuration hash, active versus historical genotype counts, lineages, blocked divisions, and resource waiting states;
+- the GUI can export the current configuration and the last completed run;
+- same-seed reproducibility and multi-seed control-suite behavior are tested.
+
+The baseline blocked-division policy is now:
+
+1. a completed division request remains pending;
+2. the proposed child genome is created once and held stable while waiting;
+3. the engine retries on later ticks;
+4. insufficient memory and insufficient energy are reported as separate states;
+5. the pending state is visible in snapshots and metrics.
+
+This slice does not claim that the whole Phase One research program is complete. Lineage visualization, run comparison, parameter-sensitivity matrices, independent result reloading, and the full experiment protocol remain follow-up work.
