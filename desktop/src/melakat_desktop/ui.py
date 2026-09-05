@@ -136,8 +136,8 @@ class WorldView(QGraphicsView):
 
     def render_snapshot(self, snapshot: dict[str, Any]) -> None:
         self.scene.clear()
-        width = 100.0
-        height = 70.0
+        width = float(snapshot.get("world_width", 100.0))
+        height = float(snapshot.get("world_height", 70.0))
         self.scene.setSceneRect(0, 0, width, height)
         for organism in snapshot.get("organisms", []):
             radius = max(1.0, min(4.0, organism["energy"] / 15.0))
@@ -159,6 +159,7 @@ class MetricsPanel(QWidget):
         self.status = QLabel("Ready")
         self.tick = QLabel("Tick: 0")
         self.population = QLabel("Population: 0")
+        self.memory = QLabel("Memory: 0")
         self.plot = pg.PlotWidget()
         self.plot.setBackground("#101820")
         self.plot.addLegend()
@@ -170,11 +171,13 @@ class MetricsPanel(QWidget):
         layout.addWidget(self.status)
         layout.addWidget(self.tick)
         layout.addWidget(self.population)
+        layout.addWidget(self.memory)
         layout.addWidget(self.plot)
 
     def update_metrics(self, metrics: dict[str, Any]) -> None:
         self.tick.setText(f"Tick: {metrics.get('tick', 0)}")
         self.population.setText(f"Population: {metrics.get('active_population', 0)}")
+        self.memory.setText(f"Memory: {metrics.get('memory_used', 0)}")
         self.population_data.append(float(metrics.get("active_population", 0)))
         self.energy_data.append(float(metrics.get("energy_pool", 0)))
         self.population_curve.setData(self.population_data)
