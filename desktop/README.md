@@ -61,21 +61,21 @@ For research exports, use:
 python -m melakat_desktop.phase_zero_experiment --runs 30 --ticks 2000 --output phase-zero-results.json --summary-csv phase-zero-summary.csv --history-csv phase-zero-history.csv
 ~~~
 
-## Phase One v0.1 instrumentation
+## Phase One v0.2 implementation
 
-The first Phase One slice provides:
+The Phase One implementation gate is complete:
 
-- versioned <code>melakat-run-artifact-0.1</code> JSON results;
-- a canonical configuration hash;
-- sampled metric history;
-- active and historical genotype counts;
-- lineage and generation records;
-- death reasons and energy-ledger values;
-- blocked-division and resource-waiting metrics;
-- multi-seed control-suite summaries;
-- GUI export for the current configuration and last completed run.
+- versioned <code>melakat-run-artifact-0.1</code> results;
+- independent artifact loading with configuration-hash validation;
+- lineage, genotype, lifetime, death-reason, and mutation-event analysis;
+- <code>--config</code> execution from an exported GUI configuration;
+- multi-seed control and one-factor-at-a-time <code>--sweep</code> execution;
+- <code>melakat-compare</code> plus GUI result comparison;
+- saved-result reopening and selected-organism inspection;
+- per-tick resource-ledger export in history <code>CSV</code> files;
+- 30 passing unit tests covering the engine, VM, artifacts, experiments, and worker.
 
-A completed division request remains pending when memory or energy is unavailable. The proposed child genome is held stable and retried on later ticks; memory and energy blocking remain separate measurements.
+The full baseline and sensitivity campaign still needs to be run and archived as research evidence. The implementation is ready; the evidence campaign is not silently treated as complete.
 
 ## Interface
 

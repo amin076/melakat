@@ -15,6 +15,8 @@
 - [نتایج مرحلهٔ صفر — انگلیسی](doc-english/phase-zero-results.md)
 - [نقشهٔ راه مرحلهٔ یک — فارسی](doc-farsi/phase-one-roadmap.md)
 - [نقشهٔ راه مرحلهٔ یک — انگلیسی](doc-english/phase-one-roadmap.md)
+- [نقشهٔ راه مرحلهٔ دو — فارسی](doc-farsi/phase-two-roadmap.md)
+- [نقشهٔ راه مرحلهٔ دو — انگلیسی](doc-english/phase-two-roadmap.md)
 
 ## اسناد فنی
 

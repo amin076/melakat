@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
+from .analysis import enrich_summary
+
 RUN_ARTIFACT_FORMAT = "melakat-run-artifact-0.1"
 
 HISTORY_FIELDS = (
@@ -27,6 +29,7 @@ HISTORY_FIELDS = (
     "memory_used",
     "free_memory",
     "energy_balance_error",
+    "ledger",
 )
 
 SUMMARY_FIELDS = (
@@ -35,6 +38,9 @@ SUMMARY_FIELDS = (
     "config_hash",
     "engine_version",
     "measurement_version",
+    "mutation_events",
+    "lineage_count",
+    "genotype_count",
     "tick",
     "active_population",
     "births",
@@ -74,13 +80,14 @@ def make_run_artifact(
     config: Mapping[str, Any],
     summary: Mapping[str, Any],
 ) -> dict[str, Any]:
+    enriched_summary = enrich_summary(summary)
     return {
         "format": RUN_ARTIFACT_FORMAT,
         "config_hash": config_hash(config),
         "config": dict(config),
-        "engine_version": summary.get("engine_version"),
-        "measurement_version": summary.get("measurement_version"),
-        "summary": dict(summary),
+        "engine_version": enriched_summary.get("engine_version"),
+        "measurement_version": enriched_summary.get("measurement_version"),
+        "summary": enriched_summary,
     }
 
 
@@ -138,3 +145,25 @@ def write_history_csv(
                     }
                 )
                 writer.writerow(row)
+
+def load_run_artifact(path: Path) -> dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("Run artifact must contain a JSON object")
+    if payload.get("format") != RUN_ARTIFACT_FORMAT:
+        raise ValueError(
+            "Unsupported run artifact format: "
+            f"{payload.get('format')!r}"
+        )
+    config = payload.get("config")
+    if not isinstance(config, dict):
+        raise ValueError("Run artifact is missing its configuration")
+    expected_hash = config_hash(config)
+    if payload.get("config_hash") != expected_hash:
+        raise ValueError(
+            "Run artifact configuration hash does not match its configuration"
+        )
+    summary = payload.get("summary")
+    if not isinstance(summary, dict):
+        raise ValueError("Run artifact is missing its summary")
+    return payload

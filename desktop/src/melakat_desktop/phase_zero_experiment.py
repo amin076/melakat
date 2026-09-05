@@ -6,6 +6,7 @@ from pathlib import Path
 from statistics import mean
 from typing import Any, Iterable
 
+from .analysis import enrich_summary
 from .artifacts import (
     RUN_ARTIFACT_FORMAT,
     config_hash,
@@ -33,6 +34,34 @@ CONTROL_PRESETS: dict[str, dict[str, Any]] = {
     },
 }
 
+SENSITIVITY_SWEEPS: dict[str, tuple[Any, ...]] = {
+    "world.memory_capacity": (250, 500, 1_000),
+    "world.energy_input_per_tick": (5.0, 10.0, 20.0),
+    "world.initial_energy": (500.0, 1_000.0, 2_000.0),
+    "execution.instructions_per_tick": (1, 8, 16),
+    "execution.instruction_cost": (0.02, 0.05, 0.1),
+    "execution.maintenance_cost": (0.1, 0.2, 0.4),
+    "reproduction.cost": (6.0, 12.0, 24.0),
+    "reproduction.offspring_energy": (4.0, 8.0, 16.0),
+    "mutation.substitution_rate": (0.0, 0.01, 0.05),
+}
+
+
+def load_config_file(path: Path) -> dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("Configuration file must contain a JSON object")
+    config = payload.get("config", payload)
+    if not isinstance(config, dict):
+        raise ValueError("Configuration file is missing its config object")
+    validated = CORE_SCHEMA.validate(dict(config))
+    if validated.get("run.engine_backend") != "phase-zero-vm":
+        raise ValueError(
+            "Headless Phase One runner requires "
+            "run.engine_backend=phase-zero-vm"
+        )
+    return validated
+
 
 def run_single(config: dict[str, Any], seed: int) -> dict[str, Any]:
     run_config = dict(config)
@@ -42,7 +71,7 @@ def run_single(config: dict[str, Any], seed: int) -> dict[str, Any]:
     engine = PhaseZeroEngine(run_config, lambda _event: None)
     while not engine.finished:
         engine.step()
-    summary = engine.summary()
+    summary = enrich_summary(engine.summary())
     summary.pop("final_snapshot", None)
     summary["seed"] = seed
     summary["config_hash"] = config_hash(run_config)
@@ -78,6 +107,12 @@ def aggregate(runs: list[dict[str, Any]]) -> dict[str, Any]:
         ),
         "mean_historical_genotypes": mean(
             run["historical_genotypes"] for run in runs
+        ),
+        "mean_lineage_count": mean(
+            run["lineage_count"] for run in runs
+        ),
+        "mean_mutation_events": mean(
+            run["mutation_events"] for run in runs
         ),
         "mean_blocked_divisions": mean(
             run["blocked_divisions"] for run in runs
@@ -116,6 +151,33 @@ def run_control_suite(
     return results
 
 
+def run_sensitivity_sweep(
+    base_config: dict[str, Any],
+    seeds: Iterable[int],
+) -> dict[str, dict[str, Any]]:
+    seed_values = tuple(seeds)
+    results: dict[str, dict[str, Any]] = {}
+    for parameter, values in SENSITIVITY_SWEEPS.items():
+        cases: dict[str, dict[str, Any]] = {}
+        for value in values:
+            config = dict(base_config)
+            config[parameter] = value
+            runs = run_replicates(config, seed_values)
+            case_name = f"{parameter}={value}"
+            for run in runs:
+                run["control"] = case_name
+            cases[str(value)] = {
+                "parameter": parameter,
+                "value": value,
+                "config": config,
+                "config_hash": config_hash(config),
+                "aggregate": aggregate(runs),
+                "runs": runs,
+            }
+        results[parameter] = {"cases": cases}
+    return results
+
+
 def _flatten_control_runs(
     controls: dict[str, dict[str, Any]],
 ) -> list[dict[str, Any]]:
@@ -126,14 +188,27 @@ def _flatten_control_runs(
     ]
 
 
+def _flatten_sweep_runs(
+    sweeps: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    return [
+        run
+        for parameter in sweeps.values()
+        for case in parameter["cases"].values()
+        for run in case["runs"]
+    ]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Run headless Melakat Phase Zero replicates."
+        description="Run headless Melakat Phase One experiments."
     )
     parser.add_argument("--runs", type=int, default=30)
-    parser.add_argument("--ticks", type=int, default=2_000)
+    parser.add_argument("--ticks", type=int)
+    parser.add_argument("--config", type=Path)
     parser.add_argument("--seed-start", type=int, default=1)
     parser.add_argument("--controls", action="store_true")
+    parser.add_argument("--sweep", action="store_true")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--summary-csv", type=Path)
     parser.add_argument("--history-csv", type=Path)
@@ -141,19 +216,43 @@ def main() -> None:
 
     if args.runs < 1:
         parser.error("--runs must be positive")
-    if args.ticks < 1:
-        parser.error("--ticks must be positive")
+    if args.controls and args.sweep:
+        parser.error("--controls and --sweep are mutually exclusive")
 
-    config = CORE_SCHEMA.defaults()
-    config["run.max_ticks"] = args.ticks
+    if args.config:
+        try:
+            config = load_config_file(args.config)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            parser.error(str(exc))
+    else:
+        config = CORE_SCHEMA.defaults()
+        config["run.max_ticks"] = 2_000
+
+    if args.ticks is not None:
+        if args.ticks < 1:
+            parser.error("--ticks must be positive")
+        config["run.max_ticks"] = args.ticks
+    if int(config["run.max_ticks"]) < 1:
+        parser.error("configured run.max_ticks must be positive")
+
     seeds = range(args.seed_start, args.seed_start + args.runs)
 
-    if args.controls:
-        controls = run_control_suite(config, seeds)
-        all_runs = _flatten_control_runs(controls)
+    if args.sweep:
+        sweeps = run_sensitivity_sweep(config, seeds)
+        all_runs = _flatten_sweep_runs(sweeps)
         payload: dict[str, Any] = {
             "format": RUN_ARTIFACT_FORMAT,
-            "experiment": "phase-zero-control-suite",
+            "experiment": "phase-one-sensitivity-sweep",
+            "config": config,
+            "config_hash": config_hash(config),
+            "sweeps": sweeps,
+        }
+    elif args.controls:
+        controls = run_control_suite(config, seeds)
+        all_runs = _flatten_control_runs(controls)
+        payload = {
+            "format": RUN_ARTIFACT_FORMAT,
+            "experiment": "phase-one-control-suite",
             "config": config,
             "config_hash": config_hash(config),
             "controls": controls,
@@ -165,7 +264,7 @@ def main() -> None:
         all_runs = runs
         payload = {
             "format": RUN_ARTIFACT_FORMAT,
-            "experiment": "phase-zero-baseline",
+            "experiment": "phase-one-baseline",
             "config": config,
             "config_hash": config_hash(config),
             "aggregate": aggregate(runs),

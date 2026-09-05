@@ -208,24 +208,40 @@ Phase One is complete only when:
 
 A stable low-complexity population, repeated extinction, a dominant short genome, or failure to produce long-term diversity are all valid results. Phase One should improve the quality of evidence rather than force the system toward a preferred outcome.
 
-## Phase One v0.1 implementation status
+## Phase One v0.2 implementation status
 
-The first implementation slice is now defined and test-covered:
+The Phase One implementation gate is complete. The code now covers the required measurement, export, comparison, and inspection paths while preserving the Phase Zero rules.
 
-- versioned run artifacts use `melakat-run-artifact-0.1`;
-- canonical configuration hashes identify the exact validated configuration;
-- the headless runner exports JSON, per-run summary CSV, and sampled history CSV;
-- the engine records active and historical genotypes, lineages, generations, death reasons, and energy-ledger values;
-- the GUI displays measurement version, configuration hash, active versus historical genotype counts, lineages, blocked divisions, and resource waiting states;
-- the GUI can export the current configuration and the last completed run;
-- same-seed reproducibility and multi-seed control-suite behavior are tested.
+Implemented:
 
-The baseline blocked-division policy is now:
+- versioned <code>melakat-run-artifact-0.1</code> JSON results;
+- canonical configuration hashes and independent artifact loading with hash validation;
+- summary analysis for lineages, genotypes, genotype lifetimes, death reasons, and parent-to-child mutation events;
+- a one-factor-at-a-time sensitivity sweep over nine resource, execution, reproduction, and mutation parameters;
+- saved-configuration execution through <code>--config</code>, using the same validated schema exported by the GUI;
+- multi-seed control and sensitivity protocols with aggregate metrics;
+- command-line result comparison through <code>melakat-compare</code>;
+- GUI actions for opening a saved result and comparing two saved results;
+- a selected-organism inspector in the desktop interface;
+- per-tick resource-ledger data in the history <code>CSV</code> export;
+- visible distinction between active and historical genotypes, active lineages, blocked divisions, and resource-waiting states.
+
+Verification completed for this implementation slice:
+
+- 30 unit tests pass;
+- all desktop Python modules pass syntax compilation;
+- a saved GUI configuration was executed successfully by the headless runner;
+- a sensitivity-sweep smoke run produced 9 parameters, 27 cases, and the expected exports;
+- identical uploaded artifacts compare as identical, while different seeds are detected as different results.
+
+The scientific evidence campaign is intentionally separate from the implementation gate. The full multi-seed baseline and sensitivity matrix still needs to be executed, archived, and reviewed as a research run. This document does not claim that every scientific question has been answered.
+
+The baseline blocked-division policy remains:
 
 1. a completed division request remains pending;
 2. the proposed child genome is created once and held stable while waiting;
 3. the engine retries on later ticks;
 4. insufficient memory and insufficient energy are reported as separate states;
-5. the pending state is visible in snapshots and metrics.
+5. the pending state is visible in snapshots, metrics, and exported history.
 
-This slice does not claim that the whole Phase One research program is complete. Lineage visualization, run comparison, parameter-sensitivity matrices, independent result reloading, and the full experiment protocol remain follow-up work.
+Phase One is ready for the evidence campaign. Phase Two must not change the Phase Zero baseline silently; it begins only after the baseline artifacts and invariants have been archived and accepted.
