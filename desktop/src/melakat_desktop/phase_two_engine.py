@@ -69,7 +69,8 @@ class PhaseTwoEngine(PhaseZeroEngine):
         )
         self.spatial_rng = random.Random(self.spatial_rng_seed)
         super().__init__(config, emit)
-        self.ledger.setdefault("energy_movement", 0.0)
+        if self.organism_actions_enabled:
+            self.ledger.setdefault("energy_movement", 0.0)
 
         if self.local_resources_enabled:
             self.resource_field = LocalResourceField(
@@ -80,8 +81,6 @@ class PhaseTwoEngine(PhaseZeroEngine):
             )
             self.resource_field.seed_uniform(self.energy_pool)
             self.energy_pool = 0.0
-            # Replace the initialization sample produced while the base class
-            # was still constructing the local field.
             self.history = []
             self._record_history(force=True)
 
@@ -151,8 +150,6 @@ class PhaseTwoEngine(PhaseZeroEngine):
 
         width = float(self.config["world.width"])
         height = float(self.config["world.height"])
-        # Preserve the two historical child-position draws so the engine RNG
-        # remains aligned with the homogeneous control.
         self.rng.uniform(0, width)
         self.rng.uniform(0, height)
         child_x, child_y, contacts = local_radial_position(
@@ -223,8 +220,7 @@ class PhaseTwoEngine(PhaseZeroEngine):
 
     def _capture_energy(self, organism: PhaseZeroOrganism) -> float:
         if self.resource_field is None:
-            capture_limit = 1.0
-            captured = min(self.energy_pool, capture_limit)
+            captured = min(self.energy_pool, 1.0)
             self.energy_pool -= captured
         else:
             captured = self.resource_field.capture(
