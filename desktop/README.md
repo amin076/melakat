@@ -55,9 +55,31 @@ cd desktop
 python -m melakat_desktop.phase_zero_experiment --runs 30 --ticks 2000 --output phase-zero-results.json
 ~~~
 
+For research exports, use:
+
+~~~powershell
+python -m melakat_desktop.phase_zero_experiment --runs 30 --ticks 2000 --output phase-zero-results.json --summary-csv phase-zero-summary.csv --history-csv phase-zero-history.csv
+~~~
+
+## Phase One v0.1 instrumentation
+
+The first Phase One slice provides:
+
+- versioned <code>melakat-run-artifact-0.1</code> JSON results;
+- a canonical configuration hash;
+- sampled metric history;
+- active and historical genotype counts;
+- lineage and generation records;
+- death reasons and energy-ledger values;
+- blocked-division and resource-waiting metrics;
+- multi-seed control-suite summaries;
+- GUI export for the current configuration and last completed run.
+
+A completed division request remains pending when memory or energy is unavailable. The proposed child genome is held stable and retried on later ticks; memory and energy blocking remain separate measurements.
+
 ## Interface
 
-The first research interface provides:
+The research interface provides:
 
 - grouped parameter editing;
 - parameter search;
@@ -65,7 +87,11 @@ The first research interface provides:
 - a live world view;
 - population and energy plots;
 - birth and death events;
-- engine, population, memory, instruction, fault, genotype, and energy-balance metrics.
+- engine and measurement versions;
+- configuration hash;
+- active and historical genotype counts;
+- lineage, blocked-division, and resource-waiting metrics;
+- configuration and result export.
 
 ## Engine boundary
 
@@ -75,13 +101,11 @@ The GUI must remain an observer and controller. It must not silently add rules t
 
 ## Planned Phase One growth
 
-- configuration and result export;
-- lineage and genotype inspection;
-- active versus historical genotype metrics;
-- blocked-division visibility;
-- run comparison;
+- lineage inspector and visualization;
+- run comparison view;
+- independent result reloading;
+- parameter sensitivity matrices;
 - deterministic replay;
-- parameter sensitivity presets;
 - a concise event log with optional detailed inspection;
 - optional Esbiko result viewing in a later integration phase.
 

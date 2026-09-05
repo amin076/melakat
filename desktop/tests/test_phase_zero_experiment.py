@@ -3,6 +3,7 @@ import unittest
 from melakat_desktop.parameters import CORE_SCHEMA
 from melakat_desktop.phase_zero_experiment import (
     aggregate,
+    run_control_suite,
     run_replicates,
 )
 
@@ -24,6 +25,35 @@ class PhaseZeroExperimentTests(unittest.TestCase):
         self.assertEqual(len(runs), 3)
         self.assertEqual(summary["runs"], 3)
         self.assertTrue(all("energy_balance_error" in run for run in runs))
+        self.assertTrue(all("config_hash" in run for run in runs))
+        self.assertIn("mean_blocked_divisions", summary)
+        self.assertIn("mean_historical_genotypes", summary)
+
+    def test_control_suite_reuses_the_same_seed_set(self) -> None:
+        config = CORE_SCHEMA.defaults()
+        config["run.max_ticks"] = 5
+
+        controls = run_control_suite(config, [4, 5])
+
+        self.assertEqual(
+            {len(result["runs"]) for result in controls.values()},
+            {2},
+        )
+        self.assertEqual(
+            {
+                run["seed"]
+                for result in controls.values()
+                for run in result["runs"]
+            },
+            {4, 5},
+        )
+        self.assertTrue(
+            all(
+                run["control"] == control
+                for control, result in controls.items()
+                for run in result["runs"]
+            )
+        )
 
 
 if __name__ == "__main__":
