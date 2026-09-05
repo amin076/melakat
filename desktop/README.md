@@ -7,8 +7,9 @@ This directory contains the first desktop interface scaffold for Melakat.
 - The UI is schema-driven. Adding a parameter means adding a ParameterSpec, not redesigning the window.
 - The simulation engine runs in a separate process from the UI.
 - The UI sends commands and receives serializable events.
-- The demo engine is deliberately small and is not yet the final scientific VM.
-- The future VM and Experiment 0 rule set can replace the demo engine without changing the UI contract.
+- The default GUI backend is the bounded Phase Zero VM.
+- The demo engine remains available for architecture comparison.
+- The Phase Zero VM is an execution substrate, not yet the final biological rule set.
 
 ## Stack
 
@@ -25,6 +26,7 @@ cd desktop
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install -e .
+cd ..
 python -m melakat_desktop.main
 ~~~
 
@@ -38,9 +40,11 @@ The first window provides:
 - event log;
 - a process boundary between UI and engine.
 
-## Important scientific boundary
+## Engine boundary
 
-The current DemoEngine exists to validate the desktop architecture and event flow. Its reproduction rules are placeholders. It must not be used as a scientific result. The next implementation replaces it with the validated Melakat VM and Experiment 0 rules.
+The GUI now runs the bounded Phase Zero VM by default. The VM has finite registers, finite memory, finite word arithmetic, explicit faults, and an instruction budget. The DemoEngine remains available as a comparison backend.
+
+The Phase Zero VM currently does not claim final biological behavior. Reproduction, mutation, genome copying, sensing, and the final Experiment 0 rules remain separate research and implementation steps.
 
 ## Planned growth
 
