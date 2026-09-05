@@ -28,20 +28,29 @@ class PhaseTwoWorldContractTests(unittest.TestCase):
             engine.step()
         return engine
 
-    def test_contract_version_and_reflective_topology_are_explicit(self) -> None:
-        self.assertEqual(WORLD_CONTRACT_VERSION, "phase-two-spatial-0.2")
+    def test_contract_version_and_phase_two_mechanisms_are_explicit(self) -> None:
+        self.assertEqual(WORLD_CONTRACT_VERSION, "phase-two-spatial-0.7")
         self.assertEqual(PHASE_TWO_WORLD_CONTRACT["observation_model"], "sequential")
-        self.assertEqual(PHASE_TWO_WORLD_CONTRACT["boundary_model"], "reflective")
+        self.assertIn("reflective", PHASE_TWO_WORLD_CONTRACT["boundary_models"])
+        self.assertIn("toroidal", PHASE_TWO_WORLD_CONTRACT["boundary_models"])
         self.assertEqual(
             PHASE_TWO_WORLD_CONTRACT["offspring_placement_model"],
-            "local_radial_dispersion_with_reflection",
+            "local_radial_dispersion",
         )
-        self.assertEqual(PHASE_TWO_WORLD_CONTRACT["movement_model"], "none")
-        self.assertEqual(PHASE_TWO_WORLD_CONTRACT["local_resource_model"], "none")
+        self.assertEqual(
+            PHASE_TWO_WORLD_CONTRACT["local_resource_model"]["mechanism"],
+            "uniform-renewal grid with local capture",
+        )
+        self.assertEqual(
+            PHASE_TWO_WORLD_CONTRACT["movement_model"]["opcodes"],
+            ["SENSE_RESOURCE", "MOVE_X", "MOVE_Y"],
+        )
 
     def test_spatial_schema_defaults_are_explicit(self) -> None:
         config = CORE_SCHEMA.defaults()
         self.assertFalse(config["world.spatial_enabled"])
+        self.assertFalse(config["world.local_resources_enabled"])
+        self.assertFalse(config["world.organism_actions_enabled"])
         self.assertEqual(config["world.boundary_model"], "reflective")
         self.assertEqual(config["world.offspring_dispersion_radius"], 1.0)
         self.assertEqual(config["world.neighborhood_radius"], 2.0)
@@ -79,7 +88,6 @@ class PhaseTwoWorldContractTests(unittest.TestCase):
 
         engine = self.run_engine(config)
         summary = engine.summary()
-
         projection = scientific_baseline_projection(summary)
         scientific_digest = hashlib.sha256(
             canonical_json(projection).encode("utf-8")
@@ -90,11 +98,10 @@ class PhaseTwoWorldContractTests(unittest.TestCase):
         snapshot_digest = hashlib.sha256(
             canonical_json(snapshot_projection).encode("utf-8")
         ).hexdigest()
-
         self.assertEqual(scientific_digest, BASELINE_SCIENTIFIC_SHA256)
         self.assertEqual(snapshot_digest, BASELINE_SNAPSHOT_SHA256)
 
-    def test_spatial_mode_preserves_nonspatial_dynamics_for_same_seed(self) -> None:
+    def test_spatial_only_mode_preserves_nonspatial_dynamics_for_same_seed(self) -> None:
         base = CORE_SCHEMA.defaults()
         base["run.engine_backend"] = "phase-two-vm"
         base["run.max_ticks"] = 500
@@ -108,7 +115,6 @@ class PhaseTwoWorldContractTests(unittest.TestCase):
 
         disabled_summary = self.run_engine(disabled).summary()
         enabled_summary = self.run_engine(enabled).summary()
-
         keys = (
             "tick",
             "active_population",
@@ -157,13 +163,11 @@ class PhaseTwoWorldContractTests(unittest.TestCase):
         by_id = {organism.organism_id: organism for organism in first.organisms}
         children = [organism for organism in first.organisms if organism.parent_id is not None]
         self.assertGreater(len(children), 0)
-
         for organism in first.organisms:
             self.assertGreaterEqual(organism.x, 0.0)
             self.assertLessEqual(organism.x, width)
             self.assertGreaterEqual(organism.y, 0.0)
             self.assertLessEqual(organism.y, height)
-
         for child in children:
             parent = by_id[child.parent_id]
             distance = math.hypot(child.x - parent.x, child.y - parent.y)
@@ -196,11 +200,9 @@ class PhaseTwoWorldContractTests(unittest.TestCase):
         config["run.engine_backend"] = "phase-two-vm"
         engine = PhaseTwoEngine(config, lambda _event: None)
         summary = engine.summary()
-
         self.assertEqual(summary["world_contract_version"], WORLD_CONTRACT_VERSION)
         self.assertFalse(summary["spatial_enabled"])
         self.assertEqual(engine.snapshot()["world_contract_version"], WORLD_CONTRACT_VERSION)
-
         artifact = make_run_artifact(config, summary)
         self.assertEqual(artifact["format"], SPATIAL_RUN_ARTIFACT_FORMAT)
         self.assertEqual(artifact["world_contract_version"], WORLD_CONTRACT_VERSION)
