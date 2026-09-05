@@ -128,7 +128,7 @@ def main() -> None:
 
     text = json.dumps(payload, indent=2, sort_keys=True)
     if args.output:
-        args.output.write_text(text + "\\n", encoding="utf-8")
+        args.output.write_text(text + "\n", encoding="utf-8")
     else:
         print(text)
 
