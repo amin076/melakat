@@ -1,97 +1,114 @@
 # Melakat
 
-## شبیه‌سازی یک جهان زیستی-دیجیتال محدود
+[فارسی](README.fa.md) | English
 
-Melakat یک پروژهٔ پژوهشی برای بررسی امکان شکل‌گیری فرایندهای شبیه به حیات و تکامل در یک جهان محاسباتی محدود است.
+Melakat is a research-first project for studying whether a constrained computational world can support processes resembling digital life and evolution.
 
-پروژه از برنامه‌های بسیار ساده شروع می‌شود؛ برنامه‌هایی که درون یک VM/sandbox اختصاصی زندگی می‌کنند، منابع محدود مصرف می‌کنند، تکثیر می‌شوند، تغییرات وراثتی پیدا می‌کنند، برای منابع مشترک رقابت می‌کنند و ممکن است بمیرند.
+Small data-only programs live inside a bounded virtual machine. They consume finite energy and memory, copy their genomes, inherit blind variation, compete for shared resources, and may die.
 
-سؤال اصلی این نیست که چگونه یک AI یا نرم‌افزار پیچیده بسازیم. سؤال این است:
+The central question is not how to build an intelligent system. It is:
 
-> اگر فقط قوانین ساده، منابع محدود، انرژی ورودی، تکثیر ناقص و مرگ را تعریف کنیم، چه الگوهایی خودبه‌خود پدیدار می‌شوند؟
+> If we define only simple rules, finite resources, incoming energy, imperfect copying, and death, what patterns emerge without being explicitly designed?
 
-## اصل مرکزی
+## Current status
 
-ما زیست‌شناسی زمین را از نظر ظاهری کپی نمی‌کنیم. از نقش عملکردی پدیده‌های طبیعی برای طراحی حداقل قوانین دیجیتال استفاده می‌کنیم.
+Phase Zero has been implemented and validated in the desktop application.
 
-برای نمونه:
+The current backend is <code>phase-zero-vm-0.2</code>. It includes:
 
-- Sun → جریان انرژی آزاد به جهان
-- Metabolism → تبدیل منابع محیط به انرژی قابل‌مصرف
-- DNA → اطلاعات اجراییِ وراثتی
-- Cell boundary → مرز محاسباتی محافظت‌شده
-- Time → گام‌های شبیه‌سازی
-- Natural selection → تغییر فراوانی دودمان‌ها بر اثر تفاوت در بقا و تکثیر
+- bounded data-only VM execution;
+- finite registers, words, and working memory;
+- self-copy reproduction;
+- energy capture and internal energy;
+- computation, maintenance, and reproduction costs;
+- finite structural memory;
+- blind opcode-substitution mutation;
+- heredity, generations, lineages, and genome hashes;
+- births, deaths, and death reasons;
+- energy and memory accounting;
+- deterministic seeded runs;
+- a desktop interface for observing live results.
 
-هر analogy باید جداگانه بررسی و توجیه شود؛ هیچ تشبیهی فقط به‌دلیل شباهت ظاهری پذیرفته نمی‌شود.
+The paired GUI control with substitution rate <code>0</code> removed the observed faults, while the nonzero mutation run produced multiple active genotypes and faults. The energy-balance error remained near floating-point zero.
 
-## مبانی محیط دیجیتال
+This is implementation evidence, not a claim that biological life has been recreated.
 
-پیش از مطالعه‌ی organism، باید خودِ محیط محاسباتی را بشناسیم:
+## Research boundaries
 
-- bit، byte و نمایش عدد؛
-- memory، address و state؛
-- CPU، register، ALU و program counter؛
-- program، process، compiler و interpreter؛
-- fetch، decode و execute؛
-- copy، clone، snapshot و replication؛
-- محدودیت سخت‌افزار و محدودیت نرم‌افزار؛
-- VM، scheduler، randomness و sandbox.
+The initial world is homogeneous, finite, energy-limited, and isolated inside a custom VM.
 
-سند پایه:
+The project deliberately excludes, at this stage:
 
-- [Digital Environment Basics](docs/foundations/digital-environment-basics.md)
+- machine learning and neural networks;
+- an intelligence objective;
+- an explicit fitness function;
+- hand-selected successful organisms;
+- cooperation, attack, parasites, or disease;
+- spatial geography and environmental heterogeneity;
+- complexity as a reward;
+- filesystem, network, subprocess, host-runtime, or external API access.
 
-## محدودیت‌های الزام‌آور
+The Python process is the host simulator. Organisms do not execute Python code.
 
-- جهان باید یک VM/sandbox مصنوعی و غیرقابل‌خروج باشد.
-- Python فقط شبیه‌ساز جهان است؛ genomeها نباید کد Python یا فرایندهای واقعی سیستم‌عامل باشند.
-- organismها نباید به filesystem، network، subprocess، runtime پایتون یا API خارجی دسترسی داشته باشند.
-- هدف‌گذاری برای AI، ML، هوش، یادگیری، RL، افزایش complexity یا ساخت برنامهٔ بزرگ‌تر ممنوع است.
-- در نسخهٔ اولیه fitness function صریح، گونه‌گذاری دستی، انتخاب دستی، حمله، همکاری، انگل و جغرافیا وجود ندارد.
-- آزمایش اولیه کوچک، همگن و مبتنی بر ورود متوالی انرژی است.
-- mutation اولیه فقط از نوع substitution خواهد بود، مگر اینکه پژوهش و پروتکل بعدی خلاف آن را توجیه کند.
-- قبل از تکمیل مشخصات علمی، کدنویسی شبیه‌ساز آغاز نمی‌شود.
+## Bilingual documentation
 
-## ترتیب کار
+The repository keeps parallel documentation:
 
-1. Phase 0A — Digital substrate and Digital–Natural Analogy Audit
-2. Phase 0B — Genome representation and interpreter
-3. Phase 0C — Virtual cell/body
-4. Phase 0D — Signals, energy and reproduction
-5. Phase 0E — Variation, competition and selection
-6. Phase 0F — Experiment 0 Protocol
-7. Phase 1 — Python prototype، فقط پس از اعتبارسنجی مراحل قبل
+- [English documentation](docs/doc-english/README.md)
+- [مستندات فارسی](docs/doc-farsi/README.md)
+- [Documentation index](docs/README.md)
+- [فهرست مستندات فارسی](docs/README.fa.md)
 
-## حلقهٔ پژوهش
+The main project documents are:
 
-Research → Hypothesis → Minimal World Rule → Implementation → Validation → Multiple Runs → Measurement → Unexpected Result → Analysis → Next Hypothesis
+- [Phase Zero results](docs/doc-english/phase-zero-results.md)
+- [Phase One roadmap](docs/doc-english/phase-one-roadmap.md)
+- [Desktop lab architecture](docs/desktop/desktop-lab-architecture.md)
+- [Phase Zero VM contract](docs/desktop/phase-zero-vm.md)
 
-نتیجهٔ مطلوب از قبل تعیین نشده است. حتی ساده‌ترشدن organismها، انقراض کامل، پایداری یک replicator کوچک یا شکست در پیدایش تکثیر، همگی نتایج معتبر آزمایش هستند.
+Each scientific or engineering rule must be updated in both language versions.
 
-## وضعیت فعلی
+## Repository map
 
-این repository در مرحلهٔ Research / Pre-Implementation قرار دارد.
+- <code>desktop/</code> — PySide6 desktop application and Python engine;
+- <code>desktop/src/melakat_desktop/vm.py</code> — bounded virtual machine;
+- <code>desktop/src/melakat_desktop/phase_zero_engine.py</code> — Phase Zero world and organism rules;
+- <code>desktop/src/melakat_desktop/worker.py</code> — process boundary and backend selection;
+- <code>desktop/src/melakat_desktop/ui.py</code> — desktop presentation layer;
+- <code>docs/doc-english/</code> — canonical English project documents;
+- <code>docs/doc-farsi/</code> — canonical Farsi project documents.
 
-اسناد اصلی:
+## Run the desktop application
 
-- [Digital Environment Basics](docs/foundations/digital-environment-basics.md)
-- [Digital Evolution World v0](docs/foundations/digital-evolution-world-v0.md)
-- [Phase 0](docs/phase-0/README.md)
-- [Research README](docs/research/README.md)
-- [Research Report](docs/research/report-source.md)
-- [Evidence Matrix](docs/research/evidence-matrix.md)
+Use a stable CPython release rather than an old alpha build.
 
-## ساختار repository
+~~~powershell
+cd desktop
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install -e .
+cd ..
+python -m melakat_desktop.main
+~~~
 
-- docs/foundations/ — مبانی محیط دیجیتال و سند مادر پروژه
-- docs/phase-0/ — مشخصات پیش از کدنویسی
-- docs/research/ — منابع، مقایسهٔ پروژه‌ها و evidence matrix
-- src/ — شبیه‌ساز آینده، پس از تأیید مشخصات
-- tests/ — آزمون‌های تعیین‌کنندهٔ قوانین جهان
+Run the test suite:
 
-## English summary
+~~~powershell
+cd desktop
+python -m unittest discover -s tests -v
+~~~
 
-Melakat is a research-first project exploring whether a constrained computational world can support open-ended digital evolution from minimal digital replicators.
+## Phase One
 
-The first world will be homogeneous, finite, energy-limited, and isolated inside a dedicated virtual machine. No machine learning, intelligence objective, explicit fitness function, or predefined complexity target will be introduced.
+Phase One will focus on evidence quality rather than adding complexity:
+
+1. freeze the Phase Zero contract;
+2. export configurations and results;
+3. run reproducible multi-seed experiments;
+4. inspect historical genotypes and lineages;
+5. define blocked-division semantics;
+6. improve run comparison and desktop inspection;
+7. perform parameter sensitivity experiments;
+8. gate any later spatial extension.
+
+Read the [Phase One roadmap](docs/doc-english/phase-one-roadmap.md) before introducing new world rules.
