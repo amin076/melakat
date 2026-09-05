@@ -22,12 +22,16 @@ This directory contains the canonical project documentation. Every major documen
 - [نقشهٔ راه مرحلهٔ دو — فارسی](doc-farsi/phase-two-roadmap.md)
 - [Phase Two world contract 0.1 — English](phase-2/phase-two-world-contract-0.1.md)
 - [قرارداد جهان مرحلهٔ دو نسخهٔ ۰.۱ — فارسی](phase-2/phase-two-world-contract-0.1.fa.md)
+- [Phase Two spatial topology 0.2 — English](phase-2/phase-two-spatial-topology-0.2.md)
+- [توپولوژی فضایی مرحلهٔ دو نسخهٔ ۰.۲ — فارسی](phase-2/phase-two-spatial-topology-0.2.fa.md)
 
 ## Current research gate
 
-The Phase One implementation gate and the Phase One scientific evidence gate are complete for the defined homogeneous baseline. The accepted archive contains 990 runs across 30 seeds, six controls, and 27 one-factor sensitivity cases.
+The Phase One implementation gate and scientific evidence gate are complete for the defined homogeneous baseline. The accepted archive contains 990 runs across 30 seeds, six controls, and 27 one-factor sensitivity cases.
 
-Phase Two has started with P2.1, the versioned world-contract and baseline-compatibility layer. P2.1 deliberately keeps spatial dynamics disabled: the homogeneous baseline remains the permanent comparison control, while active topology, boundaries, movement, sensing, and local resources remain deferred to later work packages.
+Phase Two P2.1 and P2.2 are implemented. P2.2 activates exactly one spatial mechanism: local offspring placement in a continuous two-dimensional rectangular world with a reflective boundary. Spatial randomness is isolated from the historical engine RNG, and acceptance tests require the same-seed non-spatial dynamics to remain identical to the disabled-spatial control.
+
+Movement, sensing, local resources, attack, cooperation, and explicit fitness rewards remain absent. The next scientific package is P2.3: one local-resource mechanism with explicit accounting and comparison against both P2.2 and the Phase One homogeneous control.
 
 ## Technical documents
 
