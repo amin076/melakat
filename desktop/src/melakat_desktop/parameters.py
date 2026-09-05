@@ -129,6 +129,18 @@ CORE_SCHEMA = ParameterSchema(
             10_000,
         ),
         ParameterSpec(
+            "world.spatial_enabled",
+            "Enable spatial rules",
+            "World",
+            "boolean",
+            False,
+            description=(
+                "P2.1 compatibility switch. Spatial rules are intentionally "
+                "unavailable until P2.2; enabling this value is rejected."
+            ),
+            advanced=True,
+        ),
+        ParameterSpec(
             "world.memory_capacity",
             "Memory capacity",
             "World",
