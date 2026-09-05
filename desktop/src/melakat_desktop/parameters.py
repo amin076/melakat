@@ -84,7 +84,7 @@ CORE_SCHEMA = ParameterSchema(
         ParameterSpec("population.initial_size", "Initial population", "Population", "integer", 12, 1, 10_000),
         ParameterSpec("population.initial_energy", "Initial organism energy", "Population", "number", 25.0, 0.0, 1_000_000.0, 0.1),
         ParameterSpec("population.memory_per_organism", "Memory per organism", "Population", "integer", 8, 1, 1_000_000),
-        ParameterSpec("population.max_age", "Maximum age", "Population", "integer", 500, 1, 10_000_000),
+        ParameterSpec("population.max_age", "Maximum age (Demo only)", "Population", "integer", 500, 1, 10_000_000, description="Not used by the Phase Zero baseline"),
         ParameterSpec("execution.instructions_per_tick", "Instructions per tick", "Execution", "integer", 8, 1, 100_000),
         ParameterSpec("execution.instruction_cost", "Instruction cost", "Execution", "number", 0.05, 0.0, 1_000_000.0, 0.01),
         ParameterSpec("execution.maintenance_cost", "Maintenance cost", "Execution", "number", 0.2, 0.0, 1_000_000.0, 0.01),
