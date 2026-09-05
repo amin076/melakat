@@ -32,6 +32,7 @@ from PySide6.QtWidgets import (
     QGraphicsView,
 )
 
+from .analysis import compare_artifacts
 from .artifacts import (
     config_hash,
     load_run_artifact,
@@ -437,6 +438,7 @@ class MainWindow(QMainWindow):
         self._add_action(toolbar, "Export config", self._export_config)
         self._add_action(toolbar, "Export result", self._export_result)
         self._add_action(toolbar, "Open result", self._open_result)
+        self._add_action(toolbar, "Compare results", self._compare_results)
 
         self.parameters = ParameterPanel(CORE_SCHEMA)
         self.world = WorldView()
@@ -561,6 +563,41 @@ class MainWindow(QMainWindow):
             f"config_hash={artifact.get('config_hash')}"
         )
 
+
+    def _compare_results(self) -> None:
+        paths, _ = QFileDialog.getOpenFileNames(
+            self,
+            "Compare results",
+            "",
+            "JSON files (*.json)",
+        )
+        if len(paths) != 2:
+            return
+        try:
+            first = load_run_artifact(Path(paths[0]))
+            second = load_run_artifact(Path(paths[1]))
+            report = compare_artifacts(first, second)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            QMessageBox.critical(self, "Compare failed", str(exc))
+            return
+        text = json.dumps(
+            report,
+            ensure_ascii=False,
+            indent=2,
+            sort_keys=True,
+        )
+        self.log.appendPlainText("Result comparison:\n" + text)
+        QMessageBox.information(
+            self,
+            "Result comparison",
+            "Same artifact: "
+            f"{report['same_artifact']}\n"
+            "Same configuration: "
+            f"{report['same_config']}\n"
+            "Configuration differs only by seed: "
+            f"{report['same_config_except_seed']}",
+        )
+
     def _handle_event(self, event: dict[str, Any]) -> None:
         name = event.get("name")
         payload = event.get("payload", {})
@@ -570,6 +607,7 @@ class MainWindow(QMainWindow):
             self.metrics.update_metrics(payload.get("metrics", {}))
         elif name == "ready":
             self.world.render_snapshot(payload.get("snapshot", {}))
+            self.metrics.update_snapshot(payload.get("snapshot", {}))
             self.metrics.update_metrics(payload.get("metrics", {}))
         elif name == "status":
             self.metrics.status.setText(
@@ -577,6 +615,7 @@ class MainWindow(QMainWindow):
             )
         elif name == "reset":
             self.world.render_snapshot(payload.get("snapshot", {}))
+            self.metrics.update_snapshot(payload.get("snapshot", {}))
             self.metrics.update_metrics(payload.get("metrics", {}))
             self.metrics.status.setText("Paused")
         elif name == "finished":
