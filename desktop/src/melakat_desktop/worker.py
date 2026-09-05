@@ -27,15 +27,15 @@ def engine_process_main(
         try:
             command = command_queue.get_nowait()
             name = command.get("name")
-            if name == "start" or name == "resume":
-                running = True
-                emit(make_event("status", status="running"))
+            if name in {"start", "resume"}:
+                running = not engine.finished
+                emit(make_event("status", status="running" if running else "finished"))
             elif name == "pause":
                 running = False
                 emit(make_event("status", status="paused"))
             elif name == "step":
                 engine.step()
-                emit(make_event("status", status="paused"))
+                emit(make_event("status", status="finished" if engine.finished else "paused"))
             elif name == "reset":
                 engine = DemoEngine(config, emit)
                 running = False
@@ -49,6 +49,9 @@ def engine_process_main(
 
         if running:
             engine.step()
+            if engine.finished:
+                running = False
+                emit(make_event("status", status="finished"))
             time.sleep(0.03)
         else:
             time.sleep(0.05)
