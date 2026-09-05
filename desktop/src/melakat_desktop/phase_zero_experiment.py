@@ -47,6 +47,22 @@ SENSITIVITY_SWEEPS: dict[str, tuple[Any, ...]] = {
 }
 
 
+def load_config_file(path: Path) -> dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("Configuration file must contain a JSON object")
+    config = payload.get("config", payload)
+    if not isinstance(config, dict):
+        raise ValueError("Configuration file is missing its config object")
+    validated = CORE_SCHEMA.validate(dict(config))
+    if validated.get("run.engine_backend") != "phase-zero-vm":
+        raise ValueError(
+            "Headless Phase One runner requires "
+            "run.engine_backend=phase-zero-vm"
+        )
+    return validated
+
+
 def run_single(config: dict[str, Any], seed: int) -> dict[str, Any]:
     run_config = dict(config)
     run_config["run.seed"] = seed
@@ -188,7 +204,8 @@ def main() -> None:
         description="Run headless Melakat Phase One experiments."
     )
     parser.add_argument("--runs", type=int, default=30)
-    parser.add_argument("--ticks", type=int, default=2_000)
+    parser.add_argument("--ticks", type=int)
+    parser.add_argument("--config", type=Path)
     parser.add_argument("--seed-start", type=int, default=1)
     parser.add_argument("--controls", action="store_true")
     parser.add_argument("--sweep", action="store_true")
@@ -204,8 +221,22 @@ def main() -> None:
     if args.controls and args.sweep:
         parser.error("--controls and --sweep are mutually exclusive")
 
-    config = CORE_SCHEMA.defaults()
-    config["run.max_ticks"] = args.ticks
+    if args.config:
+        try:
+            config = load_config_file(args.config)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            parser.error(str(exc))
+    else:
+        config = CORE_SCHEMA.defaults()
+        config["run.max_ticks"] = 2_000
+
+    if args.ticks is not None:
+        if args.ticks < 1:
+            parser.error("--ticks must be positive")
+        config["run.max_ticks"] = args.ticks
+    if int(config["run.max_ticks"]) < 1:
+        parser.error("configured run.max_ticks must be positive")
+
     seeds = range(args.seed_start, args.seed_start + args.runs)
 
     if args.sweep:
