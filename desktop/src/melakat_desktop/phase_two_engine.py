@@ -125,7 +125,11 @@ class PhaseTwoEngine(PhaseZeroEngine):
         allocation = self._allocation_for_genome(child_genome)
         free_memory = self._free_memory()
         if free_memory < allocation:
-            self._set_reproduction_block_reason(parent, "memory", free_memory=free_memory)
+            self._set_reproduction_block_reason(
+                parent,
+                "memory",
+                free_memory=free_memory,
+            )
             return False
 
         reproduction_cost = float(self.config["reproduction.cost"])
@@ -320,7 +324,8 @@ class PhaseTwoEngine(PhaseZeroEngine):
 
         self.total_instructions_executed += result.instructions_executed
         execution_requested = (
-            result.instructions_executed * float(self.config["execution.instruction_cost"])
+            result.instructions_executed
+            * float(self.config["execution.instruction_cost"])
         )
         if not self._charge(organism, execution_requested, "energy_execution"):
             self._kill(organism, "energy_exhausted_execution")
@@ -373,7 +378,9 @@ class PhaseTwoEngine(PhaseZeroEngine):
         self.max_population = max(self.max_population, len(self._active()))
         self._record_history()
         if self.emit_snapshots:
-            self.emit(make_event("tick", snapshot=self.snapshot(), metrics=self.metrics()))
+            self.emit(
+                make_event("tick", snapshot=self.snapshot(), metrics=self.metrics())
+            )
         if self.tick >= maximum_ticks:
             self._finish("max_ticks")
 
@@ -384,7 +391,11 @@ class PhaseTwoEngine(PhaseZeroEngine):
             + self.ledger.get("energy_reproduction_cost", 0.0)
             + self.ledger.get("energy_movement", 0.0)
         )
-        expected = self.initial_total_energy + self.ledger.get("energy_input", 0.0) - dissipated
+        expected = (
+            self.initial_total_energy
+            + self.ledger.get("energy_input", 0.0)
+            - dissipated
+        )
         environmental = self.energy_pool
         if self.resource_field is not None:
             environmental += self.resource_field.total()
@@ -421,13 +432,19 @@ class PhaseTwoEngine(PhaseZeroEngine):
                 "offspring_dispersion_radius": float(
                     self.config["world.offspring_dispersion_radius"]
                 ),
-                "neighborhood_radius": float(self.config["world.neighborhood_radius"]),
+                "neighborhood_radius": float(
+                    self.config["world.neighborhood_radius"]
+                ),
                 "spatial_rng_stream": SPATIAL_RNG_STREAM,
                 "local_resources_enabled": self.local_resources_enabled,
                 "organism_actions_enabled": self.organism_actions_enabled,
             }
         )
-        active_by_id = {organism.organism_id: organism for organism in self._active()}
+        active_by_id = {
+            organism.organism_id: organism for organism in self._active()
+        }
+        width = float(self.config["world.width"])
+        height = float(self.config["world.height"])
         for visible in snapshot.get("organisms", []):
             organism = active_by_id.get(int(visible["id"]))
             if organism is None:
@@ -436,8 +453,13 @@ class PhaseTwoEngine(PhaseZeroEngine):
                 organism,
                 self.organisms,
                 float(self.config["world.neighborhood_radius"]),
+                width=width,
+                height=height,
+                boundary_model=self.boundary_model,
             )
-            visible["local_resource"] = round(self._sense_resource(organism), 6)
+            visible["local_resource"] = round(
+                self._sense_resource(organism), 6
+            )
         if self.resource_field is not None:
             snapshot["resource_grid"] = self.resource_field.snapshot()
         return snapshot
@@ -455,6 +477,7 @@ class PhaseTwoEngine(PhaseZeroEngine):
             width=float(self.config["world.width"]),
             height=float(self.config["world.height"]),
             neighborhood_radius=float(self.config["world.neighborhood_radius"]),
+            boundary_model=self.boundary_model,
         )
         metrics.update(
             {
@@ -462,24 +485,34 @@ class PhaseTwoEngine(PhaseZeroEngine):
                 "spatial_rng_stream": SPATIAL_RNG_STREAM,
                 "spatial_births": len(distances),
                 "boundary_contacts": self.boundary_contacts,
-                "mean_parent_child_distance": round(sum(distances) / len(distances), 6)
+                "mean_parent_child_distance": round(
+                    sum(distances) / len(distances), 6
+                )
                 if distances
                 else 0.0,
-                "max_parent_child_distance": round(max(distances), 6) if distances else 0.0,
+                "max_parent_child_distance": round(max(distances), 6)
+                if distances
+                else 0.0,
                 "local_resources_enabled": self.local_resources_enabled,
                 "organism_actions_enabled": self.organism_actions_enabled,
                 "resource_sense_operations": self.resource_sense_operations,
                 "movement_operations": self.movement_operations,
                 "movement_distance": round(self.movement_distance, 6),
-                "movement_energy_cost": round(self.ledger.get("energy_movement", 0.0), 6),
+                "movement_energy_cost": round(
+                    self.ledger.get("energy_movement", 0.0), 6
+                ),
                 **spatial_population,
             }
         )
         if self.resource_field is not None:
             metrics.update(
                 {
-                    "local_resource_total": round(self.resource_field.total(), 6),
-                    "local_resource_minimum": round(self.resource_field.minimum(), 6),
+                    "local_resource_total": round(
+                        self.resource_field.total(), 6
+                    ),
+                    "local_resource_minimum": round(
+                        self.resource_field.minimum(), 6
+                    ),
                     "local_resource_balance_error": round(
                         self.resource_field.balance_error(), 10
                     ),
