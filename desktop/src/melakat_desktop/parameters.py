@@ -72,6 +72,7 @@ class ParameterSchema:
 
 CORE_SCHEMA = ParameterSchema(
     specs=(
+        ParameterSpec("run.engine_backend", "Engine backend", "Run", "choice", "phase-zero-vm", choices=("phase-zero-vm", "demo"), description="Execution engine used by the GUI"),
         ParameterSpec("run.seed", "Seed", "Run", "integer", 1, 0, 2_147_483_647, description="Deterministic random seed"),
         ParameterSpec("run.max_ticks", "Maximum ticks", "Run", "integer", 2000, 1, 10_000_000),
         ParameterSpec("run.snapshot_interval", "Snapshot interval", "Run", "integer", 10, 1, 100_000),
