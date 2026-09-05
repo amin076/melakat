@@ -157,9 +157,12 @@ class MetricsPanel(QWidget):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.status = QLabel("Ready")
+        self.engine = QLabel("Engine: —")
         self.tick = QLabel("Tick: 0")
         self.population = QLabel("Population: 0")
         self.memory = QLabel("Memory: 0")
+        self.instructions = QLabel("Instructions: 0")
+        self.faults = QLabel("Faults: 0")
         self.plot = pg.PlotWidget()
         self.plot.setBackground("#101820")
         self.plot.addLegend()
@@ -169,15 +172,23 @@ class MetricsPanel(QWidget):
         self.energy_data: list[float] = []
         layout = QVBoxLayout(self)
         layout.addWidget(self.status)
+        layout.addWidget(self.engine)
         layout.addWidget(self.tick)
         layout.addWidget(self.population)
         layout.addWidget(self.memory)
+        layout.addWidget(self.instructions)
+        layout.addWidget(self.faults)
         layout.addWidget(self.plot)
 
     def update_metrics(self, metrics: dict[str, Any]) -> None:
+        self.engine.setText(f"Engine: {metrics.get('engine_version', 'unknown')}")
         self.tick.setText(f"Tick: {metrics.get('tick', 0)}")
         self.population.setText(f"Population: {metrics.get('active_population', 0)}")
         self.memory.setText(f"Memory: {metrics.get('memory_used', 0)}")
+        self.instructions.setText(
+            f"Instructions: {metrics.get('instructions_executed', 0)}"
+        )
+        self.faults.setText(f"Faults: {metrics.get('faults', 0)}")
         self.population_data.append(float(metrics.get("active_population", 0)))
         self.energy_data.append(float(metrics.get("energy_pool", 0)))
         self.population_curve.setData(self.population_data)
