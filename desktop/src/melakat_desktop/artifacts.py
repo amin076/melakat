@@ -29,6 +29,7 @@ HISTORY_FIELDS = (
     "memory_used",
     "free_memory",
     "energy_balance_error",
+    "ledger",
 )
 
 SUMMARY_FIELDS = (
