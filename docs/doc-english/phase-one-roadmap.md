@@ -228,7 +228,7 @@ Implemented:
 
 Verification completed for this implementation slice:
 
-- 30 unit tests pass;
+- 31 unit tests pass;
 - all desktop Python modules pass syntax compilation;
 - a saved GUI configuration was executed successfully by the headless runner;
 - a sensitivity-sweep smoke run produced 9 parameters, 27 cases, and the expected exports;
