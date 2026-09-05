@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 import multiprocessing as mp
 import queue
+from pathlib import Path
 from typing import Any
 
 import pyqtgraph as pg
@@ -20,7 +22,6 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPlainTextEdit,
-    QPushButton,
     QScrollArea,
     QSpinBox,
     QSplitter,
@@ -31,6 +32,7 @@ from PySide6.QtWidgets import (
     QGraphicsView,
 )
 
+from .artifacts import config_hash, make_run_artifact, write_json
 from .parameters import CORE_SCHEMA, ParameterSchema, ParameterSpec
 from .protocol import make_command
 from .worker import engine_process_main
@@ -60,7 +62,9 @@ class ParameterPanel(QWidget):
         layout.addWidget(scroll)
 
     def _build(self) -> None:
-        grouped: dict[str, list[ParameterSpec]] = {group: [] for group in self.schema.groups()}
+        grouped: dict[str, list[ParameterSpec]] = {
+            group: [] for group in self.schema.groups()
+        }
         for spec in self.schema.specs:
             grouped[spec.group].append(spec)
 
@@ -94,12 +98,18 @@ class ParameterPanel(QWidget):
             return widget
         if spec.kind == "integer":
             widget = QSpinBox()
-            widget.setRange(int(spec.minimum or -2_147_483_648), int(spec.maximum or 2_147_483_647))
+            widget.setRange(
+                int(spec.minimum or -2_147_483_648),
+                int(spec.maximum or 2_147_483_647),
+            )
             widget.setSingleStep(int(spec.step))
             widget.setValue(int(spec.default))
             return widget
         widget = QDoubleSpinBox()
-        widget.setRange(float(spec.minimum or -1e12), float(spec.maximum or 1e12))
+        widget.setRange(
+            float(spec.minimum or -1e12),
+            float(spec.maximum or 1e12),
+        )
         widget.setSingleStep(float(spec.step))
         widget.setDecimals(6)
         widget.setValue(float(spec.default))
@@ -122,7 +132,12 @@ class ParameterPanel(QWidget):
     def _filter(self, text: str) -> None:
         query = text.strip().lower()
         for spec in self.schema.specs:
-            visible = not query or query in spec.path.lower() or query in spec.label.lower() or query in spec.group.lower()
+            visible = (
+                not query
+                or query in spec.path.lower()
+                or query in spec.label.lower()
+                or query in spec.group.lower()
+            )
             self.rows[spec.path].setVisible(visible)
 
 
@@ -141,7 +156,11 @@ class WorldView(QGraphicsView):
         self.scene.setSceneRect(0, 0, width, height)
         for organism in snapshot.get("organisms", []):
             radius = max(1.0, min(4.0, organism["energy"] / 15.0))
-            color = QColor("#63d8ff") if organism["age"] % 2 == 0 else QColor("#f8c15c")
+            color = (
+                QColor("#63d8ff")
+                if organism["age"] % 2 == 0
+                else QColor("#f8c15c")
+            )
             self.scene.addEllipse(
                 organism["x"] - radius,
                 organism["y"] - radius,
@@ -150,7 +169,10 @@ class WorldView(QGraphicsView):
                 QPen(Qt.PenStyle.NoPen),
                 QBrush(color),
             )
-        self.fitInView(self.scene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
+        self.fitInView(
+            self.scene.sceneRect(),
+            Qt.AspectRatioMode.KeepAspectRatio,
+        )
 
 
 class MetricsPanel(QWidget):
@@ -158,6 +180,8 @@ class MetricsPanel(QWidget):
         super().__init__(parent)
         self.status = QLabel("Ready")
         self.engine = QLabel("Engine: —")
+        self.measurement = QLabel("Measurement: —")
+        self.config = QLabel("Config hash: —")
         self.tick = QLabel("Tick: 0")
         self.population = QLabel("Population: 0")
         self.memory = QLabel("Memory: 0")
@@ -165,33 +189,64 @@ class MetricsPanel(QWidget):
         self.faults = QLabel("Faults: 0")
         self.births = QLabel("Births: 0")
         self.deaths = QLabel("Deaths: 0")
-        self.genotypes = QLabel("Genotypes: 0")
+        self.genotypes = QLabel("Active genotypes: 0")
+        self.historical_genotypes = QLabel("Historical genotypes: 0")
+        self.lineages = QLabel("Active lineages: 0")
+        self.blocked_divisions = QLabel("Blocked divisions: 0")
+        self.waiting_for_memory = QLabel("Waiting for memory: 0")
+        self.waiting_for_energy = QLabel("Waiting for energy: 0")
         self.balance = QLabel("Energy balance error: 0")
         self.plot = pg.PlotWidget()
         self.plot.setBackground("#101820")
         self.plot.addLegend()
-        self.population_curve = self.plot.plot(pen="#63d8ff", name="population")
-        self.energy_curve = self.plot.plot(pen="#f8c15c", name="energy pool")
+        self.population_curve = self.plot.plot(
+            pen="#63d8ff",
+            name="population",
+        )
+        self.energy_curve = self.plot.plot(
+            pen="#f8c15c",
+            name="energy pool",
+        )
         self.population_data: list[float] = []
         self.energy_data: list[float] = []
         layout = QVBoxLayout(self)
-        layout.addWidget(self.status)
-        layout.addWidget(self.engine)
-        layout.addWidget(self.tick)
-        layout.addWidget(self.population)
-        layout.addWidget(self.memory)
-        layout.addWidget(self.instructions)
-        layout.addWidget(self.faults)
-        layout.addWidget(self.births)
-        layout.addWidget(self.deaths)
-        layout.addWidget(self.genotypes)
-        layout.addWidget(self.balance)
+        for widget in (
+            self.status,
+            self.engine,
+            self.measurement,
+            self.config,
+            self.tick,
+            self.population,
+            self.memory,
+            self.instructions,
+            self.faults,
+            self.births,
+            self.deaths,
+            self.genotypes,
+            self.historical_genotypes,
+            self.lineages,
+            self.blocked_divisions,
+            self.waiting_for_memory,
+            self.waiting_for_energy,
+            self.balance,
+        ):
+            layout.addWidget(widget)
         layout.addWidget(self.plot)
 
     def update_metrics(self, metrics: dict[str, Any]) -> None:
-        self.engine.setText(f"Engine: {metrics.get('engine_version', 'unknown')}")
+        self.engine.setText(
+            f"Engine: {metrics.get('engine_version', 'unknown')}"
+        )
+        self.measurement.setText(
+            f"Measurement: {metrics.get('measurement_version', 'unknown')}"
+        )
+        self.config.setText(
+            f"Config hash: {metrics.get('config_hash', 'unknown')}"
+        )
         self.tick.setText(f"Tick: {metrics.get('tick', 0)}")
-        self.population.setText(f"Population: {metrics.get('active_population', 0)}")
+        self.population.setText(
+            f"Population: {metrics.get('active_population', 0)}"
+        )
         self.memory.setText(f"Memory: {metrics.get('memory_used', 0)}")
         self.instructions.setText(
             f"Instructions: {metrics.get('instructions_executed', 0)}"
@@ -200,12 +255,30 @@ class MetricsPanel(QWidget):
         self.births.setText(f"Births: {metrics.get('births', 0)}")
         self.deaths.setText(f"Deaths: {metrics.get('deaths', 0)}")
         self.genotypes.setText(
-            f"Genotypes: {metrics.get('active_genotypes', 0)}"
+            f"Active genotypes: {metrics.get('active_genotypes', 0)}"
+        )
+        self.historical_genotypes.setText(
+            "Historical genotypes: "
+            f"{metrics.get('historical_genotypes', 0)}"
+        )
+        self.lineages.setText(
+            f"Active lineages: {metrics.get('active_lineages', 0)}"
+        )
+        self.blocked_divisions.setText(
+            f"Blocked divisions: {metrics.get('blocked_divisions', 0)}"
+        )
+        self.waiting_for_memory.setText(
+            f"Waiting for memory: {metrics.get('waiting_for_memory', 0)}"
+        )
+        self.waiting_for_energy.setText(
+            f"Waiting for energy: {metrics.get('waiting_for_energy', 0)}"
         )
         self.balance.setText(
             f"Energy balance error: {metrics.get('energy_balance_error', 0)}"
         )
-        self.population_data.append(float(metrics.get("active_population", 0)))
+        self.population_data.append(
+            float(metrics.get("active_population", 0))
+        )
         self.energy_data.append(float(metrics.get("energy_pool", 0)))
         self.population_curve.setData(self.population_data)
         self.energy_curve.setData(self.energy_data)
@@ -232,7 +305,12 @@ class EngineController(QWidget):
         self.stop_event = self.ctx.Event()
         self.process = self.ctx.Process(
             target=engine_process_main,
-            args=(config, self.command_queue, self.event_queue, self.stop_event),
+            args=(
+                config,
+                self.command_queue,
+                self.event_queue,
+                self.stop_event,
+            ),
             daemon=True,
         )
         self.process.start()
@@ -269,15 +347,36 @@ class MainWindow(QMainWindow):
         self.resize(1500, 900)
         self.controller = EngineController(self)
         self.controller.event_received.connect(self._handle_event)
+        self.current_config: dict[str, Any] = {}
+        self.last_summary: dict[str, Any] | None = None
 
         toolbar = QToolBar("Simulation", self)
         self.addToolBar(toolbar)
         self._add_action(toolbar, "Start", self._start)
-        self._add_action(toolbar, "Pause", lambda: self.controller.send("pause"))
-        self._add_action(toolbar, "Resume", lambda: self.controller.send("resume"))
-        self._add_action(toolbar, "Step", lambda: self.controller.send("step"))
-        self._add_action(toolbar, "Reset", lambda: self.controller.send("reset"))
+        self._add_action(
+            toolbar,
+            "Pause",
+            lambda: self.controller.send("pause"),
+        )
+        self._add_action(
+            toolbar,
+            "Resume",
+            lambda: self.controller.send("resume"),
+        )
+        self._add_action(
+            toolbar,
+            "Step",
+            lambda: self.controller.send("step"),
+        )
+        self._add_action(
+            toolbar,
+            "Reset",
+            lambda: self.controller.send("reset"),
+        )
         self._add_action(toolbar, "Stop", self.controller.stop)
+        toolbar.addSeparator()
+        self._add_action(toolbar, "Export config", self._export_config)
+        self._add_action(toolbar, "Export result", self._export_result)
 
         self.parameters = ParameterPanel(CORE_SCHEMA)
         self.world = WorldView()
@@ -297,7 +396,12 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.log, 0)
         self.setCentralWidget(root)
 
-    def _add_action(self, toolbar: QToolBar, label: str, callback: Any) -> None:
+    def _add_action(
+        self,
+        toolbar: QToolBar,
+        label: str,
+        callback: Any,
+    ) -> None:
         action = QAction(label, self)
         action.triggered.connect(callback)
         toolbar.addAction(action)
@@ -308,11 +412,66 @@ class MainWindow(QMainWindow):
         except ValueError as exc:
             QMessageBox.critical(self, "Invalid parameters", str(exc))
             return
+        self.current_config = config
+        self.last_summary = None
         self.metrics.population_data.clear()
         self.metrics.energy_data.clear()
         backend = config.get("run.engine_backend", "phase-zero-vm")
         self.log.appendPlainText(f"Starting {backend} engine...")
         self.controller.start(config)
+
+    def _export_config(self) -> None:
+        try:
+            config = self.parameters.values()
+        except ValueError as exc:
+            QMessageBox.critical(self, "Invalid parameters", str(exc))
+            return
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export configuration",
+            "melakat-config.json",
+            "JSON files (*.json)",
+        )
+        if not path:
+            return
+        payload = {
+            "format": "melakat-config-0.1",
+            "config_hash": config_hash(config),
+            "config": config,
+        }
+        try:
+            write_json(Path(path), payload)
+        except OSError as exc:
+            QMessageBox.critical(self, "Export failed", str(exc))
+            return
+        self.log.appendPlainText(f"Configuration exported: {path}")
+
+    def _export_result(self) -> None:
+        if self.last_summary is None:
+            QMessageBox.information(
+                self,
+                "No completed run",
+                "Run a simulation before exporting its result.",
+            )
+            return
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export result",
+            "melakat-run.json",
+            "JSON files (*.json)",
+        )
+        if not path:
+            return
+        try:
+            artifact = make_run_artifact(
+                self.current_config,
+                self.last_summary,
+            )
+            write_json(Path(path), artifact)
+        except OSError as exc:
+            QMessageBox.critical(self, "Export failed", str(exc))
+            return
+        self.log.appendPlainText(f"Result exported: {path}")
 
     def _handle_event(self, event: dict[str, Any]) -> None:
         name = event.get("name")
@@ -324,15 +483,36 @@ class MainWindow(QMainWindow):
             self.world.render_snapshot(payload.get("snapshot", {}))
             self.metrics.update_metrics(payload.get("metrics", {}))
         elif name == "status":
-            self.metrics.status.setText(str(payload.get("status", "unknown")))
+            self.metrics.status.setText(
+                str(payload.get("status", "unknown"))
+            )
         elif name == "reset":
             self.world.render_snapshot(payload.get("snapshot", {}))
             self.metrics.update_metrics(payload.get("metrics", {}))
             self.metrics.status.setText("Paused")
+        elif name == "finished":
+            self.world.render_snapshot(payload.get("snapshot", {}))
+            self.metrics.update_metrics(payload.get("metrics", {}))
+            self.last_summary = payload.get("summary")
+            self.metrics.status.setText("finished")
+            self.log.appendPlainText(
+                "finished: "
+                f"{payload.get('reason', 'unknown')}; "
+                f"population="
+                f"{payload.get('metrics', {}).get('active_population', 0)}; "
+                f"births={payload.get('metrics', {}).get('births', 0)}; "
+                f"deaths={payload.get('metrics', {}).get('deaths', 0)}"
+            )
+        elif name == "stopped":
+            self.log.appendPlainText("stopped")
         elif name in {"organism_born", "organism_died"}:
             self.log.appendPlainText(f"{name}: {payload}")
-        elif name in {"finished", "stopped", "reset"}:
-            self.log.appendPlainText(f"{name}: {payload}")
+        elif name == "reproduction_blocked":
+            self.log.appendPlainText(
+                f"reproduction_blocked: organism="
+                f"{payload.get('organism_id')}; "
+                f"reason={payload.get('reason')}"
+            )
 
     def closeEvent(self, event: Any) -> None:
         self.controller.stop()
