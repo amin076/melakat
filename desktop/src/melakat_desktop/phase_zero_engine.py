@@ -472,7 +472,7 @@ class PhaseZeroEngine:
                 self._execute_one(organism)
 
         self.max_population = max(self.max_population, len(self._active()))
-        self._record_history(force=self.tick >= maximum_ticks)
+        self._record_history()
         if self.emit_snapshots:
             self.emit(
                 make_event(
