@@ -73,7 +73,7 @@ The Phase One implementation gate is complete:
 - <code>melakat-compare</code> plus GUI result comparison;
 - saved-result reopening and selected-organism inspection;
 - per-tick resource-ledger export in history <code>CSV</code> files;
-- 30 passing unit tests covering the engine, VM, artifacts, experiments, and worker.
+- 31 passing unit tests covering the engine, VM, artifacts, experiments, and worker.
 
 The full baseline and sensitivity campaign still needs to be run and archived as research evidence. The implementation is ready; the evidence campaign is not silently treated as complete.
 
