@@ -30,6 +30,7 @@ CONTROL_PRESETS: dict[str, dict[str, Any]] = {
 def run_single(config: dict[str, Any], seed: int) -> dict[str, Any]:
     run_config = dict(config)
     run_config["run.seed"] = seed
+    run_config["run.emit_snapshots"] = False
     run_config = CORE_SCHEMA.validate(run_config)
     events: list[dict[str, Any]] = []
     engine = PhaseZeroEngine(run_config, events.append)
