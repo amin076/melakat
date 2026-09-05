@@ -431,6 +431,8 @@ class PhaseZeroEngine:
             self._try_reproduction(organism)
 
     def _record_history(self, *, force: bool = False) -> None:
+        if self.history and self.history[-1]["tick"] == self.tick:
+            return
         if not force and self.tick % self.history_interval != 0:
             return
         self.history.append(self.metrics())
