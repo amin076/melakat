@@ -1,29 +1,20 @@
 # Phase One Roadmap
 
-[فارسی](../doc-farsi/phase-one-roadmap.md) | [Documentation index](../README.md)
+[فارسی](../doc-farsi/phase-one-roadmap.md) | [Evidence report](phase-one-evidence-report.md) | [Documentation index](../README.md)
 
 ## Purpose
 
 Phase One moves Melakat from a validated Phase Zero substrate to a measurable, reproducible, and scientifically inspectable digital-evolution laboratory.
 
-The goal is not to add intelligence, machine learning, or visual complexity. The goal is to make every observed change explainable, repeatable, exportable, and tied to an explicit world rule.
+The goal is evidence quality, not intelligence, machine learning, a hand-written fitness objective, or visual complexity. Every observed change must be repeatable, exportable, and tied to an explicit world rule.
 
 ## Entry condition
 
-Phase One begins after the following Phase Zero results are recorded:
-
-- the VM performs bounded data-only execution;
-- self-copy reproduction works;
-- births and deaths change population state;
-- finite memory changes reproductive opportunity;
-- mutation creates heritable genotype variation;
-- the mutation-zero control removes the observed mutation faults;
-- the energy-balance error remains near floating-point zero;
-- seeded runs are repeatable.
+Phase One entered after Phase Zero demonstrated bounded data-only VM execution, self-copy reproduction, finite energy and memory, heritable substitution mutation, births and deaths, near-zero energy-balance error, mutation-zero controls, and deterministic seeded runs.
 
 ## Non-goals
 
-Phase One must not introduce:
+Phase One does not introduce:
 
 - machine learning or neural networks;
 - an intelligence objective;
@@ -34,103 +25,58 @@ Phase One must not introduce:
 - complexity as a reward;
 - host-language execution by organisms.
 
-These features may be research questions in later phases, but they must not be used to hide an unexplained Phase Zero or Phase One result.
+## Completed work packages
 
-## Work packages
+### P1 — Freeze the Phase Zero contract
 
-### P1. Freeze the Phase Zero contract
+Completed through the versioned <code>phase-zero-vm-0.2</code> engine contract, documented VM/opcode semantics, finite energy and memory units, explicit limits, and deterministic seed conventions.
 
-Deliverables:
+### P2 — Reproducible experiment protocol
 
-- a versioned Phase Zero configuration;
-- a documented opcode and VM contract;
-- a fixed definition of energy and memory units;
-- a record of known limitations;
-- a reproducibility note containing seed and parameter conventions.
+Completed with:
 
-Exit condition:
+- schema-validated configuration;
+- configuration export;
+- headless execution from exported configuration;
+- explicit seed lists;
+- JSON and CSV outputs;
+- versioned <code>melakat-run-artifact-0.1</code> results;
+- canonical <code>config_hash</code> values;
+- multi-seed controls and replicates.
 
-- changing a GUI label or adding a display metric cannot silently change the engine rules.
+### P3 — Measurement and inspection
 
-### P2. Build a reproducible experiment protocol
+Completed with:
 
-Deliverables:
-
-- named parameter presets;
-- JSON configuration export;
-- headless execution from the same configuration used by the GUI;
-- replicate runner with explicit seed lists;
-- JSON and CSV result export;
-- summary statistics for births, deaths, population, genotypes, faults, energy, and memory.
-
-Required comparisons:
-
-- repeated identical seed;
-- different seeds;
-- mutation rate zero versus nonzero;
-- low versus high memory capacity;
-- low versus high energy input;
-- instruction cost and maintenance cost sensitivity.
-
-Exit condition:
-
-- every published result includes configuration, engine version, seed list, and output checksum or archived result file.
-
-### P3. Add measurement and inspection
-
-Deliverables:
-
-- time-series export for every tick or a documented sampling interval;
-- separate active-genotype and historical-genotype metrics;
-- lineage tree export;
-- death-reason counts;
-- per-lineage birth and survival summaries;
-- per-tick energy ledger;
+- sampled tick history;
+- active and historical genotype metrics;
+- genealogy records;
+- lineage summaries;
+- death reasons;
+- mutation maps;
+- per-tick resource ledger;
 - memory occupancy and free-memory history;
-- genome and VM inspector for a selected organism.
+- selected-organism VM/genome inspection.
 
-Exit condition:
+### P4 — Resource-boundary semantics
 
-- a user can explain why population changed between two sampled ticks without reading raw source code.
+The baseline blocked-division policy is fixed:
 
-### P4. Resolve resource-boundary semantics
+1. a completed division request remains pending;
+2. the proposed child genome is created once and held stable;
+3. the request is retried on later ticks;
+4. insufficient memory and insufficient energy are distinct states;
+5. the pending state is visible in snapshots, metrics, events, and exports.
 
-The 500-memory run exposed a meaningful boundary: 31 organisms occupied 496 of 500 units, and completed replicators could wait at division because a child required 16 units.
+This prevents a completed replicator from entering an unexplained hidden state at a resource boundary.
 
-Phase One must specify and test exactly one baseline policy for this state. Candidate policies are:
+### P5 — Mutation and lineage analysis
 
-1. keep a pending division request and retry;
-2. abandon the completed copy and reset the lifecycle;
-3. convert failed division into a documented energy cost;
-4. allow a bounded replication queue;
-5. define an explicit death rule for persistent inability to complete division.
+Completed with genotype cataloguing, parent-to-child mutation detection, historical genotype lifetimes, lineage summaries, mutation-event counts, and death/fault analysis.
 
-The decision must be made from a documented hypothesis and tested against energy and memory invariants. It must not be selected only to maximize population or diversity.
+### P6 — Parameter sensitivity
 
-Exit condition:
-
-- no organism state can remain unexplained indefinitely;
-- the UI reports blocked, waiting, and faulted states separately.
-
-### P5. Analyse mutation and lineage dynamics
-
-Deliverables:
-
-- mutation event counts;
-- genotype lifetime distributions;
-- lineage persistence and extinction;
-- parent-to-child mutation maps;
-- survival after mutation;
-- fault reason distributions;
-- historical genotype archive.
-
-Exit condition:
-
-- the project can distinguish a mutation that is created, survives, reproduces, becomes dominant, or disappears.
-
-### P6. Perform parameter-sensitivity experiments
-
-The first sweep should vary one dimension at a time around the validated baseline:
+Completed for nine one-factor-at-a-time parameters:
 
 - memory capacity;
 - external energy input;
@@ -140,108 +86,83 @@ The first sweep should vary one dimension at a time around the validated baselin
 - maintenance cost;
 - reproduction cost;
 - offspring energy;
-- mutation substitution rate.
+- substitution mutation rate.
 
-Each sweep should use multiple seeds and report uncertainty or run-to-run variation. A parameter is not considered meaningful merely because it changes the final population.
+The accepted campaign used 30 seeds for every tested condition.
 
-Exit condition:
+### P7 — Desktop research interface
 
-- each parameter has a documented qualitative role and a safe tested range;
-- conservation and population invariants remain valid throughout the sweep.
+Completed for the Phase One scope with schema-driven parameters, visible engine/configuration provenance, active/historical genotype metrics, blocked-division states, organism inspection, saved-result loading, result comparison, and exports.
 
-### P7. Improve the desktop research interface
+### P8 — Gate later world extensions
 
-Deliverables:
+Completed by executing and archiving the homogeneous evidence campaign before adding any new spatial rule.
 
-- clear separation of configuration, live metrics, and post-run results;
-- visible engine version and configuration hash;
-- active versus historical genotype labels;
-- blocked-division indicator;
-- lineage and organism inspector;
-- run comparison view;
-- export buttons for configuration and results;
-- concise event log with an optional detailed log.
+## Scientific evidence campaign
 
-Exit condition:
+The accepted campaign is described in the [Phase One evidence report](phase-one-evidence-report.md) and archived under <code>results/phase-one/evidence-gate/</code>.
 
-- the interface supports a 50-to-200 parameter schema without becoming a hand-built form;
-- a saved result can be reopened and interpreted without the original live process.
+Protocol:
 
-### P8. Gate optional world extensions
+- engine: <code>phase-zero-vm-0.2</code>;
+- measurement: <code>phase-one-measurement-0.1</code>;
+- evidence format: <code>melakat-phase-one-evidence-0.1</code>;
+- base configuration hash: <code>b90c2df4f218b285</code>;
+- seeds: <code>1–30</code>;
+- <code>2000 ticks</code> per run;
+- six controls, including the restored <code>reproduction.cost = 0</code> control;
+- 27 sensitivity cases;
+- 990 archived runs plus one exact repeated-seed check.
 
-Only after P1–P7 pass should the project evaluate a spatial or environmental extension.
+Primary gate result:
 
-A spatial extension must be introduced as a separate experiment with:
+- energy-invariant failures: <code>0</code>;
+- memory-invariant failures: <code>0</code>;
+- seed-coverage failures: <code>0</code>;
+- run-count failures: <code>0</code>;
+- configuration-hash failures: <code>0</code>;
+- result-checksum failures: <code>0</code>;
+- tick-count failures: <code>0</code>;
+- reproducibility failure: <code>false</code>;
+- maximum absolute energy-balance error: <code>2.5e-08</code> under a <code>1e-07</code> tolerance.
 
-- a new versioned rule set;
-- a clear comparison to the homogeneous baseline;
-- no silent change to existing Phase Zero results;
-- tests for boundary conditions and resource accounting.
+A supplemental archive audit also passes population accounting, non-negative final resources, version consistency, and cross-condition equality whenever the same effective configuration and seed are repeated.
 
-## Proposed implementation order
+## Main evidence findings
 
-1. Freeze and tag the Phase Zero contract.
-2. Add configuration and result export.
-3. Add replicate and sensitivity runners.
-4. Add historical genotype and lineage measurements.
-5. Define and test blocked-division semantics.
-6. Improve GUI inspection and comparison.
-7. Run the Phase One experiment matrix.
-8. Review the evidence before any spatial extension.
+The evidence campaign supports bounded conclusions about the implemented model:
+
+- the 500-unit baseline is predominantly memory-limited near its population ceiling of 31 default organisms;
+- the mutation-zero control removes observed mutation events, genotype diversification, VM faults, and deaths across all 30 tested seeds;
+- higher mutation increases turnover, genotype history, and faults even when final population remains fixed at the memory ceiling;
+- reducing energy input or increasing maintenance cost can move the world into an energy-limited regime;
+- increasing memory can remove the memory bottleneck, expose an energy bottleneck, and greatly increase birth/death and genotype turnover without simply increasing final population;
+- final population alone is therefore not a sufficient indicator of evolutionary dynamics.
+
+No extinction occurred in the 990 campaign runs. This is an observation within the tested parameter ranges and seeds, not a claim that extinction is impossible.
 
 ## Phase One acceptance criteria
 
-Phase One is complete only when:
+Phase One is accepted because:
 
-- repeated seeded runs are identical;
-- different seeds produce variation without violating invariants;
+- repeated seeded execution is deterministic;
+- different seeds produce variation without violating recorded invariants;
 - mutation controls are reproducible;
-- every birth and death has a recorded reason and genealogy link;
-- energy and memory accounting pass at every sampled point;
-- blocked or waiting states have explicit semantics;
-- results can be exported and independently reloaded;
-- parameter sweeps have documented protocols;
+- births, deaths, genealogy, mutations, faults, blocked divisions, and resource waits are observable;
+- energy and memory accounting pass the archived campaign;
+- results are exportable, reloadable, and comparable;
+- sensitivity protocols and exact seed lists are archived;
 - no result depends on an unrecorded GUI action;
-- no explicit intelligence or complexity objective has been added.
+- no intelligence, fitness, or complexity objective was added.
 
-## Research posture
+## Limitations
 
-A stable low-complexity population, repeated extinction, a dominant short genome, or failure to produce long-term diversity are all valid results. Phase One should improve the quality of evidence rather than force the system toward a preferred outcome.
+The accepted evidence is deliberately bounded to seeds <code>1–30</code>, 2000-tick runs, the tested one-factor parameter ranges, and the homogeneous Phase One model. It does not measure all multi-parameter interactions, prove open-ended evolution, or establish quantitative correspondence with biology.
 
-## Phase One v0.2 implementation status
+## Gate status
 
-The Phase One implementation gate is complete. The code now covers the required measurement, export, comparison, and inspection paths while preserving the Phase Zero rules.
+**Phase One implementation gate: complete.**
 
-Implemented:
+**Phase One scientific evidence gate: complete for the defined homogeneous baseline.**
 
-- versioned <code>melakat-run-artifact-0.1</code> JSON results;
-- canonical configuration hashes and independent artifact loading with hash validation;
-- summary analysis for lineages, genotypes, genotype lifetimes, death reasons, and parent-to-child mutation events;
-- a one-factor-at-a-time sensitivity sweep over nine resource, execution, reproduction, and mutation parameters;
-- saved-configuration execution through <code>--config</code>, using the same validated schema exported by the GUI;
-- multi-seed control and sensitivity protocols with aggregate metrics;
-- command-line result comparison through <code>melakat-compare</code>;
-- GUI actions for opening a saved result and comparing two saved results;
-- a selected-organism inspector in the desktop interface;
-- per-tick resource-ledger data in the history <code>CSV</code> export;
-- visible distinction between active and historical genotypes, active lineages, blocked divisions, and resource-waiting states.
-
-Verification completed for this implementation slice:
-
-- 31 unit tests pass;
-- all desktop Python modules pass syntax compilation;
-- a saved GUI configuration was executed successfully by the headless runner;
-- a sensitivity-sweep smoke run produced 9 parameters, 27 cases, and the expected exports;
-- identical uploaded artifacts compare as identical, while different seeds are detected as different results.
-
-The scientific evidence campaign is intentionally separate from the implementation gate. The full multi-seed baseline and sensitivity matrix still needs to be executed, archived, and reviewed as a research run. This document does not claim that every scientific question has been answered.
-
-The baseline blocked-division policy remains:
-
-1. a completed division request remains pending;
-2. the proposed child genome is created once and held stable while waiting;
-3. the engine retries on later ticks;
-4. insufficient memory and insufficient energy are reported as separate states;
-5. the pending state is visible in snapshots, metrics, and exported history.
-
-Phase One is ready for the evidence campaign. Phase Two must not change the Phase Zero baseline silently; it begins only after the baseline artifacts and invariants have been archived and accepted.
+Phase Two may now begin with <code>P2.1</code>. The homogeneous Phase One engine and accepted archive remain the permanent control, and no spatial or environmental rule may silently alter that baseline.
