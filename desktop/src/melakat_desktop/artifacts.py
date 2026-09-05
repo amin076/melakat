@@ -15,9 +15,23 @@ SUPPORTED_RUN_ARTIFACT_FORMATS = (
     SPATIAL_RUN_ARTIFACT_FORMAT,
 )
 
+SPATIAL_FIELDS = (
+    "boundary_model",
+    "spatial_rng_stream",
+    "spatial_births",
+    "boundary_contacts",
+    "mean_parent_child_distance",
+    "max_parent_child_distance",
+    "mean_local_neighbors",
+    "mean_nearest_neighbor_distance",
+    "occupied_spatial_bins",
+    "spatial_occupancy_fraction",
+)
+
 HISTORY_FIELDS = (
     "world_contract_version",
     "spatial_enabled",
+    *SPATIAL_FIELDS,
     "tick",
     "active_population",
     "births",
@@ -47,6 +61,7 @@ SUMMARY_FIELDS = (
     "measurement_version",
     "world_contract_version",
     "spatial_enabled",
+    *SPATIAL_FIELDS,
     "mutation_events",
     "lineage_count",
     "genotype_count",
