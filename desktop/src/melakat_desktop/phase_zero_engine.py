@@ -189,6 +189,7 @@ class PhaseZeroEngine:
             for organism in self.organisms
         )
         return {
+            "engine_version": self.engine_version,
             "tick": self.tick,
             "active_population": active,
             "births": self.births,
