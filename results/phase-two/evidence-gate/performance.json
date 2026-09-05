@@ -1,0 +1,9 @@
+{
+  "deterministic_repeat": true,
+  "event_count": 4077,
+  "peak_tracemalloc_bytes": 2748310,
+  "runtime_seconds": 0.32927944399999376,
+  "summary_json_bytes": 364409,
+  "ticks": 2000,
+  "ticks_per_second": 6073.868370599041
+}
