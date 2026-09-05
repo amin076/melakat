@@ -135,8 +135,47 @@ CORE_SCHEMA = ParameterSchema(
             "boolean",
             False,
             description=(
-                "P2.1 compatibility switch. Spatial rules are intentionally "
-                "unavailable until P2.2; enabling this value is rejected."
+                "Enable the P2.2 reflective spatial birth-placement model. "
+                "When disabled, Phase One homogeneous behavior is preserved."
+            ),
+            advanced=True,
+        ),
+        ParameterSpec(
+            "world.boundary_model",
+            "Boundary model",
+            "World",
+            "choice",
+            "reflective",
+            choices=("reflective",),
+            description="P2.2 supports one explicit reflective rectangular boundary.",
+            advanced=True,
+        ),
+        ParameterSpec(
+            "world.offspring_dispersion_radius",
+            "Offspring dispersion radius",
+            "World",
+            "number",
+            1.0,
+            0.0,
+            10_000.0,
+            0.1,
+            description=(
+                "Maximum radial birth displacement from the parent when "
+                "spatial rules are enabled."
+            ),
+        ),
+        ParameterSpec(
+            "world.neighborhood_radius",
+            "Neighborhood measurement radius",
+            "World",
+            "number",
+            2.0,
+            0.0,
+            10_000.0,
+            0.1,
+            description=(
+                "Observation-only radius used for local-neighbor metrics; it "
+                "does not change organism behavior."
             ),
             advanced=True,
         ),
