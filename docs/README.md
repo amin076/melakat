@@ -2,12 +2,21 @@
 
 [فارسی](README.fa.md) | English
 
-This directory contains the canonical project documentation. Every major document has an English version and a Farsi version.
+This directory contains the canonical project documentation. Major scientific documents are maintained in parallel English and Farsi versions.
 
-## Language directories
+## Current research status
 
-- [English documentation](doc-english/README.md)
-- [Farsi documentation](doc-farsi/README.md)
+**Phase Zero, Phase One, and Phase Two are complete for their defined gates.**
+
+The accepted Phase One homogeneous evidence archive contains 990 runs. The accepted Phase Two spatial/environment evidence archive contains 360 runs: 30 seeds across 12 matched conditions, each for 2000 ticks, with zero validation failures.
+
+Current accepted Phase Two versions:
+
+- world contract: `phase-two-spatial-0.7`
+- engine: `phase-two-vm-0.7`
+- measurement: `phase-two-measurement-0.1`
+
+The Phase One homogeneous model remains the permanent control. Phase Two adds controlled topology, a conservative local resource mechanism, data-only sensing/movement primitives, spatial measurements, a controlled evidence matrix, and a desktop research interface. It does not add machine learning, fitness objectives, attack, cooperation, mating roles, or host-authored social strategies.
 
 ## Core documents
 
@@ -20,18 +29,35 @@ This directory contains the canonical project documentation. Every major documen
 - [Phase One evidence archive](../results/phase-one/evidence-gate/README.md)
 - [Phase Two roadmap — English](doc-english/phase-two-roadmap.md)
 - [نقشهٔ راه مرحلهٔ دو — فارسی](doc-farsi/phase-two-roadmap.md)
-- [Phase Two world contract 0.1 — English](phase-2/phase-two-world-contract-0.1.md)
-- [قرارداد جهان مرحلهٔ دو نسخهٔ ۰.۱ — فارسی](phase-2/phase-two-world-contract-0.1.fa.md)
-- [Phase Two spatial topology 0.2 — English](phase-2/phase-two-spatial-topology-0.2.md)
-- [توپولوژی فضایی مرحلهٔ دو نسخهٔ ۰.۲ — فارسی](phase-2/phase-two-spatial-topology-0.2.fa.md)
+- [Phase Two completion and evidence report — English](phase-2/phase-two-completion-report.md)
+- [گزارش تکمیل و شواهد مرحلهٔ دو — فارسی](phase-2/phase-two-completion-report.fa.md)
+- [Phase Two user test guide — English](phase-2/phase-two-user-test-guide.md)
+- [راهنمای تست کاربر مرحلهٔ دو — فارسی](phase-2/phase-two-user-test-guide.fa.md)
 
-## Current research gate
+Historical Phase Two contract milestones remain available:
 
-The Phase One implementation gate and scientific evidence gate are complete for the defined homogeneous baseline. The accepted archive contains 990 runs across 30 seeds, six controls, and 27 one-factor sensitivity cases.
+- [World contract 0.1 — English](phase-2/phase-two-world-contract-0.1.md)
+- [قرارداد جهان ۰.۱ — فارسی](phase-2/phase-two-world-contract-0.1.fa.md)
+- [Spatial topology 0.2 — English](phase-2/phase-two-spatial-topology-0.2.md)
+- [توپولوژی فضایی ۰.۲ — فارسی](phase-2/phase-two-spatial-topology-0.2.fa.md)
 
-Phase Two P2.1 and P2.2 are implemented. P2.2 activates exactly one spatial mechanism: local offspring placement in a continuous two-dimensional rectangular world with a reflective boundary. Spatial randomness is isolated from the historical engine RNG, and acceptance tests require the same-seed non-spatial dynamics to remain identical to the disabled-spatial control.
+The authoritative current contract is implemented in `desktop/src/melakat_desktop/world_contract.py` and summarized in the Phase Two completion report.
 
-Movement, sensing, local resources, attack, cooperation, and explicit fitness rewards remain absent. The next scientific package is P2.3: one local-resource mechanism with explicit accounting and comparison against both P2.2 and the Phase One homogeneous control.
+## Accepted Phase Two evidence
+
+The final Phase Two evidence gate records:
+
+- 12 conditions;
+- 30 seeds per condition;
+- 360 completed runs;
+- zero validation failures;
+- maximum absolute energy-balance error `1.02e-08` under tolerance `1e-07`;
+- maximum absolute local-resource error `4.2e-09` under tolerance `1e-07`;
+- deterministic repeat PASS;
+- source commit `ad5e21159baf0d6bd79a028799b9318ba144fed7`;
+- workflow run `33969619473`.
+
+Evidence is stored in `results/phase-two/evidence-gate/` with validation, performance, provenance, and SHA-256 checksums.
 
 ## Technical documents
 
@@ -42,6 +68,4 @@ Movement, sensing, local resources, attack, cooperation, and explicit fitness re
 
 ## Documentation policy
 
-The English and Farsi documents are maintained as parallel documents. A change to a scientific rule, metric, experiment protocol, or acceptance criterion must be reflected in both language directories.
-
-The Farsi documents use isolated code formatting for technical names and English terms. This keeps mixed-direction text readable in right-to-left prose.
+English and Farsi scientific documents are maintained as parallel records. Any change to a rule, measurement contract, experiment protocol, or acceptance criterion must be reflected in both languages or explicitly tracked as documentation follow-up.
