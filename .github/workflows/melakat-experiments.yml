@@ -4,31 +4,35 @@ on:
   pull_request:
     paths:
       - ".github/workflows/melakat-experiments.yml"
-      - "desktop/src/melakat_desktop/experiment_runner.py"
+      - "desktop/pyproject.toml"
+      - "desktop/src/melakat_desktop/experiment_*.py"
       - "desktop/src/melakat_desktop/phase_two_*.py"
+      - "desktop/src/melakat_desktop/phase_three_*.py"
       - "desktop/src/melakat_desktop/resources.py"
       - "desktop/src/melakat_desktop/spatial.py"
       - "desktop/src/melakat_desktop/parameters.py"
-      - "desktop/tests/test_experiment_runner.py"
+      - "desktop/tests/test_*experiment_runner.py"
       - "experiments/**"
   push:
     branches:
       - main
     paths:
       - ".github/workflows/melakat-experiments.yml"
-      - "desktop/src/melakat_desktop/experiment_runner.py"
+      - "desktop/pyproject.toml"
+      - "desktop/src/melakat_desktop/experiment_*.py"
       - "desktop/src/melakat_desktop/phase_two_*.py"
+      - "desktop/src/melakat_desktop/phase_three_*.py"
       - "desktop/src/melakat_desktop/resources.py"
       - "desktop/src/melakat_desktop/spatial.py"
       - "desktop/src/melakat_desktop/parameters.py"
-      - "desktop/tests/test_experiment_runner.py"
+      - "desktop/tests/test_*experiment_runner.py"
       - "experiments/**"
   workflow_dispatch:
     inputs:
       spec:
         description: Experiment specification path
         required: true
-        default: experiments/phase-two/local-resource-energy-sweep.json
+        default: experiments/phase-three/uniform-vs-center-patch.json
         type: string
       seed_count:
         description: Number of seeds to run
@@ -62,9 +66,9 @@ jobs:
 
       - name: Run automated experiment unit tests
         working-directory: desktop
-        run: python -m unittest discover -s tests -p "test_experiment_runner.py" -v
+        run: python -m unittest discover -s tests -p "test_*experiment_runner.py" -v
 
-      - name: Validate experiment specification
+      - name: Validate frozen Phase Two experiment specification
         if: github.event_name != 'workflow_dispatch'
         run: >-
           melakat-experiment validate
@@ -72,14 +76,31 @@ jobs:
           --seed-count 3
           --ticks 300
 
-      - name: Run PR/main smoke campaign
+      - name: Validate Phase Three experiment specification
+        if: github.event_name != 'workflow_dispatch'
+        run: >-
+          melakat-experiment validate
+          experiments/phase-three/uniform-vs-center-patch.json
+          --seed-count 3
+          --ticks 300
+
+      - name: Run frozen Phase Two smoke campaign
         if: github.event_name != 'workflow_dispatch'
         run: >-
           melakat-experiment run
           experiments/phase-two/local-resource-energy-sweep.json
           --seed-count 3
           --ticks 300
-          --output-dir results/automated-experiments/ci-smoke
+          --output-dir results/automated-experiments/phase-two-ci-smoke
+
+      - name: Run Phase Three smoke campaign
+        if: github.event_name != 'workflow_dispatch'
+        run: >-
+          melakat-experiment run
+          experiments/phase-three/uniform-vs-center-patch.json
+          --seed-count 3
+          --ticks 300
+          --output-dir results/automated-experiments/phase-three-ci-smoke
 
       - name: Run requested research campaign
         if: github.event_name == 'workflow_dispatch'
