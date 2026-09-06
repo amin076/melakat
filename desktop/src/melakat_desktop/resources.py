@@ -141,8 +141,6 @@ class LocalResourceField:
             "values": [round(value, 6) for value in self.values],
             "total": round(self.total(), 6),
             "minimum": round(self.minimum(), 6),
-            "maximum": round(self.maximum(), 6),
-            "coefficient_of_variation": round(self.coefficient_of_variation(), 6),
             "balance_error": round(self.balance_error(), 10),
         }
 
