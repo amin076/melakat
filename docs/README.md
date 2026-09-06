@@ -6,17 +6,23 @@ This directory contains the canonical project documentation. Major scientific do
 
 ## Current research status
 
-**Phase Zero, Phase One, and Phase Two are complete for their defined gates.**
+**Phase Zero, Phase One, and Phase Two are complete. Phase Two is frozen as an accepted reference. Phase Three has started.**
 
 The accepted Phase One homogeneous evidence archive contains 990 runs. The accepted Phase Two spatial/environment evidence archive contains 360 runs: 30 seeds across 12 matched conditions, each for 2000 ticks, with zero validation failures.
 
-Current accepted Phase Two versions:
+Frozen Phase Two versions:
 
 - world contract: `phase-two-spatial-0.7`
 - engine: `phase-two-vm-0.7`
 - measurement: `phase-two-measurement-0.1`
 
-The Phase One homogeneous model remains the permanent control. Phase Two adds controlled topology, a conservative local resource mechanism, data-only sensing/movement primitives, spatial measurements, a controlled evidence matrix, and a desktop research interface. It does not add machine learning, fitness objectives, attack, cooperation, mating roles, or host-authored social strategies.
+Initial Phase Three versions:
+
+- world contract: `phase-three-environment-0.1`
+- engine: `phase-three-vm-0.1`
+- measurement: `phase-three-measurement-0.1`
+
+The Phase One homogeneous model remains the permanent control. Phase Two remains the frozen spatial/local-resource reference. Phase Three begins by introducing one isolated intervention: deterministic spatial heterogeneity in resource allocation while holding total resource input constant.
 
 ## Core documents
 
@@ -31,6 +37,10 @@ The Phase One homogeneous model remains the permanent control. Phase Two adds co
 - [نقشهٔ راه مرحلهٔ دو — فارسی](doc-farsi/phase-two-roadmap.md)
 - [Phase Two completion and evidence report — English](phase-2/phase-two-completion-report.md)
 - [گزارش تکمیل و شواهد مرحلهٔ دو — فارسی](phase-2/phase-two-completion-report.fa.md)
+- [Phase Two frozen baseline — English](phase-2/phase-two-frozen-baseline.md)
+- [خط پایهٔ منجمد مرحلهٔ دو — فارسی](phase-2/phase-two-frozen-baseline.fa.md)
+- [Phase Three roadmap — English](phase-3/phase-three-roadmap.md)
+- [نقشهٔ راه مرحلهٔ سه — فارسی](phase-3/phase-three-roadmap.fa.md)
 - [Phase Two user test guide — English](phase-2/phase-two-user-test-guide.md)
 - [راهنمای تست کاربر مرحلهٔ دو — فارسی](phase-2/phase-two-user-test-guide.fa.md)
 
@@ -41,7 +51,7 @@ Historical Phase Two contract milestones remain available:
 - [Spatial topology 0.2 — English](phase-2/phase-two-spatial-topology-0.2.md)
 - [توپولوژی فضایی ۰.۲ — فارسی](phase-2/phase-two-spatial-topology-0.2.fa.md)
 
-The authoritative current contract is implemented in `desktop/src/melakat_desktop/world_contract.py` and summarized in the Phase Two completion report.
+The frozen Phase Two contract remains implemented in `desktop/src/melakat_desktop/world_contract.py`. The new Phase Three contract is implemented separately in `desktop/src/melakat_desktop/phase_three_contract.py`; this separation is intentional so later work does not silently redefine the accepted Phase Two baseline.
 
 ## Accepted Phase Two evidence
 
@@ -57,7 +67,13 @@ The final Phase Two evidence gate records:
 - source commit `ad5e21159baf0d6bd79a028799b9318ba144fed7`;
 - workflow run `33969619473`.
 
-Evidence is stored in `results/phase-two/evidence-gate/` with validation, performance, provenance, and SHA-256 checksums.
+Evidence is stored in `results/phase-two/evidence-gate/` with validation, performance, provenance, and SHA-256 checksums. Later Phase Three experiments do not replace this archive.
+
+## Phase Three first gate
+
+The first Phase Three evidence gate will compare a `uniform` control against a deterministic `center_patch` resource distribution while preserving matched seeds, total initial resource, total per-tick resource input, VM rules, mutation, reproduction, memory, topology and local capture semantics.
+
+A difference between the two conditions may support a statement about the effect of spatial resource heterogeneity on recorded model dynamics. It is not by itself evidence of adaptation, cooperation, competition or niche formation.
 
 ## Technical documents
 

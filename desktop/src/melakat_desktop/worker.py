@@ -7,6 +7,7 @@ from threading import Event
 from typing import Any
 
 from .engine import DemoEngine
+from .phase_three_engine import PhaseThreeEngine
 from .phase_two_engine import PhaseTwoEngine
 from .phase_zero_engine import PhaseZeroEngine
 from .protocol import make_event
@@ -16,6 +17,7 @@ ENGINE_BACKENDS = {
     "demo": DemoEngine,
     "phase-zero-vm": PhaseZeroEngine,
     "phase-two-vm": PhaseTwoEngine,
+    "phase-three-vm": PhaseThreeEngine,
 }
 
 

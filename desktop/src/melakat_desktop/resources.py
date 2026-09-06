@@ -32,6 +32,20 @@ class LocalResourceField:
         col, row = self._cell(x, y)
         return row * self.cols + col
 
+    def _weighted_allocation(self, total: float, weights: list[float]) -> list[float]:
+        if len(weights) != len(self.values):
+            raise ValueError("resource_weight_count_mismatch")
+        normalized = [max(0.0, float(weight)) for weight in weights]
+        weight_total = sum(normalized)
+        if weight_total <= 0.0:
+            raise ValueError("resource_weights_must_have_positive_total")
+
+        total = max(0.0, float(total))
+        allocations = [total * weight / weight_total for weight in normalized]
+        if allocations:
+            allocations[-1] += total - sum(allocations)
+        return allocations
+
     def seed_uniform(self, total: float) -> None:
         total = max(0.0, float(total))
         per_cell = total / len(self.values)
@@ -41,6 +55,19 @@ class LocalResourceField:
         self.captured_resource = 0.0
         self.released_resource = 0.0
 
+    def seed_weighted(self, total: float, weights: list[float]) -> None:
+        total = max(0.0, float(total))
+        self.values = self._weighted_allocation(total, weights)
+        self.initial_resource = total
+        self.input_resource = 0.0
+        self.captured_resource = 0.0
+        self.released_resource = 0.0
+
+    def redistribute_weighted(self, weights: list[float]) -> None:
+        """Redistribute the current field without changing conservation ledger totals."""
+
+        self.values = self._weighted_allocation(self.total(), weights)
+
     def renew_uniform(self, total: float) -> None:
         total = max(0.0, float(total))
         if total <= 0.0:
@@ -48,6 +75,15 @@ class LocalResourceField:
         per_cell = total / len(self.values)
         for index in range(len(self.values)):
             self.values[index] += per_cell
+        self.input_resource += total
+
+    def renew_weighted(self, total: float, weights: list[float]) -> None:
+        total = max(0.0, float(total))
+        if total <= 0.0:
+            return
+        allocations = self._weighted_allocation(total, weights)
+        for index, amount in enumerate(allocations):
+            self.values[index] += amount
         self.input_resource += total
 
     def capture(self, x: float, y: float, requested: float) -> float:
@@ -73,6 +109,19 @@ class LocalResourceField:
 
     def minimum(self) -> float:
         return min(self.values, default=0.0)
+
+    def maximum(self) -> float:
+        return max(self.values, default=0.0)
+
+    def mean(self) -> float:
+        return self.total() / len(self.values) if self.values else 0.0
+
+    def coefficient_of_variation(self) -> float:
+        mean = self.mean()
+        if mean <= 0.0 or not self.values:
+            return 0.0
+        variance = sum((value - mean) ** 2 for value in self.values) / len(self.values)
+        return variance ** 0.5 / mean
 
     def balance_error(self) -> float:
         expected = (

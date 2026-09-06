@@ -4,20 +4,26 @@
 
 Melakat is a research-first simulation for studying whether simple data-only digital organisms can exhibit evolutionary and ecological dynamics inside a constrained computational world.
 
-Organisms run inside a bounded virtual machine. They consume finite energy and memory, copy genomes, inherit blind mutation, reproduce, and may die. Phase Two adds controlled spatial topology, local resources, sensing and bounded movement without adding a fitness objective or hand-written social behavior.
+Organisms run inside a bounded virtual machine. They consume finite energy and memory, copy genomes, inherit blind mutation, reproduce, and may die. Phase Two added controlled spatial topology, local resources, sensing and bounded movement without adding a fitness objective or hand-written social behavior. Phase Three now begins from that frozen reference by changing only the spatial distribution of the same total local resource input.
 
 ## Current status
 
-**Phase Zero, Phase One, and Phase Two are complete for their defined research gates.**
+**Phase Zero, Phase One, and Phase Two are complete. Phase Two is formally frozen as a reference baseline. Phase Three has started.**
 
-Accepted Phase Two versions:
+Frozen Phase Two versions:
 
 - world contract: `phase-two-spatial-0.7`
 - engine: `phase-two-vm-0.7`
 - measurement: `phase-two-measurement-0.1`
 - artifact format: `melakat-run-artifact-0.2`
 
-The Phase One homogeneous baseline remains available as a permanent frozen control. With `world.spatial_enabled=false`, the Phase Two compatibility path reproduces the accepted Phase One scientific baseline.
+Initial Phase Three versions:
+
+- world contract: `phase-three-environment-0.1`
+- engine: `phase-three-vm-0.1`
+- measurement: `phase-three-measurement-0.1`
+
+The Phase One homogeneous baseline remains available as a permanent frozen control. The accepted Phase Two implementation/evidence remains a second frozen reference for later spatial/environmental research.
 
 ### Phase Two capabilities
 
@@ -34,7 +40,15 @@ The Phase One homogeneous baseline remains available as a permanent frozen contr
 - controlled multi-seed evidence matrix;
 - deterministic repeat and performance measurements.
 
-These are rules and measurements of the implemented digital model. They are not a claim that biological life, intelligence, or adaptive navigation has been recreated.
+### Phase Three v0.1 scope
+
+Phase Three currently adds one causal intervention only: `center_patch` resource heterogeneity.
+
+The matched control is `uniform` allocation. Both modes use the same total initial environmental resource and the same total `world.energy_input_per_tick`; only relative allocation across the existing resource grid changes. The patch is deterministic, so it does not add another random-number stream.
+
+New non-causal measurements include resource-field coefficient of variation and maximum local cell resource. Phase Three v0.1 does not add resource diffusion, programmed resource-seeking, predation, cooperation, seasons, disasters, a fitness function, or host selection.
+
+These are rules and measurements of the implemented digital model. They are not a claim that biological life, intelligence, adaptation, cooperation, competition, or niche formation has been recreated.
 
 ## Accepted evidence gates
 
@@ -58,6 +72,8 @@ Final Phase Two validation:
 
 The default local-resource experiments often reached extinction because energy can remain in unoccupied cells and Phase Two deliberately has no diffusion. Resource-abundant conditions can sustain populations but create much higher turnover. These are model outcomes, not invariant failures.
 
+The formal freeze record is [Phase Two frozen baseline](docs/phase-2/phase-two-frozen-baseline.md). Later exploratory campaigns do not replace that accepted gate.
+
 ## Research boundaries
 
 Melakat still deliberately excludes:
@@ -69,7 +85,7 @@ Melakat still deliberately excludes:
 - host-authored attack or cooperation behavior;
 - mating roles, parasites, or disease;
 - complexity as a reward;
-- resource diffusion or organism-produced resources in Phase Two;
+- resource diffusion or organism-produced resources in the current Phase Three v0.1 model;
 - filesystem, network, subprocess, host-runtime, or external API access by organisms.
 
 The Python process is the host simulator. Organisms do not execute Python code.
@@ -79,20 +95,22 @@ The Python process is the host simulator. Organisms do not execute Python code.
 - [Documentation index](docs/README.md)
 - [فهرست مستندات فارسی](docs/README.fa.md)
 - [Phase One evidence report](docs/doc-english/phase-one-evidence-report.md)
-- [Phase Two roadmap](docs/doc-english/phase-two-roadmap.md)
 - [Phase Two completion and evidence report](docs/phase-2/phase-two-completion-report.md)
-- [Phase Two user test guide](docs/phase-2/phase-two-user-test-guide.md)
+- [Phase Two frozen baseline](docs/phase-2/phase-two-frozen-baseline.md)
+- [Phase Three roadmap](docs/phase-3/phase-three-roadmap.md)
 - [Phase One evidence archive](results/phase-one/evidence-gate/README.md)
 - `results/phase-two/evidence-gate/` — accepted Phase Two campaign, validation, performance, provenance and checksums
 
 ## Repository map
 
 - `desktop/src/melakat_desktop/phase_zero_engine.py` — frozen homogeneous reference engine;
-- `desktop/src/melakat_desktop/phase_two_engine.py` — Phase Two serial spatial/environment engine;
+- `desktop/src/melakat_desktop/phase_two_engine.py` — frozen Phase Two serial spatial/environment engine;
 - `desktop/src/melakat_desktop/phase_two_vm.py` — Phase Two data-only sensing/movement VM extension;
-- `desktop/src/melakat_desktop/resources.py` — conservative local-resource field;
+- `desktop/src/melakat_desktop/phase_three_contract.py` — Phase Three environmental-heterogeneity contract;
+- `desktop/src/melakat_desktop/phase_three_engine.py` — Phase Three v0.1 engine inheriting Phase Two rules and adding resource-allocation heterogeneity;
+- `desktop/src/melakat_desktop/resources.py` — conservative local-resource field with Phase Two uniform and Phase Three weighted allocation primitives;
 - `desktop/src/melakat_desktop/spatial.py` — topology, placement and spatial measurements;
-- `desktop/src/melakat_desktop/world_contract.py` — current versioned Phase Two contract;
+- `desktop/src/melakat_desktop/world_contract.py` — frozen Phase Two world contract;
 - `desktop/src/melakat_desktop/phase_two_experiment.py` — Phase Two evidence matrix and performance probe;
 - `desktop/src/melakat_desktop/ui.py` — desktop research interface;
 - `results/phase-one/evidence-gate/` — accepted Phase One evidence;
@@ -115,6 +133,6 @@ cd ..
 python -m melakat_desktop.main
 ~~~
 
-For the first manual Phase Two test, choose `phase-two-vm`, enable spatial rules, use the `reflective` boundary, and initially leave local resources and evolved sensing/movement disabled. Then introduce those mechanisms one at a time.
+The desktop backend selector now recognizes `phase-three-vm`, but the first heterogeneous intervention is being validated headlessly before Phase Three-specific desktop controls and the general automated experiment runner are expanded. This keeps the initial scientific change small and preserves the frozen Phase Two configuration defaults.
 
-See the [Phase Two user test guide](docs/phase-2/phase-two-user-test-guide.md) for the acceptance sequence and evidence commands.
+See the [Phase Three roadmap](docs/phase-3/phase-three-roadmap.md) for the current scientific contract and next evidence gate.
