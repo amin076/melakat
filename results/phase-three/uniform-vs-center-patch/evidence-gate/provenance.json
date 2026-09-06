@@ -1,0 +1,14 @@
+{
+  "experiment": "phase-three-uniform-vs-center-patch",
+  "format": "melakat-experiment-provenance-0.1",
+  "generated_at_utc": "2026-09-06T22:00:10.056549+00:00",
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "python_version": "3.12.14",
+  "repository": "amin076/melakat",
+  "source_branch": "research/phase-three-uniform-vs-center-patch",
+  "source_commit": "9314df691e2c01ee2b0fb60248ab7052ecec9c84",
+  "source_spec": "experiments/phase-three/uniform-vs-center-patch.json",
+  "source_spec_sha256": "912b374855db97edf1d265bb0a25da0944f8e13611f247a9fe0f50862459d5a4",
+  "workflow": "Phase Three uniform vs center patch research",
+  "workflow_run_id": "34062567737"
+}
