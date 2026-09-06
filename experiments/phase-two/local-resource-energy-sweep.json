@@ -1,0 +1,56 @@
+{
+  "format": "melakat-experiment-spec-0.1",
+  "name": "phase-two-local-resource-energy-sweep",
+  "description": "Matched Phase Two local-resource sweep based on the manual seed-1 experiment. Spatial rules and local resources stay enabled while sensing/movement stays disabled; only world.energy_input_per_tick is swept.",
+  "base_config": {
+    "run.engine_backend": "phase-two-vm",
+    "run.max_ticks": 2000,
+    "world.width": 96,
+    "world.height": 70,
+    "world.spatial_enabled": true,
+    "world.boundary_model": "reflective",
+    "world.offspring_dispersion_radius": 1.4,
+    "world.neighborhood_radius": 2.0,
+    "world.initial_energy": 1000.0,
+    "world.local_resources_enabled": true,
+    "world.resource_grid_cols": 10,
+    "world.resource_grid_rows": 7,
+    "world.local_capture_limit": 1.0,
+    "world.organism_actions_enabled": false,
+    "population.initial_size": 12,
+    "population.initial_energy": 25.0,
+    "population.memory_per_organism": 8,
+    "world.memory_capacity": 500,
+    "execution.instructions_per_tick": 8,
+    "execution.instruction_cost": 0.05,
+    "execution.maintenance_cost": 0.2,
+    "reproduction.enabled": true,
+    "reproduction.cost": 12.0,
+    "reproduction.offspring_energy": 8.0,
+    "mutation.substitution_rate": 0.01
+  },
+  "seeds": {
+    "start": 1,
+    "count": 30
+  },
+  "sweeps": [
+    {
+      "name": "local_resource_energy",
+      "base_overrides": {
+        "world.spatial_enabled": true,
+        "world.local_resources_enabled": true,
+        "world.organism_actions_enabled": false
+      },
+      "parameter": "world.energy_input_per_tick",
+      "values": [
+        10.4,
+        20.0,
+        40.0
+      ]
+    }
+  ],
+  "reproducibility": {
+    "condition": "local_resource_energy__energy_input_per_tick=10.4",
+    "seed": 1
+  }
+}
