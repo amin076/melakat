@@ -19,7 +19,7 @@ melakat-desktop = "melakat_desktop.main:main"
 melakat-phase-zero = "melakat_desktop.phase_zero_experiment:main"
 melakat-phase-one-evidence = "melakat_desktop.phase_one_evidence:main"
 melakat-phase-two-evidence = "melakat_desktop.phase_two_experiment:main"
-melakat-experiment = "melakat_desktop.experiment_runner:main"
+melakat-experiment = "melakat_desktop.experiment_dispatcher:main"
 melakat-compare = "melakat_desktop.compare:main"
 
 [tool.setuptools.packages.find]

@@ -101,6 +101,19 @@ class PhaseThreeEngine(PhaseTwoEngine):
 
         return weights
 
+    def _resource_allocation_cv(self) -> float:
+        """CV of the imposed renewal weights, not the evolving resource state."""
+
+        if self.resource_distribution_mode == "uniform" or not self.resource_weights:
+            return 0.0
+        mean = sum(self.resource_weights) / len(self.resource_weights)
+        if mean <= 0.0:
+            return 0.0
+        variance = sum(
+            (weight - mean) ** 2 for weight in self.resource_weights
+        ) / len(self.resource_weights)
+        return variance ** 0.5 / mean
+
     def step(self) -> None:
         # The uniform Phase Three control deliberately delegates to the exact
         # Phase Two step path. Only heterogeneous renewal uses new dynamics.
@@ -151,13 +164,19 @@ class PhaseThreeEngine(PhaseTwoEngine):
                 "mode": self.resource_distribution_mode,
                 "patch_fraction": round(self.resource_patch_fraction, 6),
                 "patch_contrast": round(self.resource_patch_contrast, 6),
+                "allocation_cv": round(self._resource_allocation_cv(), 6),
             }
         return snapshot
 
     def metrics(self) -> dict[str, Any]:
         metrics = super().metrics()
         metrics["resource_distribution_mode"] = self.resource_distribution_mode
+        metrics["resource_allocation_cv"] = round(
+            self._resource_allocation_cv(), 6
+        )
         if self.resource_field is not None:
+            # This is the observed resource-field state after organism capture,
+            # death release and renewal. It is distinct from allocation_cv.
             metrics["resource_heterogeneity_cv"] = round(
                 self.resource_field.coefficient_of_variation(), 6
             )
