@@ -17,10 +17,12 @@ PHASE_THREE_PARAMETER_DEFAULTS: dict[str, Any] = {
 PHASE_THREE_PARAMETERS = frozenset(PHASE_THREE_PARAMETER_DEFAULTS)
 PHASE_THREE_COMPACT_METRICS = (
     "resource_distribution_mode",
+    "resource_allocation_cv",
     "resource_heterogeneity_cv",
     "local_resource_maximum",
 )
 PHASE_THREE_SUMMARY_METRICS = (
+    "resource_allocation_cv",
     "resource_heterogeneity_cv",
     "local_resource_maximum",
 )
