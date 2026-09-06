@@ -104,7 +104,7 @@ Movement and sensing were disabled, so any stronger claim about navigation or ev
 - GitHub artifact id: `9997969944`
 - GitHub artifact digest: `sha256:402dabae1b7f39d600ce26e3027ff2769ec8b37e94b707d38a8a13ba42121e70`
 
-Canonical campaign files are archived under `results/phase-three/uniform-vs-center-patch/evidence-gate/`.
+The repository evidence record is archived under `results/phase-three/uniform-vs-center-patch/evidence-gate/`. The original full workflow artifact is identified by the artifact id and digest above.
 
 ## Next controlled question
 
