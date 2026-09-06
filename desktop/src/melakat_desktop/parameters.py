@@ -71,7 +71,7 @@ CORE_SCHEMA = ParameterSchema(
     specs=(
         ParameterSpec(
             "run.engine_backend", "Engine backend", "Run", "choice", "phase-zero-vm",
-            choices=("phase-zero-vm", "phase-two-vm", "demo"),
+            choices=("phase-zero-vm", "phase-two-vm", "phase-three-vm", "demo"),
             description="Execution engine used by the GUI",
         ),
         ParameterSpec(
@@ -135,6 +135,26 @@ CORE_SCHEMA = ParameterSchema(
             "world.local_capture_limit", "Local capture limit", "Resources", "number", 1.0,
             0.0, 1_000_000.0, 0.1,
             description="Maximum energy an organism can capture from its current resource cell per tick.",
+        ),
+        ParameterSpec(
+            "world.resource_distribution_mode", "Resource distribution", "Resources", "choice", "uniform",
+            choices=("uniform", "center_patch"),
+            description=(
+                "Phase Three intervention. Uniform preserves the Phase Two allocation; center_patch redistributes the same total resource input spatially."
+            ),
+            advanced=True,
+        ),
+        ParameterSpec(
+            "world.resource_patch_fraction", "Patch width/height fraction", "Resources", "number", 0.30,
+            0.05, 1.0, 0.05,
+            description="Fraction of world width and height occupied by the deterministic central resource patch.",
+            advanced=True,
+        ),
+        ParameterSpec(
+            "world.resource_patch_contrast", "Patch resource contrast", "Resources", "number", 4.0,
+            1.0, 100.0, 0.5,
+            description="Allocation weight multiplier for cells inside the Phase Three central patch.",
+            advanced=True,
         ),
         ParameterSpec(
             "world.organism_actions_enabled", "Enable evolved sensing/movement", "Movement", "boolean", False,
