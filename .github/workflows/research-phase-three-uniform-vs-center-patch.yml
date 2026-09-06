@@ -1,0 +1,67 @@
+name: Phase Three uniform vs center patch research
+
+on:
+  push:
+    branches:
+      - research/phase-three-uniform-vs-center-patch
+    paths:
+      - ".github/workflows/research-phase-three-uniform-vs-center-patch.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  campaign:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install headless Melakat package
+        run: python -m pip install -e desktop --no-deps
+
+      - name: Validate Phase Three research specification
+        run: >-
+          melakat-experiment validate
+          experiments/phase-three/uniform-vs-center-patch.json
+
+      - name: Run full Phase Three research campaign
+        run: >-
+          melakat-experiment run
+          experiments/phase-three/uniform-vs-center-patch.json
+          --output-dir results/phase-three/uniform-vs-center-patch/full-campaign
+          --quiet
+
+      - name: Verify campaign acceptance gate
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('results/phase-three/uniform-vs-center-patch/full-campaign')
+          validation = json.loads((root / 'validation.json').read_text(encoding='utf-8'))
+          summary = json.loads((root / 'summary.json').read_text(encoding='utf-8'))
+          assert validation['passed'] is True, validation
+          assert validation['expected_runs'] == 60, validation
+          assert validation['completed_runs'] == 60, validation
+          assert validation['failure_count'] == 0, validation
+          assert validation['reproducibility']['identical'] is True, validation
+          assert summary['condition_count'] == 2, summary
+          assert summary['run_count'] == 60, summary
+          print(json.dumps({'validation': validation, 'summary': summary}, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload research evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-three-uniform-vs-center-patch-${{ github.run_id }}
+          path: results/phase-three/uniform-vs-center-patch/full-campaign
+          if-no-files-found: error
+          retention-days: 90
