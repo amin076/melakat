@@ -1,0 +1,53 @@
+name: Research local resource energy sweep
+
+on:
+  push:
+    branches:
+      - research/local-resource-energy-sweep-90run
+    paths:
+      - ".github/workflows/research-local-resource-energy-sweep.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  research-campaign:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install headless Melakat package
+        run: python -m pip install -e desktop --no-deps
+
+      - name: Run experiment-runner tests
+        working-directory: desktop
+        run: python -m unittest discover -s tests -p "test_experiment_runner.py" -v
+
+      - name: Validate full experiment specification
+        run: >-
+          melakat-experiment validate
+          experiments/phase-two/local-resource-energy-sweep.json
+          --seed-count 30
+          --ticks 2000
+
+      - name: Run full 90-run research campaign
+        run: >-
+          melakat-experiment run
+          experiments/phase-two/local-resource-energy-sweep.json
+          --seed-count 30
+          --ticks 2000
+          --output-dir results/automated-experiments/local-resource-energy-sweep-90run
+
+      - name: Upload research campaign artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-resource-energy-sweep-90run-${{ github.run_id }}
+          path: results/automated-experiments/local-resource-energy-sweep-90run
+          if-no-files-found: error
