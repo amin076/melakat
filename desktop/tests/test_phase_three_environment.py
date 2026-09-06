@@ -41,7 +41,7 @@ class PhaseThreeEnvironmentTests(unittest.TestCase):
         return CORE_SCHEMA.validate(config)
 
     @staticmethod
-    def run(engine) -> None:
+    def run_engine(engine) -> None:
         while not engine.finished:
             engine.step()
 
@@ -103,8 +103,8 @@ class PhaseThreeEnvironmentTests(unittest.TestCase):
 
         phase_two = PhaseTwoEngine(phase_two_config, lambda _event: None)
         phase_three = PhaseThreeEngine(phase_three_config, lambda _event: None)
-        self.run(phase_two)
-        self.run(phase_three)
+        self.run_engine(phase_two)
+        self.run_engine(phase_three)
 
         keys = (
             "tick",
@@ -141,8 +141,8 @@ class PhaseThreeEnvironmentTests(unittest.TestCase):
     def test_patchy_run_is_deterministic_and_conservative(self) -> None:
         first = PhaseThreeEngine(self.config("center_patch", ticks=200), lambda _event: None)
         second = PhaseThreeEngine(self.config("center_patch", ticks=200), lambda _event: None)
-        self.run(first)
-        self.run(second)
+        self.run_engine(first)
+        self.run_engine(second)
 
         self.assertEqual(first.summary(), second.summary())
         self.assertLessEqual(abs(first.energy_balance_error()), 1e-7)
