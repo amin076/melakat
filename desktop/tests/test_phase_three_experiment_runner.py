@@ -98,14 +98,18 @@ class PhaseThreeExperimentRunnerTests(unittest.TestCase):
         patch = runs["center-patch"]
         self.assertEqual(uniform["resource_distribution_mode"], "uniform")
         self.assertEqual(patch["resource_distribution_mode"], "center_patch")
-        self.assertAlmostEqual(uniform["resource_heterogeneity_cv"], 0.0, places=10)
-        self.assertGreater(patch["resource_heterogeneity_cv"], 0.0)
+        self.assertAlmostEqual(uniform["resource_allocation_cv"], 0.0, places=10)
+        self.assertGreater(patch["resource_allocation_cv"], 0.0)
+        self.assertGreaterEqual(uniform["resource_heterogeneity_cv"], 0.0)
+        self.assertGreaterEqual(patch["resource_heterogeneity_cv"], 0.0)
         self.assertLessEqual(abs(float(uniform["energy_balance_error"])), 1e-7)
         self.assertLessEqual(abs(float(patch["energy_balance_error"])), 1e-7)
         self.assertLessEqual(abs(float(uniform["local_resource_balance_error"])), 1e-7)
         self.assertLessEqual(abs(float(patch["local_resource_balance_error"])), 1e-7)
 
         rows = {row["condition"]: row for row in campaign["summary"]["conditions"]}
+        self.assertIn("resource_allocation_cv_mean", rows["uniform-control"])
+        self.assertIn("resource_allocation_cv_mean", rows["center-patch"])
         self.assertIn("resource_heterogeneity_cv_mean", rows["uniform-control"])
         self.assertIn("resource_heterogeneity_cv_mean", rows["center-patch"])
 
