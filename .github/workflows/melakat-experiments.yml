@@ -1,0 +1,98 @@
+name: Melakat automated experiments
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/melakat-experiments.yml"
+      - "desktop/src/melakat_desktop/experiment_runner.py"
+      - "desktop/src/melakat_desktop/phase_two_*.py"
+      - "desktop/src/melakat_desktop/resources.py"
+      - "desktop/src/melakat_desktop/spatial.py"
+      - "desktop/src/melakat_desktop/parameters.py"
+      - "desktop/tests/test_experiment_runner.py"
+      - "experiments/**"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/melakat-experiments.yml"
+      - "desktop/src/melakat_desktop/experiment_runner.py"
+      - "desktop/src/melakat_desktop/phase_two_*.py"
+      - "desktop/src/melakat_desktop/resources.py"
+      - "desktop/src/melakat_desktop/spatial.py"
+      - "desktop/src/melakat_desktop/parameters.py"
+      - "desktop/tests/test_experiment_runner.py"
+      - "experiments/**"
+  workflow_dispatch:
+    inputs:
+      spec:
+        description: Experiment specification path
+        required: true
+        default: experiments/phase-two/local-resource-energy-sweep.json
+        type: string
+      seed_count:
+        description: Number of seeds to run
+        required: true
+        default: "30"
+        type: string
+      ticks:
+        description: Ticks per run
+        required: true
+        default: "2000"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  experiment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install headless Melakat package
+        run: python -m pip install -e desktop --no-deps
+
+      - name: Run automated experiment unit tests
+        working-directory: desktop
+        run: python -m unittest discover -s tests -p "test_experiment_runner.py" -v
+
+      - name: Validate experiment specification
+        if: github.event_name != 'workflow_dispatch'
+        run: >-
+          melakat-experiment validate
+          experiments/phase-two/local-resource-energy-sweep.json
+          --seed-count 3
+          --ticks 300
+
+      - name: Run PR/main smoke campaign
+        if: github.event_name != 'workflow_dispatch'
+        run: >-
+          melakat-experiment run
+          experiments/phase-two/local-resource-energy-sweep.json
+          --seed-count 3
+          --ticks 300
+          --output-dir results/automated-experiments/ci-smoke
+
+      - name: Run requested research campaign
+        if: github.event_name == 'workflow_dispatch'
+        run: >-
+          melakat-experiment run
+          "${{ inputs.spec }}"
+          --seed-count "${{ inputs.seed_count }}"
+          --ticks "${{ inputs.ticks }}"
+          --output-dir results/automated-experiments/research-campaign
+
+      - name: Upload automated experiment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: melakat-automated-experiment-${{ github.run_id }}
+          path: results/automated-experiments
+          if-no-files-found: error
