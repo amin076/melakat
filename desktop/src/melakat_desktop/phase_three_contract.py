@@ -5,7 +5,9 @@ from typing import Any
 PHASE_THREE_WORLD_CONTRACT_VERSION = "phase-three-environment-0.1"
 PHASE_THREE_ENGINE_VERSION = "phase-three-vm-0.1"
 PHASE_THREE_MOVEMENT_ENCODING_ENGINE_VERSION = "phase-three-vm-0.2"
+PHASE_THREE_ATOMIC_MOVEMENT_ENGINE_VERSION = "phase-three-vm-0.3"
 PHASE_THREE_MEASUREMENT_VERSION = "phase-three-measurement-0.2"
+PHASE_THREE_ATOMIC_MOVEMENT_MEASUREMENT_VERSION = "phase-three-measurement-0.3"
 PHASE_TWO_FROZEN_WORLD_CONTRACT_VERSION = "phase-two-spatial-0.7"
 PHASE_TWO_FROZEN_ENGINE_VERSION = "phase-two-vm-0.7"
 PHASE_TWO_FROZEN_MEASUREMENT_VERSION = "phase-two-measurement-0.1"
@@ -48,7 +50,22 @@ PHASE_THREE_WORLD_CONTRACT: dict[str, Any] = {
                 "MOVE_X/MOVE_Y instructions. A zero rate preserves the accepted Phase Three "
                 "0.1 hereditary representation exactly."
             ),
-        }
+        },
+        "atomic_movement_payment": {
+            "engine_version": PHASE_THREE_ATOMIC_MOVEMENT_ENGINE_VERSION,
+            "measurement_version": PHASE_THREE_ATOMIC_MOVEMENT_MEASUREMENT_VERSION,
+            "config": "world.atomic_movement_payment_enabled",
+            "default": False,
+            "scope": (
+                "Optional Phase Three-only transactional movement rule. MOVE effects are "
+                "staged against a shadow position and become realized world state only after "
+                "the VM execution cost and movement cost for that instruction batch are paid."
+            ),
+            "compatibility": (
+                "The switch is not injected into historical Phase Three specifications, so "
+                "accepted Phase Three 0.1/0.2 config hashes and output shapes remain unchanged."
+            ),
+        },
     },
     "preserved_absences": [
         "resource diffusion",

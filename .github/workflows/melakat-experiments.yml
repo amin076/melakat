@@ -92,6 +92,14 @@ jobs:
           --seed-count 3
           --ticks 300
 
+      - name: Validate Phase Three atomic movement-actuation specification
+        if: github.event_name != 'workflow_dispatch'
+        run: >-
+          melakat-experiment validate
+          experiments/phase-three/movement-actuation-atomic.json
+          --seed-count 3
+          --ticks 300
+
       - name: Validate Phase Three movement-step calibration specification
         if: github.event_name != 'workflow_dispatch'
         run: >-
@@ -173,6 +181,65 @@ jobs:
               raise SystemExit(
                   "movement-actuation gate failed: calibrated treatment produced no realized distance"
               )
+          PY
+
+      - name: Run Phase Three atomic movement-actuation smoke campaign
+        if: github.event_name != 'workflow_dispatch'
+        run: >-
+          melakat-experiment run
+          experiments/phase-three/movement-actuation-atomic.json
+          --seed-count 3
+          --ticks 300
+          --output-dir results/automated-experiments/phase-three-movement-actuation-atomic-ci-smoke
+
+      - name: Verify atomic movement payment gate
+        if: github.event_name != 'workflow_dispatch'
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("results/automated-experiments/phase-three-movement-actuation-atomic-ci-smoke/campaign.json")
+          campaign = json.loads(path.read_text(encoding="utf-8"))
+          runs = campaign["runs"]
+          control = [run for run in runs if run["condition"] == "movement-actuation-atomic-execution-off"]
+          treatment = [run for run in runs if run["condition"] == "movement-actuation-atomic-execution-on"]
+          if len(control) != 3 or len(treatment) != 3:
+              raise SystemExit("atomic movement gate failed: expected three runs per condition")
+
+          movement_metrics = (
+              "movement_operations",
+              "movement_nonzero_operations",
+              "movement_zero_step_operations",
+              "movement_distance",
+          )
+          if any(float(run.get(metric, 0.0)) != 0.0 for run in control for metric in movement_metrics):
+              raise SystemExit("atomic movement gate failed: execution-off control recorded movement")
+
+          if sum(float(run.get("movement_nonzero_operations", 0.0)) for run in treatment) <= 0.0:
+              raise SystemExit("atomic movement gate failed: treatment produced no realized movement")
+
+          for run in runs:
+              if run.get("engine_version") != "phase-three-vm-0.3":
+                  raise SystemExit(f"atomic movement gate failed: unexpected engine version {run.get('engine_version')}")
+              if run.get("measurement_version") != "phase-three-measurement-0.3":
+                  raise SystemExit(f"atomic movement gate failed: unexpected measurement version {run.get('measurement_version')}")
+              if run.get("atomic_movement_payment_enabled") is not True:
+                  raise SystemExit("atomic movement gate failed: atomic payment flag missing")
+              distance = float(run.get("movement_distance", 0.0))
+              paid = float(run.get("movement_energy_cost", 0.0))
+              minimum_required = distance * 0.1
+              if paid + 1e-9 < minimum_required:
+                  raise SystemExit(
+                      f"atomic movement gate failed: realized distance {distance} was underpaid ({paid} < {minimum_required})"
+                  )
+
+          print({
+              "treatment_nonzero_total": sum(float(run.get("movement_nonzero_operations", 0.0)) for run in treatment),
+              "treatment_distance_total": sum(float(run.get("movement_distance", 0.0)) for run in treatment),
+              "treatment_uncommitted_distance_total": sum(float(run.get("movement_uncommitted_distance", 0.0)) for run in treatment),
+          })
           PY
 
       - name: Run Phase Three movement-step calibration smoke campaign

@@ -14,24 +14,42 @@ PHASE_THREE_PARAMETER_DEFAULTS: dict[str, Any] = {
     "world.resource_patch_fraction": 0.30,
     "world.resource_patch_contrast": 4.0,
 }
-# The movement-step mutation channel is recognized only while Phase Three
-# experiment support is active, but it is intentionally NOT injected into
-# historical Phase Three specs. This preserves their accepted config hashes and
-# provenance when the new intervention remains absent/default-off.
-PHASE_THREE_OPTIONAL_PARAMETERS = frozenset({"mutation.movement_step_rate"})
-PHASE_THREE_PARAMETERS = frozenset(PHASE_THREE_PARAMETER_DEFAULTS) | PHASE_THREE_OPTIONAL_PARAMETERS
+# Later Phase Three interventions are recognized only while Phase Three
+# experiment support is active, but are intentionally NOT injected into
+# historical Phase Three specs. This preserves accepted config hashes and
+# provenance when those interventions remain absent/default-off.
+PHASE_THREE_OPTIONAL_PARAMETERS = frozenset(
+    {
+        "mutation.movement_step_rate",
+        "world.atomic_movement_payment_enabled",
+    }
+)
+PHASE_THREE_PARAMETERS = (
+    frozenset(PHASE_THREE_PARAMETER_DEFAULTS) | PHASE_THREE_OPTIONAL_PARAMETERS
+)
 PHASE_THREE_COMPACT_METRICS = (
     "resource_distribution_mode",
     "resource_allocation_cv",
     "resource_heterogeneity_cv",
     "local_resource_maximum",
     "movement_step_mutation_rate",
+    "atomic_movement_payment_enabled",
+    "movement_uncommitted_operations",
+    "movement_uncommitted_nonzero_operations",
+    "movement_uncommitted_distance",
+    "movement_uncommitted_execution_energy_batches",
+    "movement_uncommitted_movement_energy_batches",
 )
 PHASE_THREE_SUMMARY_METRICS = (
     "resource_allocation_cv",
     "resource_heterogeneity_cv",
     "local_resource_maximum",
     "movement_step_mutation_rate",
+    "movement_uncommitted_operations",
+    "movement_uncommitted_nonzero_operations",
+    "movement_uncommitted_distance",
+    "movement_uncommitted_execution_energy_batches",
+    "movement_uncommitted_movement_energy_batches",
 )
 
 
@@ -102,6 +120,20 @@ def validate_phase_three_config(config: Mapping[str, Any]) -> None:
             raise ValueError("movement_step_mutation_requires_movement_mutation")
         if not bool(config.get("world.spatial_enabled", False)):
             raise ValueError("movement_step_mutation_requires_spatial")
+
+    atomic_movement = config.get("world.atomic_movement_payment_enabled", False)
+    if not isinstance(atomic_movement, bool):
+        raise ValueError("atomic_movement_payment_enabled_must_be_boolean")
+    if atomic_movement:
+        if not bool(config.get("world.spatial_enabled", False)):
+            raise ValueError("atomic_movement_payment_requires_spatial")
+        movement_available = bool(
+            config.get("world.movement_mutation_enabled", False)
+            or config.get("world.movement_enabled", False)
+            or config.get("world.organism_actions_enabled", False)
+        )
+        if not movement_available:
+            raise ValueError("atomic_movement_payment_requires_movement")
 
     if mode != "uniform" and not bool(config.get("world.local_resources_enabled", False)):
         raise ValueError("heterogeneous_resource_distribution_requires_local_resources")

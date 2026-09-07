@@ -1,18 +1,26 @@
 from __future__ import annotations
 
+from copy import deepcopy
 import random
 from typing import Any, Callable
 
 from .phase_three_contract import (
+    PHASE_THREE_ATOMIC_MOVEMENT_ENGINE_VERSION,
+    PHASE_THREE_ATOMIC_MOVEMENT_MEASUREMENT_VERSION,
     PHASE_THREE_ENGINE_VERSION,
     PHASE_THREE_MEASUREMENT_VERSION,
     PHASE_THREE_MOVEMENT_ENCODING_ENGINE_VERSION,
     PHASE_THREE_WORLD_CONTRACT_VERSION,
 )
 from .phase_two_engine import PhaseTwoEngine
-from .phase_two_vm import PhaseTwoOpcode, mutate_phase_two_genome
+from .phase_two_vm import (
+    PhaseTwoOpcode,
+    PhaseTwoVirtualMachine,
+    mutate_phase_two_genome,
+)
 from .phase_zero_engine import PhaseZeroOrganism
 from .protocol import make_event
+from .spatial import apply_boundary
 from .vm import Instruction
 
 SUPPORTED_RESOURCE_DISTRIBUTIONS = {"uniform", "center_patch"}
@@ -115,6 +123,19 @@ class PhaseThreeEngine(PhaseTwoEngine):
         )
         if not 0.0 <= self.movement_step_mutation_rate <= 1.0:
             raise ValueError("movement_step_rate must be between 0 and 1")
+
+        self.atomic_movement_payment_configured = (
+            "world.atomic_movement_payment_enabled" in config
+        )
+        self.atomic_movement_payment_enabled = bool(
+            config.get("world.atomic_movement_payment_enabled", False)
+        )
+        self.movement_uncommitted_operations = 0
+        self.movement_uncommitted_nonzero_operations = 0
+        self.movement_uncommitted_distance = 0.0
+        self.movement_uncommitted_execution_energy_batches = 0
+        self.movement_uncommitted_movement_energy_batches = 0
+
         if self.movement_step_mutation_rate > 0.0:
             movement_alphabet_enabled = bool(
                 config.get("world.movement_mutation_enabled", False)
@@ -128,6 +149,19 @@ class PhaseThreeEngine(PhaseTwoEngine):
             if not bool(config.get("world.spatial_enabled", False)):
                 raise ValueError("movement_step_mutation_requires_spatial")
             self.engine_version = PHASE_THREE_MOVEMENT_ENCODING_ENGINE_VERSION
+
+        if self.atomic_movement_payment_enabled:
+            if not bool(config.get("world.spatial_enabled", False)):
+                raise ValueError("atomic_movement_payment_requires_spatial")
+            movement_available = bool(
+                config.get("world.movement_mutation_enabled", False)
+                or config.get("world.movement_enabled", False)
+                or config.get("world.organism_actions_enabled", False)
+            )
+            if not movement_available:
+                raise ValueError("atomic_movement_payment_requires_movement")
+            self.engine_version = PHASE_THREE_ATOMIC_MOVEMENT_ENGINE_VERSION
+            self.measurement_version = PHASE_THREE_ATOMIC_MOVEMENT_MEASUREMENT_VERSION
 
         self.resource_weights: list[float] = []
         super().__init__(config, emit)
@@ -166,6 +200,185 @@ class PhaseThreeEngine(PhaseTwoEngine):
                 movement_step_rate=self.movement_step_mutation_rate,
             )
         return super()._try_reproduction(parent)
+
+    def _sense_resource_at(self, x: float, y: float) -> float:
+        if self.resource_field is not None:
+            return self.resource_field.at(x, y)
+        return self.energy_pool
+
+    def _record_uncommitted_movement(
+        self,
+        *,
+        result: Any,
+        reason: str,
+    ) -> None:
+        if result.movement_operations <= 0:
+            return
+        self.movement_uncommitted_operations += int(result.movement_operations)
+        self.movement_uncommitted_nonzero_operations += int(
+            result.movement_nonzero_operations
+        )
+        self.movement_uncommitted_distance += float(result.movement_distance)
+        if reason == "execution_energy":
+            self.movement_uncommitted_execution_energy_batches += 1
+        elif reason == "movement_energy":
+            self.movement_uncommitted_movement_energy_batches += 1
+        self.emit(
+            make_event(
+                "movement_batch_uncommitted",
+                reason=reason,
+                movement_operations=int(result.movement_operations),
+                movement_nonzero_operations=int(
+                    result.movement_nonzero_operations
+                ),
+                movement_distance=round(float(result.movement_distance), 6),
+            )
+        )
+
+    def _execute_one_atomic_movement(self, organism: PhaseZeroOrganism) -> None:
+        """Run one organism with transactional movement world effects.
+
+        The Phase Two VM is executed against a copied VM state and a shadow
+        position. MOVE instructions can affect subsequent sensing/movement inside
+        the same instruction budget through the shadow coordinates, but no
+        position change, movement counter, boundary counter, or movement event is
+        committed to the world until both aggregate execution energy and movement
+        energy have been successfully charged.
+
+        This is a Phase Three-only opt-in rule. The frozen Phase Two engine and
+        historical Phase Three runs continue to use their accepted behavior.
+        """
+
+        self._capture_energy(organism)
+        maintenance = float(self.config["execution.maintenance_cost"])
+        if not self._charge(organism, maintenance, "energy_maintenance"):
+            self._kill(organism, "energy_exhausted_maintenance")
+            return
+        if organism.vm_state.division_requested:
+            self._try_reproduction(organism)
+            return
+
+        shadow_x = float(organism.x)
+        shadow_y = float(organism.y)
+        staged_moves: list[dict[str, Any]] = []
+
+        def stage_move(axis: str, requested: float) -> tuple[float, int]:
+            nonlocal shadow_x, shadow_y
+            maximum_step = max(
+                0.0,
+                float(self.config["world.movement_max_step"]),
+            )
+            delta = max(-maximum_step, min(maximum_step, float(requested)))
+            before_x, before_y = shadow_x, shadow_y
+
+            if axis == "x":
+                shadow_x, contacts = apply_boundary(
+                    shadow_x + delta,
+                    float(self.config["world.width"]),
+                    self.boundary_model,
+                )
+            elif axis == "y":
+                shadow_y, contacts = apply_boundary(
+                    shadow_y + delta,
+                    float(self.config["world.height"]),
+                    self.boundary_model,
+                )
+            else:
+                raise ValueError(f"invalid_movement_axis:{axis}")
+
+            distance = abs(delta)
+            staged_moves.append(
+                {
+                    "organism_id": organism.organism_id,
+                    "axis": axis,
+                    "requested": round(float(requested), 6),
+                    "distance": round(distance, 6),
+                    "from_x": round(before_x, 6),
+                    "from_y": round(before_y, 6),
+                    "x": round(shadow_x, 6),
+                    "y": round(shadow_y, 6),
+                    "boundary_contacts": contacts,
+                }
+            )
+            return distance, contacts
+
+        vm = PhaseTwoVirtualMachine(
+            organism.genome,
+            self.vm_config,
+            deepcopy(organism.vm_state),
+            sense_resource=lambda: self._sense_resource_at(shadow_x, shadow_y),
+            move=stage_move,
+            sensing_enabled=self.resource_sensing_enabled,
+            movement_enabled=self.movement_enabled,
+        )
+        result = vm.run(int(self.config["execution.instructions_per_tick"]))
+
+        # Read-only sensing and the instruction-attempt count retain the accepted
+        # Phase Two accounting behavior. Movement world effects remain staged.
+        self.resource_sense_operations += result.resource_sense_operations
+        self.total_instructions_executed += result.instructions_executed
+
+        execution_requested = (
+            result.instructions_executed
+            * float(self.config["execution.instruction_cost"])
+        )
+        if not self._charge(
+            organism,
+            execution_requested,
+            "energy_execution",
+        ):
+            self._record_uncommitted_movement(
+                result=result,
+                reason="execution_energy",
+            )
+            self._kill(organism, "energy_exhausted_execution")
+            return
+
+        movement_requested = (
+            float(result.movement_distance)
+            * float(self.config["world.movement_cost_per_unit"])
+        )
+        if movement_requested > 0.0 and not self._charge(
+            organism,
+            movement_requested,
+            "energy_movement",
+        ):
+            self._record_uncommitted_movement(
+                result=result,
+                reason="movement_energy",
+            )
+            self._kill(organism, "energy_exhausted_movement")
+            return
+
+        # All action costs have been paid. Commit the shadow VM/position and only
+        # now publish movement as realized world behavior.
+        organism.vm_state = vm.state
+        organism.x = shadow_x
+        organism.y = shadow_y
+        self.movement_operations += result.movement_operations
+        self.movement_nonzero_operations += result.movement_nonzero_operations
+        self.movement_zero_step_operations += result.movement_zero_step_operations
+        self.movement_distance += result.movement_distance
+        self.boundary_contacts += result.boundary_contacts
+
+        for movement in staged_moves:
+            self.emit(make_event("organism_moved", **movement))
+
+        if result.status == "fault":
+            self._kill(organism, f"vm_fault:{result.fault}")
+            return
+        if result.status == "division_requested":
+            self._try_reproduction(organism)
+
+    def _execute_one(self, organism: PhaseZeroOrganism) -> None:
+        if (
+            not self.atomic_movement_payment_enabled
+            or not self.movement_enabled
+            or not self.phase_two_vm_enabled
+        ):
+            super()._execute_one(organism)
+            return
+        self._execute_one_atomic_movement(organism)
 
     def _build_center_patch_weights(self) -> list[float]:
         if self.resource_field is None:
@@ -265,6 +478,10 @@ class PhaseThreeEngine(PhaseTwoEngine):
             snapshot["movement_step_mutation_rate"] = round(
                 self.movement_step_mutation_rate, 6
             )
+        if self.atomic_movement_payment_configured:
+            snapshot["atomic_movement_payment_enabled"] = (
+                self.atomic_movement_payment_enabled
+            )
         if self.resource_field is not None:
             snapshot["resource_distribution"] = {
                 "mode": self.resource_distribution_mode,
@@ -283,6 +500,26 @@ class PhaseThreeEngine(PhaseTwoEngine):
         if self.movement_step_mutation_configured:
             metrics["movement_step_mutation_rate"] = round(
                 self.movement_step_mutation_rate, 6
+            )
+        if self.atomic_movement_payment_configured:
+            metrics["atomic_movement_payment_enabled"] = (
+                self.atomic_movement_payment_enabled
+            )
+        if self.atomic_movement_payment_enabled:
+            metrics["movement_uncommitted_operations"] = (
+                self.movement_uncommitted_operations
+            )
+            metrics["movement_uncommitted_nonzero_operations"] = (
+                self.movement_uncommitted_nonzero_operations
+            )
+            metrics["movement_uncommitted_distance"] = round(
+                self.movement_uncommitted_distance, 6
+            )
+            metrics["movement_uncommitted_execution_energy_batches"] = (
+                self.movement_uncommitted_execution_energy_batches
+            )
+            metrics["movement_uncommitted_movement_energy_batches"] = (
+                self.movement_uncommitted_movement_energy_batches
             )
         if self.resource_field is not None:
             # This is the observed resource-field state after organism capture,
