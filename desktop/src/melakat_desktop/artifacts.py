@@ -149,20 +149,33 @@ def _csv_value(value: Any) -> Any:
     return value
 
 
+def _summary_fieldnames(rows: Iterable[Mapping[str, Any]]) -> tuple[str, ...]:
+    extra_fields = sorted(
+        {
+            key
+            for row in rows
+            for key in row
+            if key not in SUMMARY_FIELDS
+        }
+    )
+    return (*SUMMARY_FIELDS, *extra_fields)
+
+
 def write_summary_csv(
     path: Path,
     runs: Iterable[Mapping[str, Any]],
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     rows = list(runs)
+    fieldnames = _summary_fieldnames(rows)
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(SUMMARY_FIELDS))
+        writer = csv.DictWriter(handle, fieldnames=list(fieldnames))
         writer.writeheader()
         for run in rows:
             writer.writerow(
                 {
                     field: _csv_value(run.get(field, ""))
-                    for field in SUMMARY_FIELDS
+                    for field in fieldnames
                 }
             )
 
