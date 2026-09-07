@@ -1,7 +1,7 @@
 {
   "format": "melakat-experiment-spec-0.1",
   "name": "phase-three-movement-actuation",
-  "description": "Matched-seed Phase Three campaign testing MOVE_X/MOVE_Y execution after enabling a separate hereditary unit-step mutation channel. Both conditions share the same movement opcode and movement-step mutation process; resource sensing is disabled; only movement execution differs.",
+  "description": "Matched-seed Phase Three mechanism campaign testing MOVE_X/MOVE_Y execution after enabling the separate hereditary unit-step mutation channel at the calibrated movement_step_rate=0.5 regime. Both conditions share the same movement opcode and movement-step mutation process; resource sensing is disabled; only movement execution differs. The 0.5 value is a mechanistic calibration choice for this experiment, not a biological or optimal mutation-rate claim.",
   "base_config": {
     "run.engine_backend": "phase-three-vm",
     "run.max_ticks": 2000,
@@ -37,7 +37,7 @@
     "reproduction.cost": 12.0,
     "reproduction.offspring_energy": 8.0,
     "mutation.substitution_rate": 0.01,
-    "mutation.movement_step_rate": 0.1
+    "mutation.movement_step_rate": 0.5
   },
   "seeds": {
     "start": 1,
