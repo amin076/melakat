@@ -47,16 +47,31 @@ class PhaseTwoEngine(PhaseZeroEngine):
         self.local_resources_enabled = bool(
             config.get("world.local_resources_enabled", False)
         )
-        self.organism_actions_enabled = bool(
+        self.legacy_organism_actions_enabled = bool(
             config.get("world.organism_actions_enabled", False)
+        )
+        self.resource_sensing_enabled = (
+            self.legacy_organism_actions_enabled
+            or bool(config.get("world.resource_sensing_enabled", False))
+        )
+        self.movement_enabled = (
+            self.legacy_organism_actions_enabled
+            or bool(config.get("world.movement_enabled", False))
+        )
+        self.organism_actions_enabled = (
+            self.resource_sensing_enabled or self.movement_enabled
         )
         self.boundary_model = str(config.get("world.boundary_model", "reflective"))
         if self.spatial_enabled and self.boundary_model not in SUPPORTED_BOUNDARIES:
             raise ValueError(f"unsupported_boundary_model:{self.boundary_model}")
         if self.local_resources_enabled and not self.spatial_enabled:
             raise ValueError("local_resources_require_spatial")
-        if self.organism_actions_enabled and not self.spatial_enabled:
+        if self.legacy_organism_actions_enabled and not self.spatial_enabled:
             raise ValueError("organism_actions_require_spatial")
+        if self.resource_sensing_enabled and not self.spatial_enabled:
+            raise ValueError("resource_sensing_requires_spatial")
+        if self.movement_enabled and not self.spatial_enabled:
+            raise ValueError("movement_requires_spatial")
 
         self.boundary_contacts = 0
         self.resource_sense_operations = 0
@@ -69,7 +84,7 @@ class PhaseTwoEngine(PhaseZeroEngine):
         )
         self.spatial_rng = random.Random(self.spatial_rng_seed)
         super().__init__(config, emit)
-        if self.organism_actions_enabled:
+        if self.movement_enabled:
             self.ledger.setdefault("energy_movement", 0.0)
 
         if self.local_resources_enabled:
@@ -113,6 +128,8 @@ class PhaseTwoEngine(PhaseZeroEngine):
                     parent.genome,
                     self.rng,
                     float(self.config["mutation.substitution_rate"]),
+                    sensing_enabled=self.resource_sensing_enabled,
+                    movement_enabled=self.movement_enabled,
                 )
             else:
                 parent.pending_child_genome = mutate_genome(
@@ -310,6 +327,8 @@ class PhaseTwoEngine(PhaseZeroEngine):
                 organism.vm_state,
                 sense_resource=lambda: self._sense_resource(organism),
                 move=lambda axis, delta: self._move_organism(organism, axis, delta),
+                sensing_enabled=self.resource_sensing_enabled,
+                movement_enabled=self.movement_enabled,
             )
             result = vm.run(int(self.config["execution.instructions_per_tick"]))
             organism.vm_state = vm.state
@@ -438,6 +457,8 @@ class PhaseTwoEngine(PhaseZeroEngine):
                 "spatial_rng_stream": SPATIAL_RNG_STREAM,
                 "local_resources_enabled": self.local_resources_enabled,
                 "organism_actions_enabled": self.organism_actions_enabled,
+                "resource_sensing_enabled": self.resource_sensing_enabled,
+                "movement_enabled": self.movement_enabled,
             }
         )
         active_by_id = {
@@ -495,6 +516,8 @@ class PhaseTwoEngine(PhaseZeroEngine):
                 else 0.0,
                 "local_resources_enabled": self.local_resources_enabled,
                 "organism_actions_enabled": self.organism_actions_enabled,
+                "resource_sensing_enabled": self.resource_sensing_enabled,
+                "movement_enabled": self.movement_enabled,
                 "resource_sense_operations": self.resource_sense_operations,
                 "movement_operations": self.movement_operations,
                 "movement_distance": round(self.movement_distance, 6),

@@ -137,8 +137,21 @@ CORE_SCHEMA = ParameterSchema(
             description="Maximum energy an organism can capture from its current resource cell per tick.",
         ),
         ParameterSpec(
-            "world.organism_actions_enabled", "Enable evolved sensing/movement", "Movement", "boolean", False,
-            description="Enable Phase Two SENSE_RESOURCE, MOVE_X and MOVE_Y opcodes and their mutation alphabet.",
+            "world.resource_sensing_enabled", "Enable evolved resource sensing", "Movement", "boolean", False,
+            description="Enable SENSE_RESOURCE independently of evolved movement.",
+            advanced=True,
+        ),
+        ParameterSpec(
+            "world.movement_enabled", "Enable evolved movement", "Movement", "boolean", False,
+            description="Enable MOVE_X and MOVE_Y independently of resource sensing.",
+            advanced=True,
+        ),
+        ParameterSpec(
+            "world.organism_actions_enabled", "Enable evolved sensing/movement (legacy combined)", "Movement", "boolean", False,
+            description=(
+                "Backward-compatible umbrella: when enabled, SENSE_RESOURCE, MOVE_X and MOVE_Y are all enabled. "
+                "New controlled experiments should prefer the independent sensing and movement switches."
+            ),
             advanced=True,
         ),
         ParameterSpec(
