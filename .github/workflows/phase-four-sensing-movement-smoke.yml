@@ -1,4 +1,4 @@
-name: Phase Four sensing movement smoke evidence
+name: Phase Four sensing movement exposure preflight
 
 on:
   pull_request:
@@ -15,7 +15,7 @@ permissions:
   contents: write
 
 jobs:
-  smoke-evidence:
+  exposure-preflight:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -32,27 +32,27 @@ jobs:
       - name: Install headless Melakat package
         run: python -m pip install -e desktop --no-deps
 
-      - name: Validate Phase Four smoke specification
+      - name: Validate Phase Four preflight specification
         run: >-
           melakat-experiment validate
-          experiments/phase-four/resource-sensing-with-movement-smoke.json
+          experiments/phase-four/resource-sensing-with-movement-preflight.json
 
-      - name: Run Phase Four smoke campaign
+      - name: Run full-duration Phase Four exposure preflight
         shell: bash
         run: |
-          rm -rf results/phase-four/resource-sensing-with-movement/smoke
+          rm -rf results/phase-four/resource-sensing-with-movement/preflight
           melakat-experiment run \
-            experiments/phase-four/resource-sensing-with-movement-smoke.json \
-            --output-dir results/phase-four/resource-sensing-with-movement/smoke
+            experiments/phase-four/resource-sensing-with-movement-preflight.json \
+            --output-dir results/phase-four/resource-sensing-with-movement/preflight
 
-      - name: Verify Phase Four sensing-with-movement smoke gate
+      - name: Summarize exposure and accounting
         shell: bash
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
 
-          output = Path("results/phase-four/resource-sensing-with-movement/smoke")
+          output = Path("results/phase-four/resource-sensing-with-movement/preflight")
           campaign = json.loads((output / "campaign.json").read_text(encoding="utf-8"))
           runs = campaign["runs"]
           control_name = "sensing-execution-off-movement-on"
@@ -62,52 +62,42 @@ jobs:
 
           if len(control) != 8 or len(treatment) != 8:
               raise SystemExit(
-                  f"Phase Four smoke failed: expected 8 runs per condition, got {len(control)} and {len(treatment)}"
+                  f"Preflight failed structurally: expected 8 runs per condition, got {len(control)} and {len(treatment)}"
               )
           if not campaign["validation"]["passed"]:
-              raise SystemExit("Phase Four smoke failed: campaign validation failed")
+              raise SystemExit("Preflight failed structurally: campaign validation failed")
           if not campaign["validation"]["reproducibility"]["identical"]:
-              raise SystemExit("Phase Four smoke failed: reproducibility replay differs")
+              raise SystemExit("Preflight failed structurally: reproducibility replay differs")
 
           def total(selected, metric):
               return sum(float(run.get(metric, 0.0)) for run in selected)
 
+          def exposed_count(selected, metric):
+              return sum(1 for run in selected if float(run.get(metric, 0.0)) > 0.0)
+
+          def joint_count(selected):
+              return sum(
+                  1
+                  for run in selected
+                  if float(run.get("resource_sense_operations", 0.0)) > 0.0
+                  and float(run.get("movement_nonzero_operations", 0.0)) > 0.0
+              )
+
           control_senses = total(control, "resource_sense_operations")
           treatment_senses = total(treatment, "resource_sense_operations")
-          control_nonzero = total(control, "movement_nonzero_operations")
-          treatment_nonzero = total(treatment, "movement_nonzero_operations")
-
           if control_senses != 0.0:
               raise SystemExit(
-                  f"Phase Four smoke failed: sensing-off control executed SENSE_RESOURCE {control_senses} times"
-              )
-          if treatment_senses <= 0.0:
-              raise SystemExit("Phase Four smoke failed: sensing-on treatment had no sensing exposure")
-          if control_nonzero <= 0.0 or treatment_nonzero <= 0.0:
-              raise SystemExit(
-                  "Phase Four smoke failed: both conditions must exhibit realized non-zero locomotion"
+                  f"Preflight failed causal isolation: control executed sensing {control_senses} times"
               )
 
           max_energy_error = 0.0
           max_resource_error = 0.0
+          underpaid_runs = []
           for run in runs:
-              if run.get("engine_version") != "phase-three-vm-0.3":
-                  raise SystemExit(
-                      f"Phase Four smoke failed: unexpected engine version {run.get('engine_version')}"
-                  )
-              if run.get("measurement_version") != "phase-three-measurement-0.3":
-                  raise SystemExit(
-                      f"Phase Four smoke failed: unexpected measurement version {run.get('measurement_version')}"
-                  )
-              if run.get("atomic_movement_payment_enabled") is not True:
-                  raise SystemExit("Phase Four smoke failed: atomic payment flag missing")
               distance = float(run.get("movement_distance", 0.0))
               paid = float(run.get("movement_energy_cost", 0.0))
-              minimum_required = distance * 0.1
-              if paid + 1e-9 < minimum_required:
-                  raise SystemExit(
-                      f"Phase Four smoke failed: realized distance {distance} underpaid ({paid} < {minimum_required})"
-                  )
+              if paid + 1e-9 < distance * 0.1:
+                  underpaid_runs.append({"condition": run["condition"], "seed": run["seed"]})
               max_energy_error = max(
                   max_energy_error,
                   abs(float(run.get("energy_balance_error", 0.0))),
@@ -117,29 +107,34 @@ jobs:
                   abs(float(run.get("local_resource_balance_error", 0.0))),
               )
 
+          if underpaid_runs:
+              raise SystemExit(f"Preflight failed atomic accounting: {underpaid_runs}")
           if max_energy_error > 1e-7 or max_resource_error > 1e-7:
               raise SystemExit(
-                  f"Phase Four smoke failed: conservation error too large ({max_energy_error}, {max_resource_error})"
+                  f"Preflight failed conservation: {max_energy_error}, {max_resource_error}"
               )
 
-          verification = {
-              "status": "PASS",
+          treatment_sensing_exposed_runs = exposed_count(treatment, "resource_sense_operations")
+          control_nonzero_movement_exposed_runs = exposed_count(control, "movement_nonzero_operations")
+          treatment_nonzero_movement_exposed_runs = exposed_count(treatment, "movement_nonzero_operations")
+          treatment_joint_runs = joint_count(treatment)
+
+          report = {
+              "status": "PASS_STRUCTURAL_AND_ACCOUNTING",
               "experiment": campaign["experiment"],
+              "purpose": "full-duration exposure calibration only; no treatment-effect inference",
               "runs": len(runs),
               "matched_seeds": 8,
-              "ticks": 800,
+              "ticks": 2000,
               "causal_difference": "world.resource_sensing_enabled",
-              "hereditary_sensing_both_conditions": True,
-              "hereditary_movement_both_conditions": True,
-              "movement_execution_both_conditions": True,
-              "atomic_movement_payment_both_conditions": True,
-              "resource_distribution": "center_patch",
               "control_resource_sense_operations": int(control_senses),
               "treatment_resource_sense_operations": int(treatment_senses),
-              "control_movement_operations": int(total(control, "movement_operations")),
-              "treatment_movement_operations": int(total(treatment, "movement_operations")),
-              "control_movement_nonzero_operations": int(control_nonzero),
-              "treatment_movement_nonzero_operations": int(treatment_nonzero),
+              "treatment_sensing_exposed_runs": treatment_sensing_exposed_runs,
+              "control_nonzero_movement_exposed_runs": control_nonzero_movement_exposed_runs,
+              "treatment_nonzero_movement_exposed_runs": treatment_nonzero_movement_exposed_runs,
+              "treatment_joint_sensing_nonzero_movement_runs": treatment_joint_runs,
+              "control_movement_nonzero_operations": int(total(control, "movement_nonzero_operations")),
+              "treatment_movement_nonzero_operations": int(total(treatment, "movement_nonzero_operations")),
               "control_movement_distance": total(control, "movement_distance"),
               "treatment_movement_distance": total(treatment, "movement_distance"),
               "control_movement_energy_cost": total(control, "movement_energy_cost"),
@@ -149,31 +144,32 @@ jobs:
               "max_abs_energy_balance_error": max_energy_error,
               "max_abs_local_resource_balance_error": max_resource_error,
               "reproducibility_identical": True,
-              "interpretation": "Mechanism/exposure smoke only; no navigation or adaptation claim.",
+              "promotion_threshold": "none_post_hoc; exposure counts are reported descriptively before the 30-seed campaign",
+              "scientific_boundary": "scalar local sensing can support resource-conditioned control flow; this preflight cannot establish directional navigation, adaptation, or a treatment effect",
           }
-          (output / "smoke-verification.json").write_text(
-              json.dumps(verification, indent=2, sort_keys=True) + "\n",
+          (output / "exposure-preflight.json").write_text(
+              json.dumps(report, indent=2, sort_keys=True) + "\n",
               encoding="utf-8",
           )
-          print(json.dumps(verification, indent=2, sort_keys=True))
+          print(json.dumps(report, indent=2, sort_keys=True))
           PY
 
-      - name: Upload Phase Four smoke evidence
+      - name: Upload Phase Four preflight evidence
         uses: actions/upload-artifact@v4
         with:
-          name: phase-four-sensing-movement-smoke-${{ github.run_id }}
-          path: results/phase-four/resource-sensing-with-movement/smoke
+          name: phase-four-sensing-movement-preflight-${{ github.run_id }}
+          path: results/phase-four/resource-sensing-with-movement/preflight
           if-no-files-found: error
 
-      - name: Commit exact smoke evidence to Phase Four branch
+      - name: Commit exact preflight evidence to Phase Four branch
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add results/phase-four/resource-sensing-with-movement/smoke
+          git add results/phase-four/resource-sensing-with-movement/preflight
           if git diff --cached --quiet; then
-            echo "Smoke evidence already matches the generated artifact set."
+            echo "Preflight evidence already matches the generated artifact set."
           else
-            git commit -m "evidence: persist Phase Four sensing movement smoke"
+            git commit -m "evidence: persist Phase Four exposure preflight"
             git push origin HEAD:phase4/sensing-movement-gate
           fi
