@@ -54,12 +54,19 @@ class PhaseTwoEngine(PhaseZeroEngine):
             self.legacy_organism_actions_enabled
             or bool(config.get("world.resource_sensing_enabled", False))
         )
+        self.resource_sensing_mutation_enabled = (
+            self.resource_sensing_enabled
+            or bool(config.get("world.resource_sensing_mutation_enabled", False))
+        )
         self.movement_enabled = (
             self.legacy_organism_actions_enabled
             or bool(config.get("world.movement_enabled", False))
         )
         self.organism_actions_enabled = (
             self.resource_sensing_enabled or self.movement_enabled
+        )
+        self.phase_two_vm_enabled = (
+            self.resource_sensing_mutation_enabled or self.movement_enabled
         )
         self.boundary_model = str(config.get("world.boundary_model", "reflective"))
         if self.spatial_enabled and self.boundary_model not in SUPPORTED_BOUNDARIES:
@@ -70,6 +77,8 @@ class PhaseTwoEngine(PhaseZeroEngine):
             raise ValueError("organism_actions_require_spatial")
         if self.resource_sensing_enabled and not self.spatial_enabled:
             raise ValueError("resource_sensing_requires_spatial")
+        if self.resource_sensing_mutation_enabled and not self.spatial_enabled:
+            raise ValueError("resource_sensing_mutation_requires_spatial")
         if self.movement_enabled and not self.spatial_enabled:
             raise ValueError("movement_requires_spatial")
 
@@ -123,12 +132,12 @@ class PhaseTwoEngine(PhaseZeroEngine):
             return False
 
         if parent.pending_child_genome is None:
-            if self.organism_actions_enabled:
+            if self.phase_two_vm_enabled:
                 parent.pending_child_genome = mutate_phase_two_genome(
                     parent.genome,
                     self.rng,
                     float(self.config["mutation.substitution_rate"]),
-                    sensing_enabled=self.resource_sensing_enabled,
+                    sensing_enabled=self.resource_sensing_mutation_enabled,
                     movement_enabled=self.movement_enabled,
                 )
             else:
@@ -320,7 +329,7 @@ class PhaseTwoEngine(PhaseZeroEngine):
             return
 
         movement_distance = 0.0
-        if self.organism_actions_enabled:
+        if self.phase_two_vm_enabled:
             vm = PhaseTwoVirtualMachine(
                 organism.genome,
                 self.vm_config,
@@ -458,6 +467,7 @@ class PhaseTwoEngine(PhaseZeroEngine):
                 "local_resources_enabled": self.local_resources_enabled,
                 "organism_actions_enabled": self.organism_actions_enabled,
                 "resource_sensing_enabled": self.resource_sensing_enabled,
+                "resource_sensing_mutation_enabled": self.resource_sensing_mutation_enabled,
                 "movement_enabled": self.movement_enabled,
             }
         )
@@ -517,6 +527,7 @@ class PhaseTwoEngine(PhaseZeroEngine):
                 "local_resources_enabled": self.local_resources_enabled,
                 "organism_actions_enabled": self.organism_actions_enabled,
                 "resource_sensing_enabled": self.resource_sensing_enabled,
+                "resource_sensing_mutation_enabled": self.resource_sensing_mutation_enabled,
                 "movement_enabled": self.movement_enabled,
                 "resource_sense_operations": self.resource_sense_operations,
                 "movement_operations": self.movement_operations,

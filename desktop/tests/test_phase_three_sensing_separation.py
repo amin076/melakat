@@ -110,6 +110,48 @@ class PhaseThreeSensingSeparationTests(unittest.TestCase):
         self.assertTrue(engine.movement_enabled)
         self.assertTrue(engine.organism_actions_enabled)
 
+
+    def test_sensing_execution_can_change_without_changing_mutation_alphabet(self) -> None:
+        common = {
+            "world.spatial_enabled": True,
+            "world.resource_sensing_mutation_enabled": True,
+            "world.movement_enabled": False,
+            "world.organism_actions_enabled": False,
+        }
+        control = PhaseTwoEngine(
+            CORE_SCHEMA.validate({**common, "world.resource_sensing_enabled": False}),
+            lambda event: None,
+        )
+        treatment = PhaseTwoEngine(
+            CORE_SCHEMA.validate({**common, "world.resource_sensing_enabled": True}),
+            lambda event: None,
+        )
+        self.assertTrue(control.resource_sensing_mutation_enabled)
+        self.assertTrue(treatment.resource_sensing_mutation_enabled)
+        self.assertFalse(control.resource_sensing_enabled)
+        self.assertTrue(treatment.resource_sensing_enabled)
+        self.assertTrue(control.phase_two_vm_enabled)
+        self.assertTrue(treatment.phase_two_vm_enabled)
+        self.assertFalse(control.movement_enabled)
+        self.assertFalse(treatment.movement_enabled)
+
+        genome = tuple(Instruction(Opcode.NOP) for _ in range(64))
+        a = mutate_phase_two_genome(
+            genome,
+            random.Random(12345),
+            1.0,
+            sensing_enabled=control.resource_sensing_mutation_enabled,
+            movement_enabled=control.movement_enabled,
+        )
+        b = mutate_phase_two_genome(
+            genome,
+            random.Random(12345),
+            1.0,
+            sensing_enabled=treatment.resource_sensing_mutation_enabled,
+            movement_enabled=treatment.movement_enabled,
+        )
+        self.assertEqual(a, b)
+
     def test_independent_switches_require_spatial_world(self) -> None:
         sensing = CORE_SCHEMA.validate(
             {"world.resource_sensing_enabled": True}
@@ -124,6 +166,14 @@ class PhaseThreeSensingSeparationTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(ValueError, "movement_requires_spatial"):
             PhaseTwoEngine(movement, lambda event: None)
+
+        mutation_only = CORE_SCHEMA.validate(
+            {"world.resource_sensing_mutation_enabled": True}
+        )
+        with self.assertRaisesRegex(
+            ValueError, "resource_sensing_mutation_requires_spatial"
+        ):
+            PhaseTwoEngine(mutation_only, lambda event: None)
 
 
 if __name__ == "__main__":

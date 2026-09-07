@@ -142,6 +142,14 @@ CORE_SCHEMA = ParameterSchema(
             advanced=True,
         ),
         ParameterSpec(
+            "world.resource_sensing_mutation_enabled", "Allow sensing opcode in mutation", "Movement", "boolean", False,
+            description=(
+                "Allow SENSE_RESOURCE in the mutation alphabet even when sensing execution is disabled. "
+                "This permits matched causal experiments with identical hereditary opcode availability."
+            ),
+            advanced=True,
+        ),
+        ParameterSpec(
             "world.movement_enabled", "Enable evolved movement", "Movement", "boolean", False,
             description="Enable MOVE_X and MOVE_Y independently of resource sensing.",
             advanced=True,
