@@ -1,0 +1,28 @@
+{
+  "status": "READY_FOR_MERGE_REVIEW",
+  "mechanism_gate_passed": true,
+  "campaign_status": "PASS",
+  "validation_passed": true,
+  "runs": 60,
+  "matched_seeds": 30,
+  "engine_version": "phase-three-vm-0.3",
+  "measurement_version": "phase-three-measurement-0.3",
+  "realized_movement_distance": 129.0,
+  "realized_nonzero_movement_operations": 129.0,
+  "uncommitted_distance": 4.0,
+  "underpaid_realized_movement_runs": [],
+  "max_abs_energy_balance_error": 4.6e-09,
+  "max_abs_local_resource_balance_error": 5.8e-09,
+  "reproducibility_identical": true,
+  "selected_population_intervals_cross_zero": {
+    "active_population": true,
+    "births": true,
+    "deaths": true,
+    "historical_genotypes": true,
+    "blocked_divisions": true,
+    "mean_local_neighbors": true,
+    "mean_nearest_neighbor_distance": true
+  },
+  "scientific_interpretation": "Atomic movement execution is mechanically established and conservatively accounted. The selected population/ecological outcomes do not provide a robust directional effect under this movement-only mechanism campaign; this is not evidence of navigation, adaptation, resource seeking, or fitness advantage.",
+  "next_gate": "A new sensing-plus-movement experiment may now be designed, but it must preserve the v0.3 atomic movement semantics and use a matched causal contrast before any navigation/adaptation interpretation."
+}
