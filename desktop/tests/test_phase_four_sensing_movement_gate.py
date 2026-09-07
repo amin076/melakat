@@ -11,6 +11,9 @@ from melakat_desktop.vm import Instruction, Opcode, VMConfig, VMState
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FULL_SPEC = REPO_ROOT / "experiments" / "phase-four" / "resource-sensing-with-movement.json"
+PREFLIGHT_SPEC = (
+    REPO_ROOT / "experiments" / "phase-four" / "resource-sensing-with-movement-preflight.json"
+)
 SMOKE_SPEC = REPO_ROOT / "experiments" / "phase-four" / "resource-sensing-with-movement-smoke.json"
 CONTROL = "sensing-execution-off-movement-on"
 TREATMENT = "sensing-execution-on-movement-on"
@@ -22,7 +25,11 @@ class PhaseFourSensingMovementGateTests(unittest.TestCase):
         return json.loads(path.read_text(encoding="utf-8"))
 
     def test_specs_differ_only_in_sensing_execution(self) -> None:
-        for path, expected_runs in ((FULL_SPEC, 60), (SMOKE_SPEC, 16)):
+        for path, expected_runs in (
+            (FULL_SPEC, 60),
+            (PREFLIGHT_SPEC, 16),
+            (SMOKE_SPEC, 16),
+        ):
             with self.subTest(spec=path.name):
                 spec = self._load(path)
                 with phase_three_experiment_support():
@@ -66,6 +73,18 @@ class PhaseFourSensingMovementGateTests(unittest.TestCase):
                     self.assertTrue(engine.atomic_movement_payment_enabled)
                 self.assertFalse(control_engine.resource_sensing_enabled)
                 self.assertTrue(treatment_engine.resource_sensing_enabled)
+
+    def test_full_duration_preflight_matches_full_campaign_configuration(self) -> None:
+        full = self._load(FULL_SPEC)
+        preflight = self._load(PREFLIGHT_SPEC)
+
+        self.assertEqual(preflight["base_config"], full["base_config"])
+        self.assertEqual(preflight["conditions"], full["conditions"])
+        self.assertEqual(preflight["reproducibility"], full["reproducibility"])
+        self.assertEqual(preflight["seeds"]["start"], full["seeds"]["start"])
+        self.assertEqual(preflight["seeds"]["count"], 8)
+        self.assertEqual(full["seeds"]["count"], 30)
+        self.assertEqual(preflight["base_config"]["run.max_ticks"], 2000)
 
     def test_local_scalar_sensing_can_gate_move_reachability_via_control_flow(self) -> None:
         program = (
