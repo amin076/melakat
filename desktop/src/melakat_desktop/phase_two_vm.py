@@ -26,6 +26,8 @@ class PhaseTwoExecutionResult:
     fault: str | None
     resource_sense_operations: int
     movement_operations: int
+    movement_nonzero_operations: int
+    movement_zero_step_operations: int
     movement_distance: float
     boundary_contacts: int
 
@@ -86,6 +88,8 @@ class PhaseTwoVirtualMachine:
         self.movement_enabled = bool(movement_enabled)
         self.resource_sense_operations = 0
         self.movement_operations = 0
+        self.movement_nonzero_operations = 0
+        self.movement_zero_step_operations = 0
         self.movement_distance = 0.0
         self.boundary_contacts = 0
 
@@ -128,8 +132,13 @@ class PhaseTwoVirtualMachine:
                         axis = "x" if instruction.opcode is PhaseTwoOpcode.MOVE_X else "y"
                         requested = float(self._signed_immediate(instruction.b))
                         distance, contacts = self.move(axis, requested)
+                        realized_distance = max(0.0, float(distance))
                         self.movement_operations += 1
-                        self.movement_distance += max(0.0, float(distance))
+                        if realized_distance > 0.0:
+                            self.movement_nonzero_operations += 1
+                        else:
+                            self.movement_zero_step_operations += 1
+                        self.movement_distance += realized_distance
                         self.boundary_contacts += max(0, int(contacts))
             except ValueError as exc:
                 self.state.fault = str(exc)
@@ -170,6 +179,8 @@ class PhaseTwoVirtualMachine:
             fault=self.state.fault,
             resource_sense_operations=self.resource_sense_operations,
             movement_operations=self.movement_operations,
+            movement_nonzero_operations=self.movement_nonzero_operations,
+            movement_zero_step_operations=self.movement_zero_step_operations,
             movement_distance=self.movement_distance,
             boundary_contacts=self.boundary_contacts,
         )

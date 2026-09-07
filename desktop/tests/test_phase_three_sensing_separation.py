@@ -167,6 +167,47 @@ class PhaseThreeSensingSeparationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "movement_mutation_requires_spatial"):
             PhaseTwoEngine(config, lambda event: None)
 
+    def test_movement_metrics_partition_zero_and_nonzero_steps(self) -> None:
+        config = VMConfig(word_bits=8, register_count=4, memory_size=8)
+
+        def run_operand(operand: int):
+            calls = []
+
+            def move(axis: str, requested: float):
+                calls.append((axis, requested))
+                return abs(requested), 0
+
+            program = (Instruction(PhaseTwoOpcode.MOVE_X, b=operand),)
+            state = VMState(
+                registers=[0] * 4,
+                memory=[0] * 8,
+                replication_buffer=[None],
+            )
+            vm = PhaseTwoVirtualMachine(
+                program,
+                config,
+                state,
+                sense_resource=lambda: 0.0,
+                move=move,
+                sensing_enabled=False,
+                movement_enabled=True,
+            )
+            return vm.run(1), calls
+
+        zero, zero_calls = run_operand(0)
+        self.assertEqual(zero_calls, [("x", 0.0)])
+        self.assertEqual(zero.movement_operations, 1)
+        self.assertEqual(zero.movement_nonzero_operations, 0)
+        self.assertEqual(zero.movement_zero_step_operations, 1)
+        self.assertEqual(zero.movement_distance, 0.0)
+
+        nonzero, nonzero_calls = run_operand(1)
+        self.assertEqual(nonzero_calls, [("x", 1.0)])
+        self.assertEqual(nonzero.movement_operations, 1)
+        self.assertEqual(nonzero.movement_nonzero_operations, 1)
+        self.assertEqual(nonzero.movement_zero_step_operations, 0)
+        self.assertEqual(nonzero.movement_distance, 1.0)
+
     def test_legacy_combined_switch_preserves_old_behavior(self) -> None:
         config = CORE_SCHEMA.validate(
             {

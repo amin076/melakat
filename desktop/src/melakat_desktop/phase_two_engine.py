@@ -92,6 +92,8 @@ class PhaseTwoEngine(PhaseZeroEngine):
         self.boundary_contacts = 0
         self.resource_sense_operations = 0
         self.movement_operations = 0
+        self.movement_nonzero_operations = 0
+        self.movement_zero_step_operations = 0
         self.movement_distance = 0.0
         self.resource_field: LocalResourceField | None = None
         self.spatial_rng_seed = derive_spatial_seed(
@@ -350,6 +352,8 @@ class PhaseTwoEngine(PhaseZeroEngine):
             organism.vm_state = vm.state
             self.resource_sense_operations += result.resource_sense_operations
             self.movement_operations += result.movement_operations
+            self.movement_nonzero_operations += result.movement_nonzero_operations
+            self.movement_zero_step_operations += result.movement_zero_step_operations
             self.movement_distance += result.movement_distance
             movement_distance = result.movement_distance
         else:
@@ -476,7 +480,7 @@ class PhaseTwoEngine(PhaseZeroEngine):
                 "resource_sensing_enabled": self.resource_sensing_enabled,
                 "resource_sensing_mutation_enabled": self.resource_sensing_mutation_enabled,
                 "movement_enabled": self.movement_enabled,
-            "movement_mutation_enabled": self.movement_mutation_enabled,
+                "movement_mutation_enabled": self.movement_mutation_enabled,
             }
         )
         active_by_id = {
@@ -537,9 +541,11 @@ class PhaseTwoEngine(PhaseZeroEngine):
                 "resource_sensing_enabled": self.resource_sensing_enabled,
                 "resource_sensing_mutation_enabled": self.resource_sensing_mutation_enabled,
                 "movement_enabled": self.movement_enabled,
-            "movement_mutation_enabled": self.movement_mutation_enabled,
+                "movement_mutation_enabled": self.movement_mutation_enabled,
                 "resource_sense_operations": self.resource_sense_operations,
                 "movement_operations": self.movement_operations,
+                "movement_nonzero_operations": self.movement_nonzero_operations,
+                "movement_zero_step_operations": self.movement_zero_step_operations,
                 "movement_distance": round(self.movement_distance, 6),
                 "movement_energy_cost": round(
                     self.ledger.get("energy_movement", 0.0), 6

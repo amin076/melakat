@@ -53,7 +53,7 @@ class PhaseThreeEnvironmentTests(unittest.TestCase):
         self.assertEqual(PHASE_THREE_ENGINE_VERSION, "phase-three-vm-0.1")
         self.assertEqual(
             PHASE_THREE_MEASUREMENT_VERSION,
-            "phase-three-measurement-0.1",
+            "phase-three-measurement-0.2",
         )
         mechanism = PHASE_THREE_WORLD_CONTRACT["new_causal_mechanism"]
         self.assertEqual(mechanism["name"], "spatial_resource_heterogeneity")

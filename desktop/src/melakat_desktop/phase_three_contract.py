@@ -4,7 +4,7 @@ from typing import Any
 
 PHASE_THREE_WORLD_CONTRACT_VERSION = "phase-three-environment-0.1"
 PHASE_THREE_ENGINE_VERSION = "phase-three-vm-0.1"
-PHASE_THREE_MEASUREMENT_VERSION = "phase-three-measurement-0.1"
+PHASE_THREE_MEASUREMENT_VERSION = "phase-three-measurement-0.2"
 PHASE_TWO_FROZEN_WORLD_CONTRACT_VERSION = "phase-two-spatial-0.7"
 PHASE_TWO_FROZEN_ENGINE_VERSION = "phase-two-vm-0.7"
 PHASE_TWO_FROZEN_MEASUREMENT_VERSION = "phase-two-measurement-0.1"
