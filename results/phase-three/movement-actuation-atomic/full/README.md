@@ -22,7 +22,7 @@ Maximum absolute energy-balance error was 4.60e-09; maximum absolute local-resou
 
 ## Scientific interpretation
 
-This campaign establishes the **movement execution/accounting mechanism**, not navigation or adaptation. The selected matched population/ecological outcomes have approximate 95% paired intervals that cross zero, so this campaign does not support a robust directional population effect from movement execution alone.
+This campaign establishes the **movement execution/accounting mechanism**, not navigation or adaptation. All selected matched population/ecological outcomes have approximate 95% paired intervals that cross zero, so this campaign does not support a robust directional population effect from movement execution alone.
 
 The result therefore opens the next controlled gate: a sensing-plus-movement experiment can now ask whether information coupled to locomotion changes spatial/resource outcomes. That future experiment must retain the v0.3 atomic-payment semantics and must not pre-program resource seeking.
 
