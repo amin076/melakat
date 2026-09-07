@@ -4,6 +4,7 @@ from typing import Any
 
 PHASE_THREE_WORLD_CONTRACT_VERSION = "phase-three-environment-0.1"
 PHASE_THREE_ENGINE_VERSION = "phase-three-vm-0.1"
+PHASE_THREE_MOVEMENT_ENCODING_ENGINE_VERSION = "phase-three-vm-0.2"
 PHASE_THREE_MEASUREMENT_VERSION = "phase-three-measurement-0.2"
 PHASE_TWO_FROZEN_WORLD_CONTRACT_VERSION = "phase-two-spatial-0.7"
 PHASE_TWO_FROZEN_ENGINE_VERSION = "phase-two-vm-0.7"
@@ -36,6 +37,18 @@ PHASE_THREE_WORLD_CONTRACT: dict[str, Any] = {
         "geometry": "axis-aligned central rectangle measured as a fraction of world extent",
         "contrast": "cells inside the patch receive a multiplicative allocation weight",
         "randomness": "none; patch geometry is deterministic and identical across matched seeds",
+    },
+    "later_interventions": {
+        "movement_step_encoding": {
+            "engine_version": PHASE_THREE_MOVEMENT_ENCODING_ENGINE_VERSION,
+            "config": "mutation.movement_step_rate",
+            "default": 0.0,
+            "scope": (
+                "Optional Phase Three-only mutation of the signed immediate on existing "
+                "MOVE_X/MOVE_Y instructions. A zero rate preserves the accepted Phase Three "
+                "0.1 hereditary representation exactly."
+            ),
+        }
     },
     "preserved_absences": [
         "resource diffusion",
