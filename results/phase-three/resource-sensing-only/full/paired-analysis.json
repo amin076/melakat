@@ -1,0 +1,3181 @@
+{
+  "format": "melakat-phase-three-sensing-paired-analysis-0.1",
+  "experiment": "phase-three-resource-sensing-only",
+  "scientific_question": "With resource geography, hereditary opcode availability, mutation rate, total resource budget, and movement held fixed, does executing SENSE_RESOURCE alter measured digital-population dynamics?",
+  "causal_contrast": {
+    "control": "sensing-execution-off",
+    "treatment": "sensing-execution-on",
+    "resource_distribution": "center_patch",
+    "mutation_alphabet_matched": true,
+    "movement_enabled_both_conditions": false,
+    "only_intended_difference": "SENSE_RESOURCE execution semantics"
+  },
+  "execution_mode": "three verified batches of ten matched seeds each",
+  "n_matched_seeds": 30,
+  "ticks_per_run": 2000,
+  "completed_runs": 60,
+  "validation_passed": true,
+  "reproducibility_batches_identical": true,
+  "control_resource_sense_operations": 0,
+  "treatment_resource_sense_operations": 233,
+  "maximum_movement_operations": 0,
+  "maximum_movement_distance": 0.0,
+  "maximum_abs_energy_balance_error": 4e-09,
+  "maximum_abs_local_resource_balance_error": 6.5e-09,
+  "metrics": {
+    "active_population": {
+      "n": 30,
+      "mean_difference_treatment_minus_control": 0.23333333333333334,
+      "median_difference": 0.0,
+      "standard_deviation_difference": 3.6358685660905095,
+      "approx_95_percent_ci": [
+        -1.1241698616277327,
+        1.5908365282943995
+      ],
+      "minimum_difference": -10.0,
+      "maximum_difference": 11.0,
+      "positive_seed_count": 5,
+      "zero_seed_count": 22,
+      "negative_seed_count": 3,
+      "pairs": [
+        {
+          "seed": 1,
+          "control": 22.0,
+          "treatment": 22.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 2,
+          "control": 11.0,
+          "treatment": 11.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 3,
+          "control": 10.0,
+          "treatment": 11.0,
+          "difference": 1.0
+        },
+        {
+          "seed": 4,
+          "control": 12.0,
+          "treatment": 12.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 5,
+          "control": 16.0,
+          "treatment": 16.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 6,
+          "control": 18.0,
+          "treatment": 17.0,
+          "difference": -1.0
+        },
+        {
+          "seed": 7,
+          "control": 31.0,
+          "treatment": 31.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 8,
+          "control": 10.0,
+          "treatment": 14.0,
+          "difference": 4.0
+        },
+        {
+          "seed": 9,
+          "control": 20.0,
+          "treatment": 31.0,
+          "difference": 11.0
+        },
+        {
+          "seed": 10,
+          "control": 31.0,
+          "treatment": 31.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 11,
+          "control": 31.0,
+          "treatment": 31.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 12,
+          "control": 26.0,
+          "treatment": 26.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 13,
+          "control": 10.0,
+          "treatment": 10.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 14,
+          "control": 14.0,
+          "treatment": 14.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 15,
+          "control": 7.0,
+          "treatment": 7.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 16,
+          "control": 31.0,
+          "treatment": 31.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 17,
+          "control": 19.0,
+          "treatment": 23.0,
+          "difference": 4.0
+        },
+        {
+          "seed": 18,
+          "control": 13.0,
+          "treatment": 13.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 19,
+          "control": 14.0,
+          "treatment": 14.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 20,
+          "control": 24.0,
+          "treatment": 14.0,
+          "difference": -10.0
+        },
+        {
+          "seed": 21,
+          "control": 9.0,
+          "treatment": 9.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 22,
+          "control": 31.0,
+          "treatment": 31.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 23,
+          "control": 23.0,
+          "treatment": 14.0,
+          "difference": -9.0
+        },
+        {
+          "seed": 24,
+          "control": 14.0,
+          "treatment": 14.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 25,
+          "control": 16.0,
+          "treatment": 16.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 26,
+          "control": 12.0,
+          "treatment": 12.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 27,
+          "control": 9.0,
+          "treatment": 9.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 28,
+          "control": 15.0,
+          "treatment": 15.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 29,
+          "control": 15.0,
+          "treatment": 22.0,
+          "difference": 7.0
+        },
+        {
+          "seed": 30,
+          "control": 16.0,
+          "treatment": 16.0,
+          "difference": 0.0
+        }
+      ]
+    },
+    "births": {
+      "n": 30,
+      "mean_difference_treatment_minus_control": -1.3,
+      "median_difference": 0.0,
+      "standard_deviation_difference": 12.517987058628876,
+      "approx_95_percent_ci": [
+        -5.973768349344384,
+        3.3737683493443846
+      ],
+      "minimum_difference": -48.0,
+      "maximum_difference": 22.0,
+      "positive_seed_count": 4,
+      "zero_seed_count": 23,
+      "negative_seed_count": 3,
+      "pairs": [
+        {
+          "seed": 1,
+          "control": 233.0,
+          "treatment": 233.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 2,
+          "control": 64.0,
+          "treatment": 64.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 3,
+          "control": 54.0,
+          "treatment": 54.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 4,
+          "control": 61.0,
+          "treatment": 61.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 5,
+          "control": 145.0,
+          "treatment": 145.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 6,
+          "control": 117.0,
+          "treatment": 121.0,
+          "difference": 4.0
+        },
+        {
+          "seed": 7,
+          "control": 121.0,
+          "treatment": 121.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 8,
+          "control": 110.0,
+          "treatment": 123.0,
+          "difference": 13.0
+        },
+        {
+          "seed": 9,
+          "control": 144.0,
+          "treatment": 163.0,
+          "difference": 19.0
+        },
+        {
+          "seed": 10,
+          "control": 151.0,
+          "treatment": 151.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 11,
+          "control": 189.0,
+          "treatment": 189.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 12,
+          "control": 127.0,
+          "treatment": 127.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 13,
+          "control": 60.0,
+          "treatment": 60.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 14,
+          "control": 109.0,
+          "treatment": 109.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 15,
+          "control": 38.0,
+          "treatment": 38.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 16,
+          "control": 183.0,
+          "treatment": 183.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 17,
+          "control": 171.0,
+          "treatment": 141.0,
+          "difference": -30.0
+        },
+        {
+          "seed": 18,
+          "control": 104.0,
+          "treatment": 104.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 19,
+          "control": 88.0,
+          "treatment": 88.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 20,
+          "control": 110.0,
+          "treatment": 91.0,
+          "difference": -19.0
+        },
+        {
+          "seed": 21,
+          "control": 42.0,
+          "treatment": 42.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 22,
+          "control": 79.0,
+          "treatment": 79.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 23,
+          "control": 187.0,
+          "treatment": 139.0,
+          "difference": -48.0
+        },
+        {
+          "seed": 24,
+          "control": 56.0,
+          "treatment": 56.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 25,
+          "control": 114.0,
+          "treatment": 114.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 26,
+          "control": 54.0,
+          "treatment": 54.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 27,
+          "control": 51.0,
+          "treatment": 51.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 28,
+          "control": 120.0,
+          "treatment": 120.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 29,
+          "control": 116.0,
+          "treatment": 138.0,
+          "difference": 22.0
+        },
+        {
+          "seed": 30,
+          "control": 106.0,
+          "treatment": 106.0,
+          "difference": 0.0
+        }
+      ]
+    },
+    "deaths": {
+      "n": 30,
+      "mean_difference_treatment_minus_control": -1.5333333333333334,
+      "median_difference": 0.0,
+      "standard_deviation_difference": 10.311471125964966,
+      "approx_95_percent_ci": [
+        -5.383267604554117,
+        2.3166009378874497
+      ],
+      "minimum_difference": -39.0,
+      "maximum_difference": 15.0,
+      "positive_seed_count": 4,
+      "zero_seed_count": 22,
+      "negative_seed_count": 4,
+      "pairs": [
+        {
+          "seed": 1,
+          "control": 223.0,
+          "treatment": 223.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 2,
+          "control": 65.0,
+          "treatment": 65.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 3,
+          "control": 56.0,
+          "treatment": 55.0,
+          "difference": -1.0
+        },
+        {
+          "seed": 4,
+          "control": 61.0,
+          "treatment": 61.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 5,
+          "control": 141.0,
+          "treatment": 141.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 6,
+          "control": 111.0,
+          "treatment": 116.0,
+          "difference": 5.0
+        },
+        {
+          "seed": 7,
+          "control": 102.0,
+          "treatment": 102.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 8,
+          "control": 112.0,
+          "treatment": 121.0,
+          "difference": 9.0
+        },
+        {
+          "seed": 9,
+          "control": 136.0,
+          "treatment": 144.0,
+          "difference": 8.0
+        },
+        {
+          "seed": 10,
+          "control": 132.0,
+          "treatment": 132.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 11,
+          "control": 170.0,
+          "treatment": 170.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 12,
+          "control": 113.0,
+          "treatment": 113.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 13,
+          "control": 62.0,
+          "treatment": 62.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 14,
+          "control": 107.0,
+          "treatment": 107.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 15,
+          "control": 43.0,
+          "treatment": 43.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 16,
+          "control": 164.0,
+          "treatment": 164.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 17,
+          "control": 164.0,
+          "treatment": 130.0,
+          "difference": -34.0
+        },
+        {
+          "seed": 18,
+          "control": 103.0,
+          "treatment": 103.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 19,
+          "control": 86.0,
+          "treatment": 86.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 20,
+          "control": 98.0,
+          "treatment": 89.0,
+          "difference": -9.0
+        },
+        {
+          "seed": 21,
+          "control": 45.0,
+          "treatment": 45.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 22,
+          "control": 60.0,
+          "treatment": 60.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 23,
+          "control": 176.0,
+          "treatment": 137.0,
+          "difference": -39.0
+        },
+        {
+          "seed": 24,
+          "control": 54.0,
+          "treatment": 54.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 25,
+          "control": 110.0,
+          "treatment": 110.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 26,
+          "control": 54.0,
+          "treatment": 54.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 27,
+          "control": 54.0,
+          "treatment": 54.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 28,
+          "control": 117.0,
+          "treatment": 117.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 29,
+          "control": 113.0,
+          "treatment": 128.0,
+          "difference": 15.0
+        },
+        {
+          "seed": 30,
+          "control": 102.0,
+          "treatment": 102.0,
+          "difference": 0.0
+        }
+      ]
+    },
+    "max_population": {
+      "n": 30,
+      "mean_difference_treatment_minus_control": 0.1,
+      "median_difference": 0.0,
+      "standard_deviation_difference": 1.0288929437289247,
+      "approx_95_percent_ci": [
+        -0.2841518011435571,
+        0.48415180114355716
+      ],
+      "minimum_difference": -2.0,
+      "maximum_difference": 5.0,
+      "positive_seed_count": 2,
+      "zero_seed_count": 26,
+      "negative_seed_count": 2,
+      "pairs": [
+        {
+          "seed": 1,
+          "control": 31.0,
+          "treatment": 31.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 2,
+          "control": 24.0,
+          "treatment": 24.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 3,
+          "control": 24.0,
+          "treatment": 24.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 4,
+          "control": 25.0,
+          "treatment": 25.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 5,
+          "control": 27.0,
+          "treatment": 27.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 6,
+          "control": 31.0,
+          "treatment": 31.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 7,
+          "control": 31.0,
+          "treatment": 31.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 8,
+          "control": 26.0,
+          "treatment": 31.0,
+          "difference": 5.0
+        },
+        {
+          "seed": 9,
+          "control": 31.0,
+          "treatment": 31.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 10,
+          "control": 31.0,
+          "treatment": 31.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 11,
+          "control": 31.0,
+          "treatment": 31.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 12,
+          "control": 28.0,
+          "treatment": 28.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 13,
+          "control": 24.0,
+          "treatment": 24.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 14,
+          "control": 25.0,
+          "treatment": 25.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 15,
+          "control": 24.0,
+          "treatment": 24.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 16,
+          "control": 31.0,
+          "treatment": 31.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 17,
+          "control": 31.0,
+          "treatment": 29.0,
+          "difference": -2.0
+        },
+        {
+          "seed": 18,
+          "control": 24.0,
+          "treatment": 24.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 19,
+          "control": 27.0,
+          "treatment": 27.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 20,
+          "control": 26.0,
+          "treatment": 25.0,
+          "difference": -1.0
+        },
+        {
+          "seed": 21,
+          "control": 24.0,
+          "treatment": 24.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 22,
+          "control": 31.0,
+          "treatment": 31.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 23,
+          "control": 31.0,
+          "treatment": 31.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 24,
+          "control": 24.0,
+          "treatment": 24.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 25,
+          "control": 31.0,
+          "treatment": 31.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 26,
+          "control": 24.0,
+          "treatment": 24.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 27,
+          "control": 24.0,
+          "treatment": 24.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 28,
+          "control": 29.0,
+          "treatment": 29.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 29,
+          "control": 27.0,
+          "treatment": 28.0,
+          "difference": 1.0
+        },
+        {
+          "seed": 30,
+          "control": 31.0,
+          "treatment": 31.0,
+          "difference": 0.0
+        }
+      ]
+    },
+    "historical_genotypes": {
+      "n": 30,
+      "mean_difference_treatment_minus_control": -0.5,
+      "median_difference": 0.0,
+      "standard_deviation_difference": 1.737020834449128,
+      "approx_95_percent_ci": [
+        -1.1485414116644197,
+        0.1485414116644196
+      ],
+      "minimum_difference": -7.0,
+      "maximum_difference": 3.0,
+      "positive_seed_count": 1,
+      "zero_seed_count": 24,
+      "negative_seed_count": 5,
+      "pairs": [
+        {
+          "seed": 1,
+          "control": 16.0,
+          "treatment": 16.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 2,
+          "control": 6.0,
+          "treatment": 6.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 3,
+          "control": 5.0,
+          "treatment": 5.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 4,
+          "control": 2.0,
+          "treatment": 2.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 5,
+          "control": 8.0,
+          "treatment": 8.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 6,
+          "control": 5.0,
+          "treatment": 5.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 7,
+          "control": 7.0,
+          "treatment": 7.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 8,
+          "control": 10.0,
+          "treatment": 13.0,
+          "difference": 3.0
+        },
+        {
+          "seed": 9,
+          "control": 18.0,
+          "treatment": 13.0,
+          "difference": -5.0
+        },
+        {
+          "seed": 10,
+          "control": 12.0,
+          "treatment": 12.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 11,
+          "control": 12.0,
+          "treatment": 12.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 12,
+          "control": 14.0,
+          "treatment": 14.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 13,
+          "control": 6.0,
+          "treatment": 6.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 14,
+          "control": 9.0,
+          "treatment": 9.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 15,
+          "control": 6.0,
+          "treatment": 6.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 16,
+          "control": 14.0,
+          "treatment": 14.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 17,
+          "control": 15.0,
+          "treatment": 8.0,
+          "difference": -7.0
+        },
+        {
+          "seed": 18,
+          "control": 8.0,
+          "treatment": 8.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 19,
+          "control": 6.0,
+          "treatment": 6.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 20,
+          "control": 12.0,
+          "treatment": 10.0,
+          "difference": -2.0
+        },
+        {
+          "seed": 21,
+          "control": 3.0,
+          "treatment": 3.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 22,
+          "control": 14.0,
+          "treatment": 14.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 23,
+          "control": 13.0,
+          "treatment": 11.0,
+          "difference": -2.0
+        },
+        {
+          "seed": 24,
+          "control": 5.0,
+          "treatment": 5.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 25,
+          "control": 12.0,
+          "treatment": 12.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 26,
+          "control": 4.0,
+          "treatment": 4.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 27,
+          "control": 6.0,
+          "treatment": 6.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 28,
+          "control": 8.0,
+          "treatment": 8.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 29,
+          "control": 13.0,
+          "treatment": 11.0,
+          "difference": -2.0
+        },
+        {
+          "seed": 30,
+          "control": 9.0,
+          "treatment": 9.0,
+          "difference": 0.0
+        }
+      ]
+    },
+    "active_genotypes": {
+      "n": 30,
+      "mean_difference_treatment_minus_control": -0.03333333333333333,
+      "median_difference": 0.0,
+      "standard_deviation_difference": 0.6149478998583782,
+      "approx_95_percent_ci": [
+        -0.2629328701752174,
+        0.1962662035085507
+      ],
+      "minimum_difference": -2.0,
+      "maximum_difference": 2.0,
+      "positive_seed_count": 2,
+      "zero_seed_count": 25,
+      "negative_seed_count": 3,
+      "pairs": [
+        {
+          "seed": 1,
+          "control": 2.0,
+          "treatment": 2.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 2,
+          "control": 1.0,
+          "treatment": 1.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 3,
+          "control": 1.0,
+          "treatment": 1.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 4,
+          "control": 1.0,
+          "treatment": 1.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 5,
+          "control": 1.0,
+          "treatment": 1.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 6,
+          "control": 1.0,
+          "treatment": 1.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 7,
+          "control": 1.0,
+          "treatment": 1.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 8,
+          "control": 2.0,
+          "treatment": 3.0,
+          "difference": 1.0
+        },
+        {
+          "seed": 9,
+          "control": 3.0,
+          "treatment": 1.0,
+          "difference": -2.0
+        },
+        {
+          "seed": 10,
+          "control": 2.0,
+          "treatment": 2.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 11,
+          "control": 3.0,
+          "treatment": 3.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 12,
+          "control": 5.0,
+          "treatment": 5.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 13,
+          "control": 1.0,
+          "treatment": 1.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 14,
+          "control": 2.0,
+          "treatment": 2.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 15,
+          "control": 1.0,
+          "treatment": 1.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 16,
+          "control": 2.0,
+          "treatment": 2.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 17,
+          "control": 3.0,
+          "treatment": 2.0,
+          "difference": -1.0
+        },
+        {
+          "seed": 18,
+          "control": 1.0,
+          "treatment": 1.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 19,
+          "control": 2.0,
+          "treatment": 2.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 20,
+          "control": 2.0,
+          "treatment": 2.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 21,
+          "control": 1.0,
+          "treatment": 1.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 22,
+          "control": 5.0,
+          "treatment": 5.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 23,
+          "control": 3.0,
+          "treatment": 2.0,
+          "difference": -1.0
+        },
+        {
+          "seed": 24,
+          "control": 3.0,
+          "treatment": 3.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 25,
+          "control": 2.0,
+          "treatment": 2.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 26,
+          "control": 3.0,
+          "treatment": 3.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 27,
+          "control": 1.0,
+          "treatment": 1.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 28,
+          "control": 2.0,
+          "treatment": 2.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 29,
+          "control": 1.0,
+          "treatment": 3.0,
+          "difference": 2.0
+        },
+        {
+          "seed": 30,
+          "control": 1.0,
+          "treatment": 1.0,
+          "difference": 0.0
+        }
+      ]
+    },
+    "max_generation": {
+      "n": 30,
+      "mean_difference_treatment_minus_control": 0.1,
+      "median_difference": 0.0,
+      "standard_deviation_difference": 1.8448436995751345,
+      "approx_95_percent_ci": [
+        -0.5887986105256521,
+        0.788798610525652
+      ],
+      "minimum_difference": -6.0,
+      "maximum_difference": 6.0,
+      "positive_seed_count": 4,
+      "zero_seed_count": 22,
+      "negative_seed_count": 4,
+      "pairs": [
+        {
+          "seed": 1,
+          "control": 28.0,
+          "treatment": 28.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 2,
+          "control": 6.0,
+          "treatment": 6.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 3,
+          "control": 5.0,
+          "treatment": 5.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 4,
+          "control": 5.0,
+          "treatment": 5.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 5,
+          "control": 21.0,
+          "treatment": 21.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 6,
+          "control": 15.0,
+          "treatment": 16.0,
+          "difference": 1.0
+        },
+        {
+          "seed": 7,
+          "control": 19.0,
+          "treatment": 19.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 8,
+          "control": 28.0,
+          "treatment": 32.0,
+          "difference": 4.0
+        },
+        {
+          "seed": 9,
+          "control": 23.0,
+          "treatment": 22.0,
+          "difference": -1.0
+        },
+        {
+          "seed": 10,
+          "control": 30.0,
+          "treatment": 30.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 11,
+          "control": 27.0,
+          "treatment": 27.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 12,
+          "control": 19.0,
+          "treatment": 19.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 13,
+          "control": 7.0,
+          "treatment": 7.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 14,
+          "control": 23.0,
+          "treatment": 23.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 15,
+          "control": 4.0,
+          "treatment": 4.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 16,
+          "control": 26.0,
+          "treatment": 25.0,
+          "difference": -1.0
+        },
+        {
+          "seed": 17,
+          "control": 25.0,
+          "treatment": 19.0,
+          "difference": -6.0
+        },
+        {
+          "seed": 18,
+          "control": 19.0,
+          "treatment": 19.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 19,
+          "control": 6.0,
+          "treatment": 6.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 20,
+          "control": 9.0,
+          "treatment": 7.0,
+          "difference": -2.0
+        },
+        {
+          "seed": 21,
+          "control": 4.0,
+          "treatment": 4.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 22,
+          "control": 10.0,
+          "treatment": 10.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 23,
+          "control": 17.0,
+          "treatment": 19.0,
+          "difference": 2.0
+        },
+        {
+          "seed": 24,
+          "control": 6.0,
+          "treatment": 6.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 25,
+          "control": 19.0,
+          "treatment": 19.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 26,
+          "control": 4.0,
+          "treatment": 4.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 27,
+          "control": 4.0,
+          "treatment": 4.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 28,
+          "control": 11.0,
+          "treatment": 11.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 29,
+          "control": 13.0,
+          "treatment": 19.0,
+          "difference": 6.0
+        },
+        {
+          "seed": 30,
+          "control": 10.0,
+          "treatment": 10.0,
+          "difference": 0.0
+        }
+      ]
+    },
+    "blocked_divisions": {
+      "n": 30,
+      "mean_difference_treatment_minus_control": 0.3,
+      "median_difference": 0.0,
+      "standard_deviation_difference": 3.4755302249912297,
+      "approx_95_percent_ci": [
+        -0.9976385968985815,
+        1.5976385968985816
+      ],
+      "minimum_difference": -8.0,
+      "maximum_difference": 13.0,
+      "positive_seed_count": 5,
+      "zero_seed_count": 22,
+      "negative_seed_count": 3,
+      "pairs": [
+        {
+          "seed": 1,
+          "control": 21.0,
+          "treatment": 21.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 2,
+          "control": 11.0,
+          "treatment": 11.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 3,
+          "control": 10.0,
+          "treatment": 11.0,
+          "difference": 1.0
+        },
+        {
+          "seed": 4,
+          "control": 12.0,
+          "treatment": 12.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 5,
+          "control": 16.0,
+          "treatment": 16.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 6,
+          "control": 18.0,
+          "treatment": 17.0,
+          "difference": -1.0
+        },
+        {
+          "seed": 7,
+          "control": 31.0,
+          "treatment": 31.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 8,
+          "control": 10.0,
+          "treatment": 13.0,
+          "difference": 3.0
+        },
+        {
+          "seed": 9,
+          "control": 18.0,
+          "treatment": 31.0,
+          "difference": 13.0
+        },
+        {
+          "seed": 10,
+          "control": 30.0,
+          "treatment": 30.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 11,
+          "control": 29.0,
+          "treatment": 29.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 12,
+          "control": 24.0,
+          "treatment": 24.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 13,
+          "control": 10.0,
+          "treatment": 10.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 14,
+          "control": 12.0,
+          "treatment": 12.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 15,
+          "control": 7.0,
+          "treatment": 7.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 16,
+          "control": 30.0,
+          "treatment": 30.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 17,
+          "control": 19.0,
+          "treatment": 22.0,
+          "difference": 3.0
+        },
+        {
+          "seed": 18,
+          "control": 13.0,
+          "treatment": 13.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 19,
+          "control": 13.0,
+          "treatment": 13.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 20,
+          "control": 22.0,
+          "treatment": 14.0,
+          "difference": -8.0
+        },
+        {
+          "seed": 21,
+          "control": 9.0,
+          "treatment": 9.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 22,
+          "control": 20.0,
+          "treatment": 20.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 23,
+          "control": 21.0,
+          "treatment": 13.0,
+          "difference": -8.0
+        },
+        {
+          "seed": 24,
+          "control": 11.0,
+          "treatment": 11.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 25,
+          "control": 15.0,
+          "treatment": 15.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 26,
+          "control": 10.0,
+          "treatment": 10.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 27,
+          "control": 9.0,
+          "treatment": 9.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 28,
+          "control": 14.0,
+          "treatment": 14.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 29,
+          "control": 15.0,
+          "treatment": 21.0,
+          "difference": 6.0
+        },
+        {
+          "seed": 30,
+          "control": 14.0,
+          "treatment": 14.0,
+          "difference": 0.0
+        }
+      ]
+    },
+    "waiting_for_memory": {
+      "n": 30,
+      "mean_difference_treatment_minus_control": 1.0333333333333334,
+      "median_difference": 0.0,
+      "standard_deviation_difference": 5.659799760886717,
+      "approx_95_percent_ci": [
+        -1.0798333333333334,
+        3.1465000000000005
+      ],
+      "minimum_difference": 0.0,
+      "maximum_difference": 31.0,
+      "positive_seed_count": 1,
+      "zero_seed_count": 29,
+      "negative_seed_count": 0,
+      "pairs": [
+        {
+          "seed": 1,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 2,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 3,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 4,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 5,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 6,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 7,
+          "control": 31.0,
+          "treatment": 31.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 8,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 9,
+          "control": 0.0,
+          "treatment": 31.0,
+          "difference": 31.0
+        },
+        {
+          "seed": 10,
+          "control": 30.0,
+          "treatment": 30.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 11,
+          "control": 29.0,
+          "treatment": 29.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 12,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 13,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 14,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 15,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 16,
+          "control": 30.0,
+          "treatment": 30.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 17,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 18,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 19,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 20,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 21,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 22,
+          "control": 3.0,
+          "treatment": 3.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 23,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 24,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 25,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 26,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 27,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 28,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 29,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 30,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        }
+      ]
+    },
+    "waiting_for_energy": {
+      "n": 30,
+      "mean_difference_treatment_minus_control": -0.7333333333333333,
+      "median_difference": 0.0,
+      "standard_deviation_difference": 4.118363696934729,
+      "approx_95_percent_ci": [
+        -2.2709829416666696,
+        0.8043162750000031
+      ],
+      "minimum_difference": -18.0,
+      "maximum_difference": 6.0,
+      "positive_seed_count": 4,
+      "zero_seed_count": 22,
+      "negative_seed_count": 4,
+      "pairs": [
+        {
+          "seed": 1,
+          "control": 21.0,
+          "treatment": 21.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 2,
+          "control": 11.0,
+          "treatment": 11.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 3,
+          "control": 10.0,
+          "treatment": 11.0,
+          "difference": 1.0
+        },
+        {
+          "seed": 4,
+          "control": 12.0,
+          "treatment": 12.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 5,
+          "control": 16.0,
+          "treatment": 16.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 6,
+          "control": 18.0,
+          "treatment": 17.0,
+          "difference": -1.0
+        },
+        {
+          "seed": 7,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 8,
+          "control": 10.0,
+          "treatment": 13.0,
+          "difference": 3.0
+        },
+        {
+          "seed": 9,
+          "control": 18.0,
+          "treatment": 0.0,
+          "difference": -18.0
+        },
+        {
+          "seed": 10,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 11,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 12,
+          "control": 24.0,
+          "treatment": 24.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 13,
+          "control": 10.0,
+          "treatment": 10.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 14,
+          "control": 12.0,
+          "treatment": 12.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 15,
+          "control": 7.0,
+          "treatment": 7.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 16,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 17,
+          "control": 19.0,
+          "treatment": 22.0,
+          "difference": 3.0
+        },
+        {
+          "seed": 18,
+          "control": 13.0,
+          "treatment": 13.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 19,
+          "control": 13.0,
+          "treatment": 13.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 20,
+          "control": 22.0,
+          "treatment": 14.0,
+          "difference": -8.0
+        },
+        {
+          "seed": 21,
+          "control": 9.0,
+          "treatment": 9.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 22,
+          "control": 17.0,
+          "treatment": 17.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 23,
+          "control": 21.0,
+          "treatment": 13.0,
+          "difference": -8.0
+        },
+        {
+          "seed": 24,
+          "control": 11.0,
+          "treatment": 11.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 25,
+          "control": 15.0,
+          "treatment": 15.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 26,
+          "control": 10.0,
+          "treatment": 10.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 27,
+          "control": 9.0,
+          "treatment": 9.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 28,
+          "control": 14.0,
+          "treatment": 14.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 29,
+          "control": 15.0,
+          "treatment": 21.0,
+          "difference": 6.0
+        },
+        {
+          "seed": 30,
+          "control": 14.0,
+          "treatment": 14.0,
+          "difference": 0.0
+        }
+      ]
+    },
+    "mean_local_neighbors": {
+      "n": 30,
+      "mean_difference_treatment_minus_control": 0.10292563333333332,
+      "median_difference": 0.0,
+      "standard_deviation_difference": 1.136736010314847,
+      "approx_95_percent_ci": [
+        -0.3214909091735792,
+        0.5273421758402459
+      ],
+      "minimum_difference": -4.2142859999999995,
+      "maximum_difference": 2.648485,
+      "positive_seed_count": 5,
+      "zero_seed_count": 21,
+      "negative_seed_count": 4,
+      "pairs": [
+        {
+          "seed": 1,
+          "control": 1.363636,
+          "treatment": 1.363636,
+          "difference": 0.0
+        },
+        {
+          "seed": 2,
+          "control": 0.181818,
+          "treatment": 0.181818,
+          "difference": 0.0
+        },
+        {
+          "seed": 3,
+          "control": 0.2,
+          "treatment": 0.181818,
+          "difference": -0.018182000000000004
+        },
+        {
+          "seed": 4,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 5,
+          "control": 0.5,
+          "treatment": 0.5,
+          "difference": 0.0
+        },
+        {
+          "seed": 6,
+          "control": 1.0,
+          "treatment": 1.058824,
+          "difference": 0.05882399999999999
+        },
+        {
+          "seed": 7,
+          "control": 9.290323,
+          "treatment": 9.290323,
+          "difference": 0.0
+        },
+        {
+          "seed": 8,
+          "control": 0.4,
+          "treatment": 2.142857,
+          "difference": 1.7428569999999999
+        },
+        {
+          "seed": 9,
+          "control": 3.1,
+          "treatment": 5.741935,
+          "difference": 2.6419349999999997
+        },
+        {
+          "seed": 10,
+          "control": 6.322581,
+          "treatment": 6.322581,
+          "difference": 0.0
+        },
+        {
+          "seed": 11,
+          "control": 2.580645,
+          "treatment": 2.580645,
+          "difference": 0.0
+        },
+        {
+          "seed": 12,
+          "control": 4.461538,
+          "treatment": 4.461538,
+          "difference": 0.0
+        },
+        {
+          "seed": 13,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 14,
+          "control": 0.428571,
+          "treatment": 0.428571,
+          "difference": 0.0
+        },
+        {
+          "seed": 15,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 16,
+          "control": 3.354839,
+          "treatment": 2.967742,
+          "difference": -0.38709700000000025
+        },
+        {
+          "seed": 17,
+          "control": 0.105263,
+          "treatment": 1.565217,
+          "difference": 1.4599540000000002
+        },
+        {
+          "seed": 18,
+          "control": 0.615385,
+          "treatment": 0.615385,
+          "difference": 0.0
+        },
+        {
+          "seed": 19,
+          "control": 0.142857,
+          "treatment": 0.142857,
+          "difference": 0.0
+        },
+        {
+          "seed": 20,
+          "control": 4.5,
+          "treatment": 0.285714,
+          "difference": -4.2142859999999995
+        },
+        {
+          "seed": 21,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 22,
+          "control": 8.129032,
+          "treatment": 8.129032,
+          "difference": 0.0
+        },
+        {
+          "seed": 23,
+          "control": 1.130435,
+          "treatment": 0.285714,
+          "difference": -0.844721
+        },
+        {
+          "seed": 24,
+          "control": 0.714286,
+          "treatment": 0.714286,
+          "difference": 0.0
+        },
+        {
+          "seed": 25,
+          "control": 1.5,
+          "treatment": 1.5,
+          "difference": 0.0
+        },
+        {
+          "seed": 26,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 27,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 28,
+          "control": 1.466667,
+          "treatment": 1.466667,
+          "difference": 0.0
+        },
+        {
+          "seed": 29,
+          "control": 0.533333,
+          "treatment": 3.181818,
+          "difference": 2.648485
+        },
+        {
+          "seed": 30,
+          "control": 0.375,
+          "treatment": 0.375,
+          "difference": 0.0
+        }
+      ]
+    },
+    "mean_nearest_neighbor_distance": {
+      "n": 30,
+      "mean_difference_treatment_minus_control": -0.03005026666666666,
+      "median_difference": 0.0,
+      "standard_deviation_difference": 1.8731629812132709,
+      "approx_95_percent_ci": [
+        -0.7294222834098347,
+        0.6693217500765014
+      ],
+      "minimum_difference": -4.767566,
+      "maximum_difference": 5.630761,
+      "positive_seed_count": 4,
+      "zero_seed_count": 21,
+      "negative_seed_count": 5,
+      "pairs": [
+        {
+          "seed": 1,
+          "control": 7.579294,
+          "treatment": 7.579294,
+          "difference": 0.0
+        },
+        {
+          "seed": 2,
+          "control": 13.182765,
+          "treatment": 13.182765,
+          "difference": 0.0
+        },
+        {
+          "seed": 3,
+          "control": 14.633118,
+          "treatment": 14.725699,
+          "difference": 0.09258100000000091
+        },
+        {
+          "seed": 4,
+          "control": 11.027611,
+          "treatment": 11.027611,
+          "difference": 0.0
+        },
+        {
+          "seed": 5,
+          "control": 11.187219,
+          "treatment": 11.187219,
+          "difference": 0.0
+        },
+        {
+          "seed": 6,
+          "control": 6.758162,
+          "treatment": 7.267812,
+          "difference": 0.5096500000000006
+        },
+        {
+          "seed": 7,
+          "control": 5.472898,
+          "treatment": 5.472898,
+          "difference": 0.0
+        },
+        {
+          "seed": 8,
+          "control": 13.943879,
+          "treatment": 9.176313,
+          "difference": -4.767566
+        },
+        {
+          "seed": 9,
+          "control": 6.732872,
+          "treatment": 4.511398,
+          "difference": -2.2214740000000006
+        },
+        {
+          "seed": 10,
+          "control": 4.079371,
+          "treatment": 4.079371,
+          "difference": 0.0
+        },
+        {
+          "seed": 11,
+          "control": 6.142901,
+          "treatment": 6.142901,
+          "difference": 0.0
+        },
+        {
+          "seed": 12,
+          "control": 5.198884,
+          "treatment": 5.198884,
+          "difference": 0.0
+        },
+        {
+          "seed": 13,
+          "control": 14.205125,
+          "treatment": 14.205125,
+          "difference": 0.0
+        },
+        {
+          "seed": 14,
+          "control": 12.081568,
+          "treatment": 12.081568,
+          "difference": 0.0
+        },
+        {
+          "seed": 15,
+          "control": 13.921531,
+          "treatment": 13.921531,
+          "difference": 0.0
+        },
+        {
+          "seed": 16,
+          "control": 2.861306,
+          "treatment": 2.84896,
+          "difference": -0.012345999999999968
+        },
+        {
+          "seed": 17,
+          "control": 9.662433,
+          "treatment": 8.658191,
+          "difference": -1.0042419999999996
+        },
+        {
+          "seed": 18,
+          "control": 10.634465,
+          "treatment": 10.634465,
+          "difference": 0.0
+        },
+        {
+          "seed": 19,
+          "control": 9.539024,
+          "treatment": 9.539024,
+          "difference": 0.0
+        },
+        {
+          "seed": 20,
+          "control": 3.465714,
+          "treatment": 8.415369,
+          "difference": 4.949655
+        },
+        {
+          "seed": 21,
+          "control": 17.138762,
+          "treatment": 17.138762,
+          "difference": 0.0
+        },
+        {
+          "seed": 22,
+          "control": 5.564051,
+          "treatment": 5.564051,
+          "difference": 0.0
+        },
+        {
+          "seed": 23,
+          "control": 4.874559,
+          "treatment": 10.50532,
+          "difference": 5.630761
+        },
+        {
+          "seed": 24,
+          "control": 8.141164,
+          "treatment": 8.141164,
+          "difference": 0.0
+        },
+        {
+          "seed": 25,
+          "control": 4.969308,
+          "treatment": 4.969308,
+          "difference": 0.0
+        },
+        {
+          "seed": 26,
+          "control": 12.779467,
+          "treatment": 12.779467,
+          "difference": 0.0
+        },
+        {
+          "seed": 27,
+          "control": 21.747068,
+          "treatment": 21.747068,
+          "difference": 0.0
+        },
+        {
+          "seed": 28,
+          "control": 7.5103,
+          "treatment": 7.5103,
+          "difference": 0.0
+        },
+        {
+          "seed": 29,
+          "control": 9.133253,
+          "treatment": 5.054726,
+          "difference": -4.078527
+        },
+        {
+          "seed": 30,
+          "control": 9.841116,
+          "treatment": 9.841116,
+          "difference": 0.0
+        }
+      ]
+    },
+    "occupied_spatial_bins": {
+      "n": 30,
+      "mean_difference_treatment_minus_control": -0.06666666666666667,
+      "median_difference": 0.0,
+      "standard_deviation_difference": 1.0806553992619585,
+      "approx_95_percent_ci": [
+        -0.47014471612966713,
+        0.3368113827963338
+      ],
+      "minimum_difference": -4.0,
+      "maximum_difference": 2.0,
+      "positive_seed_count": 4,
+      "zero_seed_count": 23,
+      "negative_seed_count": 3,
+      "pairs": [
+        {
+          "seed": 1,
+          "control": 12.0,
+          "treatment": 12.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 2,
+          "control": 9.0,
+          "treatment": 9.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 3,
+          "control": 9.0,
+          "treatment": 10.0,
+          "difference": 1.0
+        },
+        {
+          "seed": 4,
+          "control": 12.0,
+          "treatment": 12.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 5,
+          "control": 12.0,
+          "treatment": 12.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 6,
+          "control": 12.0,
+          "treatment": 12.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 7,
+          "control": 11.0,
+          "treatment": 11.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 8,
+          "control": 8.0,
+          "treatment": 10.0,
+          "difference": 2.0
+        },
+        {
+          "seed": 9,
+          "control": 11.0,
+          "treatment": 13.0,
+          "difference": 2.0
+        },
+        {
+          "seed": 10,
+          "control": 13.0,
+          "treatment": 13.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 11,
+          "control": 14.0,
+          "treatment": 14.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 12,
+          "control": 13.0,
+          "treatment": 13.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 13,
+          "control": 9.0,
+          "treatment": 9.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 14,
+          "control": 11.0,
+          "treatment": 11.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 15,
+          "control": 7.0,
+          "treatment": 7.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 16,
+          "control": 17.0,
+          "treatment": 17.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 17,
+          "control": 16.0,
+          "treatment": 12.0,
+          "difference": -4.0
+        },
+        {
+          "seed": 18,
+          "control": 10.0,
+          "treatment": 10.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 19,
+          "control": 12.0,
+          "treatment": 12.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 20,
+          "control": 12.0,
+          "treatment": 10.0,
+          "difference": -2.0
+        },
+        {
+          "seed": 21,
+          "control": 9.0,
+          "treatment": 9.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 22,
+          "control": 10.0,
+          "treatment": 10.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 23,
+          "control": 13.0,
+          "treatment": 11.0,
+          "difference": -2.0
+        },
+        {
+          "seed": 24,
+          "control": 11.0,
+          "treatment": 11.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 25,
+          "control": 11.0,
+          "treatment": 11.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 26,
+          "control": 11.0,
+          "treatment": 11.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 27,
+          "control": 9.0,
+          "treatment": 9.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 28,
+          "control": 12.0,
+          "treatment": 12.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 29,
+          "control": 10.0,
+          "treatment": 11.0,
+          "difference": 1.0
+        },
+        {
+          "seed": 30,
+          "control": 13.0,
+          "treatment": 13.0,
+          "difference": 0.0
+        }
+      ]
+    },
+    "spatial_occupancy_fraction": {
+      "n": 30,
+      "mean_difference_treatment_minus_control": -0.0006666666666666663,
+      "median_difference": 0.0,
+      "standard_deviation_difference": 0.010806553992619587,
+      "approx_95_percent_ci": [
+        -0.004701447161296671,
+        0.0033681138279633392
+      ],
+      "minimum_difference": -0.04000000000000001,
+      "maximum_difference": 0.020000000000000004,
+      "positive_seed_count": 4,
+      "zero_seed_count": 23,
+      "negative_seed_count": 3,
+      "pairs": [
+        {
+          "seed": 1,
+          "control": 0.12,
+          "treatment": 0.12,
+          "difference": 0.0
+        },
+        {
+          "seed": 2,
+          "control": 0.09,
+          "treatment": 0.09,
+          "difference": 0.0
+        },
+        {
+          "seed": 3,
+          "control": 0.09,
+          "treatment": 0.1,
+          "difference": 0.010000000000000009
+        },
+        {
+          "seed": 4,
+          "control": 0.12,
+          "treatment": 0.12,
+          "difference": 0.0
+        },
+        {
+          "seed": 5,
+          "control": 0.12,
+          "treatment": 0.12,
+          "difference": 0.0
+        },
+        {
+          "seed": 6,
+          "control": 0.12,
+          "treatment": 0.12,
+          "difference": 0.0
+        },
+        {
+          "seed": 7,
+          "control": 0.11,
+          "treatment": 0.11,
+          "difference": 0.0
+        },
+        {
+          "seed": 8,
+          "control": 0.08,
+          "treatment": 0.1,
+          "difference": 0.020000000000000004
+        },
+        {
+          "seed": 9,
+          "control": 0.11,
+          "treatment": 0.13,
+          "difference": 0.020000000000000004
+        },
+        {
+          "seed": 10,
+          "control": 0.13,
+          "treatment": 0.13,
+          "difference": 0.0
+        },
+        {
+          "seed": 11,
+          "control": 0.14,
+          "treatment": 0.14,
+          "difference": 0.0
+        },
+        {
+          "seed": 12,
+          "control": 0.13,
+          "treatment": 0.13,
+          "difference": 0.0
+        },
+        {
+          "seed": 13,
+          "control": 0.09,
+          "treatment": 0.09,
+          "difference": 0.0
+        },
+        {
+          "seed": 14,
+          "control": 0.11,
+          "treatment": 0.11,
+          "difference": 0.0
+        },
+        {
+          "seed": 15,
+          "control": 0.07,
+          "treatment": 0.07,
+          "difference": 0.0
+        },
+        {
+          "seed": 16,
+          "control": 0.17,
+          "treatment": 0.17,
+          "difference": 0.0
+        },
+        {
+          "seed": 17,
+          "control": 0.16,
+          "treatment": 0.12,
+          "difference": -0.04000000000000001
+        },
+        {
+          "seed": 18,
+          "control": 0.1,
+          "treatment": 0.1,
+          "difference": 0.0
+        },
+        {
+          "seed": 19,
+          "control": 0.12,
+          "treatment": 0.12,
+          "difference": 0.0
+        },
+        {
+          "seed": 20,
+          "control": 0.12,
+          "treatment": 0.1,
+          "difference": -0.01999999999999999
+        },
+        {
+          "seed": 21,
+          "control": 0.09,
+          "treatment": 0.09,
+          "difference": 0.0
+        },
+        {
+          "seed": 22,
+          "control": 0.1,
+          "treatment": 0.1,
+          "difference": 0.0
+        },
+        {
+          "seed": 23,
+          "control": 0.13,
+          "treatment": 0.11,
+          "difference": -0.020000000000000004
+        },
+        {
+          "seed": 24,
+          "control": 0.11,
+          "treatment": 0.11,
+          "difference": 0.0
+        },
+        {
+          "seed": 25,
+          "control": 0.11,
+          "treatment": 0.11,
+          "difference": 0.0
+        },
+        {
+          "seed": 26,
+          "control": 0.11,
+          "treatment": 0.11,
+          "difference": 0.0
+        },
+        {
+          "seed": 27,
+          "control": 0.09,
+          "treatment": 0.09,
+          "difference": 0.0
+        },
+        {
+          "seed": 28,
+          "control": 0.12,
+          "treatment": 0.12,
+          "difference": 0.0
+        },
+        {
+          "seed": 29,
+          "control": 0.1,
+          "treatment": 0.11,
+          "difference": 0.009999999999999995
+        },
+        {
+          "seed": 30,
+          "control": 0.13,
+          "treatment": 0.13,
+          "difference": 0.0
+        }
+      ]
+    },
+    "local_resource_total": {
+      "n": 30,
+      "mean_difference_treatment_minus_control": 32.45909093333333,
+      "median_difference": 0.0,
+      "standard_deviation_difference": 600.0351775716026,
+      "approx_95_percent_ci": [
+        -191.5725691325119,
+        256.49075099917854
+      ],
+      "minimum_difference": -1619.5681820000027,
+      "maximum_difference": 2119.3909090000016,
+      "positive_seed_count": 4,
+      "zero_seed_count": 21,
+      "negative_seed_count": 5,
+      "pairs": [
+        {
+          "seed": 1,
+          "control": 27439.795455,
+          "treatment": 27439.795455,
+          "difference": 0.0
+        },
+        {
+          "seed": 2,
+          "control": 35056.772727,
+          "treatment": 35056.772727,
+          "difference": 0.0
+        },
+        {
+          "seed": 3,
+          "control": 35608.990909,
+          "treatment": 35575.881818,
+          "difference": -33.10909099999844
+        },
+        {
+          "seed": 4,
+          "control": 34920.609091,
+          "treatment": 34920.609091,
+          "difference": 0.0
+        },
+        {
+          "seed": 5,
+          "control": 31812.272727,
+          "treatment": 31812.272727,
+          "difference": 0.0
+        },
+        {
+          "seed": 6,
+          "control": 31639.140909,
+          "treatment": 31656.413636,
+          "difference": 17.272726999999577
+        },
+        {
+          "seed": 7,
+          "control": 31424.631818,
+          "treatment": 31424.631818,
+          "difference": 0.0
+        },
+        {
+          "seed": 8,
+          "control": 35219.290909,
+          "treatment": 33599.722727,
+          "difference": -1619.5681820000027
+        },
+        {
+          "seed": 9,
+          "control": 30700.154545,
+          "treatment": 29924.95,
+          "difference": -775.2045450000005
+        },
+        {
+          "seed": 10,
+          "control": 29788.563636,
+          "treatment": 29788.563636,
+          "difference": 0.0
+        },
+        {
+          "seed": 11,
+          "control": 28948.181818,
+          "treatment": 28948.181818,
+          "difference": 0.0
+        },
+        {
+          "seed": 12,
+          "control": 31870.454545,
+          "treatment": 31870.454545,
+          "difference": 0.0
+        },
+        {
+          "seed": 13,
+          "control": 36028.604545,
+          "treatment": 36028.604545,
+          "difference": 0.0
+        },
+        {
+          "seed": 14,
+          "control": 32876.795455,
+          "treatment": 32876.795455,
+          "difference": 0.0
+        },
+        {
+          "seed": 15,
+          "control": 37415.131818,
+          "treatment": 37415.131818,
+          "difference": 0.0
+        },
+        {
+          "seed": 16,
+          "control": 26560.25,
+          "treatment": 26568.886364,
+          "difference": 8.636364000001777
+        },
+        {
+          "seed": 17,
+          "control": 29659.7,
+          "treatment": 31291.972727,
+          "difference": 1632.2727269999996
+        },
+        {
+          "seed": 18,
+          "control": 33673.263636,
+          "treatment": 33673.263636,
+          "difference": 0.0
+        },
+        {
+          "seed": 19,
+          "control": 32928.409091,
+          "treatment": 32928.409091,
+          "difference": 0.0
+        },
+        {
+          "seed": 20,
+          "control": 33307.690909,
+          "treatment": 33221.295455,
+          "difference": -86.3954539999977
+        },
+        {
+          "seed": 21,
+          "control": 36311.236364,
+          "treatment": 36311.236364,
+          "difference": 0.0
+        },
+        {
+          "seed": 22,
+          "control": 35194.718182,
+          "treatment": 35194.718182,
+          "difference": 0.0
+        },
+        {
+          "seed": 23,
+          "control": 29802.836364,
+          "treatment": 31922.227273,
+          "difference": 2119.3909090000016
+        },
+        {
+          "seed": 24,
+          "control": 35961.568182,
+          "treatment": 35961.568182,
+          "difference": 0.0
+        },
+        {
+          "seed": 25,
+          "control": 32441.290909,
+          "treatment": 32441.290909,
+          "difference": 0.0
+        },
+        {
+          "seed": 26,
+          "control": 34973.409091,
+          "treatment": 34973.409091,
+          "difference": 0.0
+        },
+        {
+          "seed": 27,
+          "control": 35445.581818,
+          "treatment": 35445.581818,
+          "difference": 0.0
+        },
+        {
+          "seed": 28,
+          "control": 31505.659091,
+          "treatment": 31505.659091,
+          "difference": 0.0
+        },
+        {
+          "seed": 29,
+          "control": 33239.954545,
+          "treatment": 32950.431818,
+          "difference": -289.5227270000032
+        },
+        {
+          "seed": 30,
+          "control": 33128.863636,
+          "treatment": 33128.863636,
+          "difference": 0.0
+        }
+      ]
+    },
+    "resource_sense_operations": {
+      "n": 30,
+      "mean_difference_treatment_minus_control": 7.766666666666667,
+      "median_difference": 0.0,
+      "standard_deviation_difference": 15.79324022427346,
+      "approx_95_percent_ci": [
+        1.870036006474331,
+        13.663297326859002
+      ],
+      "minimum_difference": 0.0,
+      "maximum_difference": 52.0,
+      "positive_seed_count": 14,
+      "zero_seed_count": 16,
+      "negative_seed_count": 0,
+      "pairs": [
+        {
+          "seed": 1,
+          "control": 0.0,
+          "treatment": 1.0,
+          "difference": 1.0
+        },
+        {
+          "seed": 2,
+          "control": 0.0,
+          "treatment": 8.0,
+          "difference": 8.0
+        },
+        {
+          "seed": 3,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 4,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 5,
+          "control": 0.0,
+          "treatment": 2.0,
+          "difference": 2.0
+        },
+        {
+          "seed": 6,
+          "control": 0.0,
+          "treatment": 37.0,
+          "difference": 37.0
+        },
+        {
+          "seed": 7,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 8,
+          "control": 0.0,
+          "treatment": 52.0,
+          "difference": 52.0
+        },
+        {
+          "seed": 9,
+          "control": 0.0,
+          "treatment": 48.0,
+          "difference": 48.0
+        },
+        {
+          "seed": 10,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 11,
+          "control": 0.0,
+          "treatment": 2.0,
+          "difference": 2.0
+        },
+        {
+          "seed": 12,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 13,
+          "control": 0.0,
+          "treatment": 1.0,
+          "difference": 1.0
+        },
+        {
+          "seed": 14,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 15,
+          "control": 0.0,
+          "treatment": 1.0,
+          "difference": 1.0
+        },
+        {
+          "seed": 16,
+          "control": 0.0,
+          "treatment": 1.0,
+          "difference": 1.0
+        },
+        {
+          "seed": 17,
+          "control": 0.0,
+          "treatment": 37.0,
+          "difference": 37.0
+        },
+        {
+          "seed": 18,
+          "control": 0.0,
+          "treatment": 1.0,
+          "difference": 1.0
+        },
+        {
+          "seed": 19,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 20,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 21,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 22,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 23,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 24,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 25,
+          "control": 0.0,
+          "treatment": 8.0,
+          "difference": 8.0
+        },
+        {
+          "seed": 26,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 27,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 28,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        },
+        {
+          "seed": 29,
+          "control": 0.0,
+          "treatment": 34.0,
+          "difference": 34.0
+        },
+        {
+          "seed": 30,
+          "control": 0.0,
+          "treatment": 0.0,
+          "difference": 0.0
+        }
+      ]
+    }
+  },
+  "interpretation_limit": "The campaign supports only claims about executing the existing SENSE_RESOURCE opcode under this implemented center-patch environment. It does not establish adaptation, navigation, biological fitness, intelligence, cooperation, or open-ended evolution.",
+  "interval_note": "Approximate paired 95% intervals use mean difference +/- t(29,0.975) times paired standard error and are descriptive for this computational campaign."
+}

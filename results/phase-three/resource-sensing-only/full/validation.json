@@ -1,0 +1,36 @@
+{
+  "completed_runs": 60,
+  "energy_tolerance": 1e-07,
+  "expected_runs": 60,
+  "failure_count": 0,
+  "failures": [],
+  "passed": true,
+  "reproducibility": {
+    "all_identical": true,
+    "batch_results": [
+      {
+        "condition": "sensing-execution-off",
+        "identical": true,
+        "reference_checksum": "a6d06953ab19008d6acb05d6182762d25212ab2a0b1383944c61930cbba28377",
+        "repeat_checksum": "a6d06953ab19008d6acb05d6182762d25212ab2a0b1383944c61930cbba28377",
+        "seed": 1
+      },
+      {
+        "condition": "sensing-execution-off",
+        "identical": true,
+        "reference_checksum": "699d9e999795546052cae215a737de6587855b88483ac36ac9ed457632fb03ef",
+        "repeat_checksum": "699d9e999795546052cae215a737de6587855b88483ac36ac9ed457632fb03ef",
+        "seed": 11
+      },
+      {
+        "condition": "sensing-execution-off",
+        "identical": true,
+        "reference_checksum": "74961154e65091316730c85ba9b8a10c1de93877792cdde018e3731de7ebc6d4",
+        "repeat_checksum": "74961154e65091316730c85ba9b8a10c1de93877792cdde018e3731de7ebc6d4",
+        "seed": 21
+      }
+    ],
+    "mode": "three independently repeated batch controls"
+  },
+  "resource_tolerance": 1e-07
+}
