@@ -1,0 +1,14 @@
+{
+  "experiment": "phase-four-resource-sensing-with-movement-preflight",
+  "format": "melakat-experiment-provenance-0.1",
+  "generated_at_utc": "2026-09-07T17:18:54.052532+00:00",
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "python_version": "3.12.14",
+  "repository": "amin076/melakat",
+  "source_branch": "28/merge",
+  "source_commit": "02905124657250980ceb43079a99f8ee1a16ccda",
+  "source_spec": "experiments/phase-four/resource-sensing-with-movement-preflight.json",
+  "source_spec_sha256": "f2130d9248864788796b2fa937e6fb34cfe3f8686adbdeb8b1861d4a6db8d074",
+  "workflow": "Phase Four sensing movement exposure preflight",
+  "workflow_run_id": "34147002823"
+}
