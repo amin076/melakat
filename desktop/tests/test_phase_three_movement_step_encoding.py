@@ -37,6 +37,23 @@ class PhaseThreeMovementStepEncodingTests(unittest.TestCase):
         )
         return CORE_SCHEMA.validate(config)
 
+    @staticmethod
+    def historical_config() -> dict:
+        config = CORE_SCHEMA.defaults()
+        config.update(
+            {
+                "run.engine_backend": "phase-three-vm",
+                "run.seed": 19,
+                "run.max_ticks": 20,
+                "run.emit_snapshots": False,
+                "world.spatial_enabled": True,
+                "world.resource_distribution_mode": "uniform",
+                "world.movement_enabled": False,
+                "world.movement_mutation_enabled": True,
+            }
+        )
+        return CORE_SCHEMA.validate(config)
+
     def test_zero_step_rate_preserves_phase_two_mutation_exactly(self) -> None:
         genome = PhaseZeroEngine.default_genome()
         phase_two_rng = random.Random(12345)
@@ -109,6 +126,12 @@ class PhaseThreeMovementStepEncodingTests(unittest.TestCase):
         )
         self.assertEqual(control.metrics()["movement_step_mutation_rate"], 0.0)
         self.assertEqual(intervention.metrics()["movement_step_mutation_rate"], 0.1)
+
+    def test_absent_intervention_preserves_historical_result_shape(self) -> None:
+        engine = PhaseThreeEngine(self.historical_config(), lambda _event: None)
+        self.assertEqual(engine.engine_version, PHASE_THREE_ENGINE_VERSION)
+        self.assertNotIn("movement_step_mutation_rate", engine.metrics())
+        self.assertNotIn("movement_step_mutation_rate", engine.snapshot())
 
     def test_intervention_requires_movement_mutation_alphabet(self) -> None:
         config = self.config(movement_step_rate=0.1)
