@@ -1,0 +1,195 @@
+name: Phase Three full atomic movement evidence
+
+on:
+  push:
+    branches:
+      - phase3/full-atomic-movement-actuation-evidence
+    paths:
+      - ".github/workflows/phase-three-full-atomic-evidence.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  full-atomic-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Check out evidence branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install headless Melakat package
+        run: python -m pip install -e desktop --no-deps
+
+      - name: Validate atomic movement specification
+        run: >-
+          melakat-experiment validate
+          experiments/phase-three/movement-actuation-atomic.json
+          --seed-count 30
+          --ticks 2000
+
+      - name: Run full 30-seed atomic movement campaign
+        run: >-
+          melakat-experiment run
+          experiments/phase-three/movement-actuation-atomic.json
+          --seed-count 30
+          --ticks 2000
+          --output-dir results/phase-three/movement-actuation-atomic/full
+
+      - name: Verify atomic campaign and write evidence summary
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path("results/phase-three/movement-actuation-atomic/full")
+          campaign = json.loads((root / "campaign.json").read_text(encoding="utf-8"))
+          validation = json.loads((root / "validation.json").read_text(encoding="utf-8"))
+          summary = json.loads((root / "summary.json").read_text(encoding="utf-8"))
+          runs = campaign["runs"]
+
+          control_name = "movement-actuation-atomic-execution-off"
+          treatment_name = "movement-actuation-atomic-execution-on"
+          control = [run for run in runs if run["condition"] == control_name]
+          treatment = [run for run in runs if run["condition"] == treatment_name]
+
+          failures = []
+          if len(runs) != 60:
+              failures.append(f"expected_60_runs_got_{len(runs)}")
+          if len(control) != 30 or len(treatment) != 30:
+              failures.append(
+                  f"expected_30_per_condition_got_control_{len(control)}_treatment_{len(treatment)}"
+              )
+          if not validation.get("passed"):
+              failures.append("runner_validation_failed")
+
+          movement_metrics = (
+              "movement_operations",
+              "movement_nonzero_operations",
+              "movement_zero_step_operations",
+              "movement_distance",
+              "movement_energy_cost",
+          )
+          if any(float(run.get(metric, 0.0)) != 0.0 for run in control for metric in movement_metrics):
+              failures.append("execution_off_control_recorded_movement_or_cost")
+
+          treatment_ops = sum(float(run.get("movement_operations", 0.0)) for run in treatment)
+          treatment_nonzero = sum(float(run.get("movement_nonzero_operations", 0.0)) for run in treatment)
+          treatment_zero = sum(float(run.get("movement_zero_step_operations", 0.0)) for run in treatment)
+          treatment_distance = sum(float(run.get("movement_distance", 0.0)) for run in treatment)
+          treatment_cost = sum(float(run.get("movement_energy_cost", 0.0)) for run in treatment)
+          treatment_uncommitted_ops = sum(float(run.get("movement_uncommitted_operations", 0.0)) for run in treatment)
+          treatment_uncommitted_nonzero = sum(float(run.get("movement_uncommitted_nonzero_operations", 0.0)) for run in treatment)
+          treatment_uncommitted_distance = sum(float(run.get("movement_uncommitted_distance", 0.0)) for run in treatment)
+
+          if treatment_ops <= 0.0:
+              failures.append("treatment_executed_no_move_instructions")
+          if treatment_nonzero <= 0.0 or treatment_distance <= 0.0:
+              failures.append("treatment_produced_no_realized_locomotion")
+          if abs(treatment_ops - (treatment_nonzero + treatment_zero)) > 1e-9:
+              failures.append("movement_partition_identity_failed")
+
+          underpaid = []
+          wrong_versions = []
+          wrong_atomic = []
+          max_energy_error = 0.0
+          max_resource_error = 0.0
+          for run in runs:
+              if run.get("engine_version") != "phase-three-vm-0.3" or run.get("measurement_version") != "phase-three-measurement-0.3":
+                  wrong_versions.append({"condition": run["condition"], "seed": run["seed"], "engine_version": run.get("engine_version"), "measurement_version": run.get("measurement_version")})
+              if run.get("atomic_movement_payment_enabled") is not True:
+                  wrong_atomic.append({"condition": run["condition"], "seed": run["seed"]})
+              distance = float(run.get("movement_distance", 0.0))
+              paid = float(run.get("movement_energy_cost", 0.0))
+              minimum_required = distance * 0.1
+              if paid + 1e-9 < minimum_required:
+                  underpaid.append({"condition": run["condition"], "seed": run["seed"], "distance": distance, "paid": paid, "minimum_required": minimum_required})
+              max_energy_error = max(max_energy_error, abs(float(run.get("energy_balance_error", 0.0))))
+              max_resource_error = max(max_resource_error, abs(float(run.get("local_resource_balance_error", 0.0))))
+
+          if wrong_versions:
+              failures.append("unexpected_v0_3_versioning")
+          if wrong_atomic:
+              failures.append("atomic_payment_flag_missing")
+          if underpaid:
+              failures.append("realized_movement_underpaid")
+
+          comparison = summary.get("comparisons", [{}])[0] if summary.get("comparisons") else {}
+          selected = {
+              key: comparison.get(f"{key}_mean_delta")
+              for key in (
+                  "active_population",
+                  "births",
+                  "deaths",
+                  "historical_genotypes",
+                  "blocked_divisions",
+                  "mean_local_neighbors",
+                  "mean_nearest_neighbor_distance",
+              )
+          }
+
+          reproducibility = validation.get("reproducibility", {})
+          reproducibility_identical = bool(
+              reproducibility.get("all_identical", reproducibility.get("identical", False))
+          )
+
+          verification = {
+              "status": "PASS" if not failures else "FAIL",
+              "failures": failures,
+              "runs": len(runs),
+              "matched_seeds": min(len(control), len(treatment)),
+              "ticks_per_run": 2000,
+              "engine_version": "phase-three-vm-0.3",
+              "measurement_version": "phase-three-measurement-0.3",
+              "atomic_movement_payment_enabled": True,
+              "control_movement_operations": sum(float(run.get("movement_operations", 0.0)) for run in control),
+              "treatment_movement_operations": treatment_ops,
+              "control_movement_nonzero_operations": sum(float(run.get("movement_nonzero_operations", 0.0)) for run in control),
+              "treatment_movement_nonzero_operations": treatment_nonzero,
+              "control_movement_zero_step_operations": sum(float(run.get("movement_zero_step_operations", 0.0)) for run in control),
+              "treatment_movement_zero_step_operations": treatment_zero,
+              "control_movement_distance": sum(float(run.get("movement_distance", 0.0)) for run in control),
+              "treatment_movement_distance": treatment_distance,
+              "control_movement_energy_cost": sum(float(run.get("movement_energy_cost", 0.0)) for run in control),
+              "treatment_movement_energy_cost": treatment_cost,
+              "treatment_uncommitted_operations": treatment_uncommitted_ops,
+              "treatment_uncommitted_nonzero_operations": treatment_uncommitted_nonzero,
+              "treatment_uncommitted_distance": treatment_uncommitted_distance,
+              "underpaid_realized_movement_runs": underpaid,
+              "movement_partition_identity": abs(treatment_ops - (treatment_nonzero + treatment_zero)) <= 1e-9,
+              "max_abs_energy_balance_error": max_energy_error,
+              "max_abs_local_resource_balance_error": max_resource_error,
+              "reproducibility_identical": reproducibility_identical,
+              "selected_mean_differences": selected,
+              "claim_boundary": "model-specific atomic movement execution/accounting only; no adaptation, navigation, resource-seeking, fitness advantage, intelligence, cooperation, predation, or open-ended-evolution claim",
+          }
+          (root / "campaign-verification.json").write_text(
+              json.dumps(verification, indent=2, sort_keys=False) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps(verification, indent=2))
+          if failures:
+              raise SystemExit(";".join(failures))
+          PY
+
+      - name: Commit full evidence to branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results/phase-three/movement-actuation-atomic/full
+          git commit -m "Archive full atomic movement actuation campaign"
+          git push origin HEAD:phase3/full-atomic-movement-actuation-evidence
+
+      - name: Upload full evidence artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-three-full-atomic-movement-evidence-${{ github.run_id }}
+          path: results/phase-three/movement-actuation-atomic/full
+          if-no-files-found: error
