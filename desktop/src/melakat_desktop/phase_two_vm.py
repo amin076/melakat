@@ -34,6 +34,9 @@ def mutate_phase_two_genome(
     genome: tuple[Instruction, ...],
     rng: random.Random,
     rate: float,
+    *,
+    sensing_enabled: bool = True,
+    movement_enabled: bool = True,
 ) -> tuple[Instruction, ...]:
     """Blind substitution across the Phase Zero + Phase Two opcode alphabets.
 
@@ -43,7 +46,11 @@ def mutate_phase_two_genome(
     """
 
     result: list[Instruction] = []
-    opcodes: list[IntEnum] = [*list(Opcode), *list(PhaseTwoOpcode)]
+    opcodes: list[IntEnum] = [*list(Opcode)]
+    if sensing_enabled:
+        opcodes.append(PhaseTwoOpcode.SENSE_RESOURCE)
+    if movement_enabled:
+        opcodes.extend((PhaseTwoOpcode.MOVE_X, PhaseTwoOpcode.MOVE_Y))
     for instruction in genome:
         if rng.random() < rate:
             alternatives = [opcode for opcode in opcodes if opcode != instruction.opcode]
@@ -67,12 +74,16 @@ class PhaseTwoVirtualMachine:
         *,
         sense_resource: Callable[[], float],
         move: Callable[[str, float], tuple[float, int]],
+        sensing_enabled: bool = True,
+        movement_enabled: bool = True,
     ) -> None:
         self.program = program
         self.config = config
         self.state = state
         self.sense_resource = sense_resource
         self.move = move
+        self.sensing_enabled = bool(sensing_enabled)
+        self.movement_enabled = bool(movement_enabled)
         self.resource_sense_operations = 0
         self.movement_operations = 0
         self.movement_distance = 0.0
@@ -103,21 +114,23 @@ class PhaseTwoVirtualMachine:
         if isinstance(instruction.opcode, PhaseTwoOpcode):
             try:
                 if instruction.opcode is PhaseTwoOpcode.SENSE_RESOURCE:
-                    self._require_register(instruction.a)
-                    sensed = max(0.0, float(self.sense_resource()))
-                    quantized = min(self.modulus - 1, int(round(sensed)))
-                    self.state.registers[instruction.a] = quantized
-                    self.resource_sense_operations += 1
+                    if self.sensing_enabled:
+                        self._require_register(instruction.a)
+                        sensed = max(0.0, float(self.sense_resource()))
+                        quantized = min(self.modulus - 1, int(round(sensed)))
+                        self.state.registers[instruction.a] = quantized
+                        self.resource_sense_operations += 1
                 elif instruction.opcode in {
                     PhaseTwoOpcode.MOVE_X,
                     PhaseTwoOpcode.MOVE_Y,
                 }:
-                    axis = "x" if instruction.opcode is PhaseTwoOpcode.MOVE_X else "y"
-                    requested = float(self._signed_immediate(instruction.b))
-                    distance, contacts = self.move(axis, requested)
-                    self.movement_operations += 1
-                    self.movement_distance += max(0.0, float(distance))
-                    self.boundary_contacts += max(0, int(contacts))
+                    if self.movement_enabled:
+                        axis = "x" if instruction.opcode is PhaseTwoOpcode.MOVE_X else "y"
+                        requested = float(self._signed_immediate(instruction.b))
+                        distance, contacts = self.move(axis, requested)
+                        self.movement_operations += 1
+                        self.movement_distance += max(0.0, float(distance))
+                        self.boundary_contacts += max(0, int(contacts))
             except ValueError as exc:
                 self.state.fault = str(exc)
                 return False

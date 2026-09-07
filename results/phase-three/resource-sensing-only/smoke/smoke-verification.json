@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "experiment": "phase-three-resource-sensing-only-smoke",
+  "runs": 16,
+  "matched_seeds": 8,
+  "ticks": 800,
+  "resource_distribution": "center_patch",
+  "mutation_alphabet_matched": true,
+  "movement_disabled_both_conditions": true,
+  "control_resource_sense_operations": 0,
+  "treatment_resource_sense_operations": 54,
+  "max_abs_energy_balance_error": 1.4e-09,
+  "max_abs_local_resource_balance_error": 7e-10,
+  "reproducibility_identical": true
+}

@@ -1,0 +1,114 @@
+{
+  "status": "READY_FOR_MERGE_REVIEW",
+  "branch": "phase3/resource-sensing-only",
+  "campaign_commit": "1b1676ce8640fe5084da41f65a6e5ca166ba6ac9",
+  "selected_metrics": [
+    {
+      "key": "active_population",
+      "label": "Final active population",
+      "mean": 0.23333333333333334,
+      "low": -1.1241698616277327,
+      "high": 1.5908365282943995,
+      "crosses_zero": true,
+      "direction": "higher",
+      "positive": 5,
+      "zero": 22,
+      "negative": 3
+    },
+    {
+      "key": "births",
+      "label": "Births",
+      "mean": -1.3,
+      "low": -5.973768349344384,
+      "high": 3.3737683493443846,
+      "crosses_zero": true,
+      "direction": "lower",
+      "positive": 4,
+      "zero": 23,
+      "negative": 3
+    },
+    {
+      "key": "deaths",
+      "label": "Deaths",
+      "mean": -1.5333333333333334,
+      "low": -5.383267604554117,
+      "high": 2.3166009378874497,
+      "crosses_zero": true,
+      "direction": "lower",
+      "positive": 4,
+      "zero": 22,
+      "negative": 4
+    },
+    {
+      "key": "historical_genotypes",
+      "label": "Historical genotypes",
+      "mean": -0.5,
+      "low": -1.1485414116644197,
+      "high": 0.1485414116644196,
+      "crosses_zero": true,
+      "direction": "lower",
+      "positive": 1,
+      "zero": 24,
+      "negative": 5
+    },
+    {
+      "key": "blocked_divisions",
+      "label": "Blocked divisions",
+      "mean": 0.3,
+      "low": -0.9976385968985815,
+      "high": 1.5976385968985816,
+      "crosses_zero": true,
+      "direction": "higher",
+      "positive": 5,
+      "zero": 22,
+      "negative": 3
+    },
+    {
+      "key": "mean_local_neighbors",
+      "label": "Mean local neighbors",
+      "mean": 0.10292563333333332,
+      "low": -0.3214909091735792,
+      "high": 0.5273421758402459,
+      "crosses_zero": true,
+      "direction": "higher",
+      "positive": 5,
+      "zero": 21,
+      "negative": 4
+    },
+    {
+      "key": "mean_nearest_neighbor_distance",
+      "label": "Mean nearest-neighbor distance",
+      "mean": -0.03005026666666666,
+      "low": -0.7294222834098347,
+      "high": 0.6693217500765014,
+      "crosses_zero": true,
+      "direction": "lower",
+      "positive": 4,
+      "zero": 21,
+      "negative": 5
+    },
+    {
+      "key": "resource_sense_operations",
+      "label": "Resource-sense operations",
+      "mean": 7.766666666666667,
+      "low": 1.870036006474331,
+      "high": 13.663297326859002,
+      "crosses_zero": false,
+      "direction": "higher",
+      "positive": 14,
+      "zero": 16,
+      "negative": 0
+    }
+  ],
+  "non_sensing_intervals_excluding_zero": [],
+  "non_sensing_intervals_including_zero": [
+    "active_population",
+    "births",
+    "deaths",
+    "historical_genotypes",
+    "blocked_divisions",
+    "mean_local_neighbors",
+    "mean_nearest_neighbor_distance"
+  ],
+  "claim_boundary": "model-specific sensing execution only"
+}
