@@ -1,0 +1,16 @@
+{
+  "completed_runs": 60,
+  "energy_tolerance": 1e-07,
+  "expected_runs": 60,
+  "failure_count": 0,
+  "failures": [],
+  "passed": true,
+  "reproducibility": {
+    "condition": "movement-actuation-atomic-execution-off",
+    "identical": true,
+    "reference_checksum": "b4d73ccb47604a71c2849a20fd30495d08ffb59add0c2d2b181620efea398497",
+    "repeat_checksum": "b4d73ccb47604a71c2849a20fd30495d08ffb59add0c2d2b181620efea398497",
+    "seed": 1
+  },
+  "resource_tolerance": 1e-07
+}
