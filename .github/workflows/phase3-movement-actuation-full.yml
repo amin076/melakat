@@ -1,0 +1,156 @@
+name: Phase Three movement actuation full campaign
+
+on:
+  push:
+    branches:
+      - phase3/full-movement-actuation-evidence
+    paths:
+      - ".github/workflows/phase3-movement-actuation-full.yml"
+      - "desktop/**"
+      - "experiments/phase-three/movement-actuation.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  movement-actuation-full:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install headless Melakat package
+        run: python -m pip install -e desktop --no-deps
+
+      - name: Validate full movement-actuation plan
+        run: >-
+          melakat-experiment validate
+          experiments/phase-three/movement-actuation.json
+          --seed-count 30
+          --ticks 2000
+
+      - name: Run full matched-seed movement-actuation campaign
+        run: >-
+          melakat-experiment run
+          experiments/phase-three/movement-actuation.json
+          --seed-count 30
+          --ticks 2000
+          --output-dir results/phase-three/movement-actuation-full-30x2000
+
+      - name: Summarize and verify actuation mechanism
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from statistics import mean, median
+
+          out_dir = Path("results/phase-three/movement-actuation-full-30x2000")
+          campaign_path = out_dir / "campaign.json"
+          campaign = json.loads(campaign_path.read_text(encoding="utf-8"))
+          runs = campaign["runs"]
+
+          control_name = "movement-actuation-execution-off"
+          treatment_name = "movement-actuation-execution-on"
+          control = sorted(
+              [run for run in runs if run["condition"] == control_name],
+              key=lambda run: int(run["seed"]),
+          )
+          treatment = sorted(
+              [run for run in runs if run["condition"] == treatment_name],
+              key=lambda run: int(run["seed"]),
+          )
+
+          if len(control) != 30 or len(treatment) != 30:
+              raise SystemExit(
+                  f"expected 30 runs per condition, got control={len(control)} treatment={len(treatment)}"
+              )
+          if [int(run["seed"]) for run in control] != [int(run["seed"]) for run in treatment]:
+              raise SystemExit("matched-seed invariant failed")
+
+          metrics = (
+              "movement_operations",
+              "movement_nonzero_operations",
+              "movement_zero_step_operations",
+              "movement_distance",
+          )
+
+          def summarize(selected):
+              summary = {}
+              for metric in metrics:
+                  values = [float(run.get(metric, 0.0)) for run in selected]
+                  summary[metric] = {
+                      "total": sum(values),
+                      "mean": mean(values),
+                      "median": median(values),
+                      "min": min(values),
+                      "max": max(values),
+                  }
+              summary["seeds_with_nonzero_movement"] = sum(
+                  float(run.get("movement_nonzero_operations", 0.0)) > 0.0 for run in selected
+              )
+              summary["seeds_with_positive_distance"] = sum(
+                  float(run.get("movement_distance", 0.0)) > 0.0 for run in selected
+              )
+              return summary
+
+          control_summary = summarize(control)
+          treatment_summary = summarize(treatment)
+          paired = []
+          for control_run, treatment_run in zip(control, treatment):
+              paired.append({
+                  "seed": int(control_run["seed"]),
+                  "control_nonzero_operations": float(control_run.get("movement_nonzero_operations", 0.0)),
+                  "treatment_nonzero_operations": float(treatment_run.get("movement_nonzero_operations", 0.0)),
+                  "control_distance": float(control_run.get("movement_distance", 0.0)),
+                  "treatment_distance": float(treatment_run.get("movement_distance", 0.0)),
+              })
+
+          report = {
+              "format": "melakat-phase-three-movement-actuation-full-gate-0.1",
+              "campaign": "movement-actuation-full-30x2000",
+              "matched_seed_count": 30,
+              "ticks_per_run": 2000,
+              "run_count": len(runs),
+              "control": control_summary,
+              "treatment": treatment_summary,
+              "paired_seeds_with_treatment_more_nonzero_movement": sum(
+                  row["treatment_nonzero_operations"] > row["control_nonzero_operations"] for row in paired
+              ),
+              "paired_seeds_with_treatment_more_distance": sum(
+                  row["treatment_distance"] > row["control_distance"] for row in paired
+              ),
+              "paired": paired,
+              "scientific_boundary": (
+                  "Mechanism/actuation evidence only. This campaign does not test navigation, "
+                  "resource seeking, adaptation, intelligence, cooperation, predation, or host selection."
+              ),
+          }
+
+          gate_path = out_dir / "movement-actuation-full-gate.json"
+          gate_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          print(json.dumps(report, indent=2, sort_keys=True))
+
+          if any(control_summary[metric]["total"] != 0.0 for metric in metrics):
+              raise SystemExit("execution-off control recorded movement")
+          if treatment_summary["movement_operations"]["total"] <= 0.0:
+              raise SystemExit("execution-on treatment executed no MOVE instructions")
+          if treatment_summary["movement_nonzero_operations"]["total"] <= 0.0:
+              raise SystemExit("execution-on treatment produced no non-zero movement")
+          if treatment_summary["movement_distance"]["total"] <= 0.0:
+              raise SystemExit("execution-on treatment produced no realized movement distance")
+          PY
+
+      - name: Upload full campaign evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-three-movement-actuation-full-${{ github.run_id }}
+          path: results/phase-three/movement-actuation-full-30x2000
+          if-no-files-found: error
