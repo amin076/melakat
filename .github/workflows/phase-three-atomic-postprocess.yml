@@ -21,7 +21,6 @@ jobs:
         shell: bash
         run: |
           python - <<'PY'
-          import csv
           import hashlib
           import json
           import math
@@ -31,9 +30,8 @@ jobs:
           root = Path("results/phase-three/movement-actuation-atomic/full")
           verification = json.loads((root / "campaign-verification.json").read_text(encoding="utf-8"))
           validation = json.loads((root / "validation.json").read_text(encoding="utf-8"))
-
-          with (root / "runs.csv").open(newline="", encoding="utf-8") as handle:
-              rows = list(csv.DictReader(handle))
+          campaign = json.loads((root / "campaign.json").read_text(encoding="utf-8"))
+          rows = campaign["runs"]
 
           control_name = "movement-actuation-atomic-execution-off"
           treatment_name = "movement-actuation-atomic-execution-on"
@@ -47,8 +45,8 @@ jobs:
               raise SystemExit(f"expected matched seeds 1..30, got {seeds}")
 
           def value(row, metric):
-              raw = row.get(metric, "")
-              return 0.0 if raw in (None, "") else float(raw)
+              raw = row.get(metric, 0.0)
+              return 0.0 if raw is None else float(raw)
 
           def paired_metric(metric):
               deltas = {
@@ -158,7 +156,7 @@ jobs:
               json.dumps(merge, indent=2) + "\n", encoding="utf-8"
           )
 
-          readme = f'''# Phase Three atomic movement-actuation evidence\n\nThis directory archives the full matched-seed evidence campaign for the Phase Three `phase-three-vm-0.3` atomic movement-payment semantics.\n\n## Campaign\n\n- 30 matched seeds;\n- 2 conditions;\n- 2000 ticks per run;\n- 60 completed runs;\n- control: movement execution off;\n- treatment: movement execution on;\n- hereditary movement availability and `mutation.movement_step_rate=0.5` matched in both conditions;\n- resource sensing disabled in both conditions;\n- `world.atomic_movement_payment_enabled=true` in both conditions.\n\n## Mechanical result\n\nThe verification gate passed. The control committed no movement. The treatment committed {verification['treatment_movement_nonzero_operations']:.0f} non-zero movement operations over {verification['treatment_movement_distance']:.1f} distance units and paid {verification['treatment_movement_energy_cost']:.1f} movement-energy units. Four additional non-zero movement attempts ({verification['treatment_uncommitted_distance']:.1f} distance units) were rejected before commit because later execution-energy payment failed. No committed realized movement was underpaid.\n\nMaximum absolute energy-balance error was {verification['max_abs_energy_balance_error']:.2e}; maximum absolute local-resource balance error was {verification['max_abs_local_resource_balance_error']:.2e}; deterministic reproducibility passed.\n\n## Scientific interpretation\n\nThis campaign establishes the **movement execution/accounting mechanism**, not navigation or adaptation. The selected matched population/ecological outcomes have approximate 95% paired intervals that cross zero, so this campaign does not support a robust directional population effect from movement execution alone.\n\nThe result therefore opens the next controlled gate: a sensing-plus-movement experiment can now ask whether information coupled to locomotion changes spatial/resource outcomes. That future experiment must retain the v0.3 atomic-payment semantics and must not pre-program resource seeking.\n\nSee `campaign-verification.json`, `paired-analysis.json`, `merge-readiness.json`, `validation.json`, and `runs.csv` for machine-readable evidence.\n'''
+          readme = f'''# Phase Three atomic movement-actuation evidence\n\nThis directory archives the full matched-seed evidence campaign for the Phase Three `phase-three-vm-0.3` atomic movement-payment semantics.\n\n## Campaign\n\n- 30 matched seeds;\n- 2 conditions;\n- 2000 ticks per run;\n- 60 completed runs;\n- control: movement execution off;\n- treatment: movement execution on;\n- hereditary movement availability and `mutation.movement_step_rate=0.5` matched in both conditions;\n- resource sensing disabled in both conditions;\n- `world.atomic_movement_payment_enabled=true` in both conditions.\n\n## Mechanical result\n\nThe verification gate passed. The control committed no movement. The treatment committed {verification['treatment_movement_nonzero_operations']:.0f} non-zero movement operations over {verification['treatment_movement_distance']:.1f} distance units and paid {verification['treatment_movement_energy_cost']:.1f} movement-energy units. Four additional non-zero movement attempts ({verification['treatment_uncommitted_distance']:.1f} distance units) were rejected before commit because later execution-energy payment failed. No committed realized movement was underpaid.\n\nMaximum absolute energy-balance error was {verification['max_abs_energy_balance_error']:.2e}; maximum absolute local-resource balance error was {verification['max_abs_local_resource_balance_error']:.2e}; deterministic reproducibility passed.\n\n## Scientific interpretation\n\nThis campaign establishes the **movement execution/accounting mechanism**, not navigation or adaptation. All selected matched population/ecological outcomes have approximate 95% paired intervals that cross zero, so this campaign does not support a robust directional population effect from movement execution alone.\n\nThe result therefore opens the next controlled gate: a sensing-plus-movement experiment can now ask whether information coupled to locomotion changes spatial/resource outcomes. That future experiment must retain the v0.3 atomic-payment semantics and must not pre-program resource seeking.\n\nSee `campaign-verification.json`, `paired-analysis.json`, `merge-readiness.json`, `validation.json`, and `runs.csv` for machine-readable evidence.\n'''
           (root / "README.md").write_text(readme, encoding="utf-8")
 
           checksum_files = [
@@ -174,6 +172,8 @@ jobs:
 
           if not mechanism_ok:
               raise SystemExit("atomic evidence is not merge-ready")
+          if not all(selected_cross_zero.values()):
+              raise SystemExit("selected population interval unexpectedly excludes zero")
           print(json.dumps(merge, indent=2))
           PY
 
@@ -183,5 +183,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add results/phase-three/movement-actuation-atomic/full
-          git commit -m "Analyze full atomic movement evidence"
+          git commit -m "Correct paired atomic movement analysis"
           git push origin HEAD:phase3/full-atomic-movement-actuation-evidence
