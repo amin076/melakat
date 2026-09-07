@@ -62,11 +62,16 @@ class PhaseTwoEngine(PhaseZeroEngine):
             self.legacy_organism_actions_enabled
             or bool(config.get("world.movement_enabled", False))
         )
+        self.movement_mutation_enabled = (
+            self.movement_enabled
+            or bool(config.get("world.movement_mutation_enabled", False))
+        )
         self.organism_actions_enabled = (
             self.resource_sensing_enabled or self.movement_enabled
         )
         self.phase_two_vm_enabled = (
-            self.resource_sensing_mutation_enabled or self.movement_enabled
+            self.resource_sensing_mutation_enabled
+            or self.movement_mutation_enabled
         )
         self.boundary_model = str(config.get("world.boundary_model", "reflective"))
         if self.spatial_enabled and self.boundary_model not in SUPPORTED_BOUNDARIES:
@@ -81,6 +86,8 @@ class PhaseTwoEngine(PhaseZeroEngine):
             raise ValueError("resource_sensing_mutation_requires_spatial")
         if self.movement_enabled and not self.spatial_enabled:
             raise ValueError("movement_requires_spatial")
+        if self.movement_mutation_enabled and not self.spatial_enabled:
+            raise ValueError("movement_mutation_requires_spatial")
 
         self.boundary_contacts = 0
         self.resource_sense_operations = 0
@@ -138,7 +145,7 @@ class PhaseTwoEngine(PhaseZeroEngine):
                     self.rng,
                     float(self.config["mutation.substitution_rate"]),
                     sensing_enabled=self.resource_sensing_mutation_enabled,
-                    movement_enabled=self.movement_enabled,
+                    movement_enabled=self.movement_mutation_enabled,
                 )
             else:
                 parent.pending_child_genome = mutate_genome(
@@ -469,6 +476,7 @@ class PhaseTwoEngine(PhaseZeroEngine):
                 "resource_sensing_enabled": self.resource_sensing_enabled,
                 "resource_sensing_mutation_enabled": self.resource_sensing_mutation_enabled,
                 "movement_enabled": self.movement_enabled,
+            "movement_mutation_enabled": self.movement_mutation_enabled,
             }
         )
         active_by_id = {
@@ -529,6 +537,7 @@ class PhaseTwoEngine(PhaseZeroEngine):
                 "resource_sensing_enabled": self.resource_sensing_enabled,
                 "resource_sensing_mutation_enabled": self.resource_sensing_mutation_enabled,
                 "movement_enabled": self.movement_enabled,
+            "movement_mutation_enabled": self.movement_mutation_enabled,
                 "resource_sense_operations": self.resource_sense_operations,
                 "movement_operations": self.movement_operations,
                 "movement_distance": round(self.movement_distance, 6),
