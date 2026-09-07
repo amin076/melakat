@@ -66,6 +66,8 @@ COMPACT_METRICS = (
     "local_resource_balance_error",
     "resource_sense_operations",
     "movement_operations",
+    "movement_nonzero_operations",
+    "movement_zero_step_operations",
     "movement_distance",
     "movement_energy_cost",
 )
@@ -90,6 +92,8 @@ SUMMARY_METRICS = (
     "mean_nearest_neighbor_distance",
     "local_resource_total",
     "movement_operations",
+    "movement_nonzero_operations",
+    "movement_zero_step_operations",
     "movement_distance",
 )
 

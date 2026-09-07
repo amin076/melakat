@@ -15,7 +15,9 @@ class PhaseThreeSensingSeparationTests(unittest.TestCase):
     def test_new_switches_default_off(self) -> None:
         defaults = CORE_SCHEMA.defaults()
         self.assertFalse(defaults["world.resource_sensing_enabled"])
+        self.assertFalse(defaults["world.resource_sensing_mutation_enabled"])
         self.assertFalse(defaults["world.movement_enabled"])
+        self.assertFalse(defaults["world.movement_mutation_enabled"])
         self.assertFalse(defaults["world.organism_actions_enabled"])
 
     def test_sensing_only_mutation_excludes_movement(self) -> None:
@@ -97,6 +99,114 @@ class PhaseThreeSensingSeparationTests(unittest.TestCase):
         metrics = engine.metrics()
         self.assertTrue(metrics["resource_sensing_enabled"])
         self.assertFalse(metrics["movement_enabled"])
+
+    def test_movement_mutation_availability_without_execution(self) -> None:
+        config = CORE_SCHEMA.validate({
+            "world.spatial_enabled": True,
+            "world.resource_sensing_enabled": False,
+            "world.resource_sensing_mutation_enabled": False,
+            "world.movement_enabled": False,
+            "world.movement_mutation_enabled": True,
+            "world.organism_actions_enabled": False,
+        })
+        engine = PhaseTwoEngine(config, lambda event: None)
+        self.assertFalse(engine.movement_enabled)
+        self.assertTrue(engine.movement_mutation_enabled)
+        self.assertTrue(engine.phase_two_vm_enabled)
+
+    def test_movement_execution_toggle_preserves_mutation_mapping(self) -> None:
+        base = {
+            "world.spatial_enabled": True,
+            "world.resource_sensing_enabled": False,
+            "world.resource_sensing_mutation_enabled": False,
+            "world.movement_mutation_enabled": True,
+            "world.organism_actions_enabled": False,
+        }
+        control_engine = PhaseTwoEngine(
+            CORE_SCHEMA.validate({**base, "world.movement_enabled": False}),
+            lambda event: None,
+        )
+        treatment_engine = PhaseTwoEngine(
+            CORE_SCHEMA.validate({**base, "world.movement_enabled": True}),
+            lambda event: None,
+        )
+        self.assertFalse(control_engine.movement_enabled)
+        self.assertTrue(treatment_engine.movement_enabled)
+        self.assertTrue(control_engine.movement_mutation_enabled)
+        self.assertTrue(treatment_engine.movement_mutation_enabled)
+
+        genome = (
+            Instruction(Opcode.NOP),
+            Instruction(Opcode.ADD, a=0, b=1),
+            Instruction(Opcode.COPY, a=0, b=1),
+            Instruction(Opcode.DIVIDE),
+        )
+        control_mutated = mutate_phase_two_genome(
+            genome,
+            random.Random(24680),
+            0.65,
+            sensing_enabled=control_engine.resource_sensing_mutation_enabled,
+            movement_enabled=control_engine.movement_mutation_enabled,
+        )
+        treatment_mutated = mutate_phase_two_genome(
+            genome,
+            random.Random(24680),
+            0.65,
+            sensing_enabled=treatment_engine.resource_sensing_mutation_enabled,
+            movement_enabled=treatment_engine.movement_mutation_enabled,
+        )
+        self.assertEqual(control_mutated, treatment_mutated)
+
+    def test_movement_mutation_requires_spatial_world(self) -> None:
+        config = CORE_SCHEMA.validate({
+            "world.spatial_enabled": False,
+            "world.movement_enabled": False,
+            "world.movement_mutation_enabled": True,
+            "world.organism_actions_enabled": False,
+        })
+        with self.assertRaisesRegex(ValueError, "movement_mutation_requires_spatial"):
+            PhaseTwoEngine(config, lambda event: None)
+
+    def test_movement_metrics_partition_zero_and_nonzero_steps(self) -> None:
+        config = VMConfig(word_bits=8, register_count=4, memory_size=8)
+
+        def run_operand(operand: int):
+            calls = []
+
+            def move(axis: str, requested: float):
+                calls.append((axis, requested))
+                return abs(requested), 0
+
+            program = (Instruction(PhaseTwoOpcode.MOVE_X, b=operand),)
+            state = VMState(
+                registers=[0] * 4,
+                memory=[0] * 8,
+                replication_buffer=[None],
+            )
+            vm = PhaseTwoVirtualMachine(
+                program,
+                config,
+                state,
+                sense_resource=lambda: 0.0,
+                move=move,
+                sensing_enabled=False,
+                movement_enabled=True,
+            )
+            return vm.run(1), calls
+
+        zero, zero_calls = run_operand(0)
+        self.assertEqual(zero_calls, [("x", 0.0)])
+        self.assertEqual(zero.movement_operations, 1)
+        self.assertEqual(zero.movement_nonzero_operations, 0)
+        self.assertEqual(zero.movement_zero_step_operations, 1)
+        self.assertEqual(zero.movement_distance, 0.0)
+
+        nonzero, nonzero_calls = run_operand(1)
+        self.assertEqual(nonzero_calls, [("x", 1.0)])
+        self.assertEqual(nonzero.movement_operations, 1)
+        self.assertEqual(nonzero.movement_nonzero_operations, 1)
+        self.assertEqual(nonzero.movement_zero_step_operations, 0)
+        self.assertEqual(nonzero.movement_distance, 1.0)
 
     def test_legacy_combined_switch_preserves_old_behavior(self) -> None:
         config = CORE_SCHEMA.validate(

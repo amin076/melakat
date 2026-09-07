@@ -155,6 +155,14 @@ CORE_SCHEMA = ParameterSchema(
             advanced=True,
         ),
         ParameterSpec(
+            "world.movement_mutation_enabled", "Allow movement opcodes in mutation", "Movement", "boolean", False,
+            description=(
+                "Allow MOVE_X and MOVE_Y to enter hereditary genomes through mutation independently "
+                "of whether those instructions execute movement."
+            ),
+            advanced=True,
+        ),
+        ParameterSpec(
             "world.organism_actions_enabled", "Enable evolved sensing/movement (legacy combined)", "Movement", "boolean", False,
             description=(
                 "Backward-compatible umbrella: when enabled, SENSE_RESOURCE, MOVE_X and MOVE_Y are all enabled. "
