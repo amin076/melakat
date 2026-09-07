@@ -1,0 +1,42 @@
+{
+  "status": "PASS",
+  "runs": 60,
+  "matched_seeds": 30,
+  "ticks_per_run": 2000,
+  "batches": 3,
+  "measurement_version": "phase-three-measurement-0.2",
+  "control_movement_operations": 0,
+  "treatment_movement_operations": 257,
+  "control_movement_nonzero_operations": 0,
+  "treatment_movement_nonzero_operations": 6,
+  "control_movement_zero_step_operations": 0,
+  "treatment_movement_zero_step_operations": 251,
+  "control_movement_distance": 0.0,
+  "treatment_movement_distance": 6.0,
+  "control_movement_energy_cost": 0.0,
+  "treatment_movement_energy_cost": 0.6000000000000001,
+  "resource_sense_operations_total": 0,
+  "movement_partition_identity": true,
+  "max_abs_energy_balance_error": 3.9e-09,
+  "max_abs_local_resource_balance_error": 6.7e-09,
+  "all_batch_reproducibility_identical": true,
+  "selected_mean_differences": {
+    "active_population": 0.0,
+    "births": 0.23333333333333334,
+    "deaths": 0.23333333333333334,
+    "historical_genotypes": 0.16666666666666666,
+    "blocked_divisions": 0.0,
+    "mean_local_neighbors": 0.0117647,
+    "mean_nearest_neighbor_distance": 0.026573833333333317
+  },
+  "selected_intervals_crossing_zero": {
+    "active_population": true,
+    "births": true,
+    "deaths": true,
+    "historical_genotypes": true,
+    "blocked_divisions": true,
+    "mean_local_neighbors": true,
+    "mean_nearest_neighbor_distance": true
+  },
+  "claim_boundary": "model-specific movement execution only; no adaptation, navigation, resource-seeking, fitness advantage, intelligence, cooperation, or open-ended-evolution claim"
+}

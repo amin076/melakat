@@ -1,0 +1,35 @@
+{
+  "completed_runs": 60,
+  "energy_tolerance": 1e-07,
+  "expected_runs": 60,
+  "failure_count": 0,
+  "failures": [],
+  "passed": true,
+  "reproducibility": {
+    "all_identical": true,
+    "batch_results": [
+      {
+        "condition": "movement-execution-off",
+        "identical": true,
+        "reference_checksum": "6d9707555c96b783dd35cd143065bef3f0acbf69491a7a1462e89f384ee87810",
+        "repeat_checksum": "6d9707555c96b783dd35cd143065bef3f0acbf69491a7a1462e89f384ee87810",
+        "seed": 1
+      },
+      {
+        "condition": "movement-execution-off",
+        "identical": true,
+        "reference_checksum": "7c5adaa0663b032aa7da0543732c722ac94996ef2ae9324a06392f4a5444dd5c",
+        "repeat_checksum": "7c5adaa0663b032aa7da0543732c722ac94996ef2ae9324a06392f4a5444dd5c",
+        "seed": 11
+      },
+      {
+        "condition": "movement-execution-off",
+        "identical": true,
+        "reference_checksum": "dfe83360f2c44f6ba6a02b077bfda124a9f30a53e5c9a35ed491808363829f13",
+        "repeat_checksum": "dfe83360f2c44f6ba6a02b077bfda124a9f30a53e5c9a35ed491808363829f13",
+        "seed": 21
+      }
+    ]
+  },
+  "resource_tolerance": 1e-07
+}
