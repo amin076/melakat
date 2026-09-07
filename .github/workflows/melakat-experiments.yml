@@ -84,6 +84,22 @@ jobs:
           --seed-count 3
           --ticks 300
 
+      - name: Validate Phase Three movement-actuation specification
+        if: github.event_name != 'workflow_dispatch'
+        run: >-
+          melakat-experiment validate
+          experiments/phase-three/movement-actuation.json
+          --seed-count 3
+          --ticks 300
+
+      - name: Validate Phase Three movement-step calibration specification
+        if: github.event_name != 'workflow_dispatch'
+        run: >-
+          melakat-experiment validate
+          experiments/phase-three/movement-step-rate-calibration.json
+          --seed-count 3
+          --ticks 300
+
       - name: Run frozen Phase Two smoke campaign
         if: github.event_name != 'workflow_dispatch'
         run: >-
@@ -101,6 +117,109 @@ jobs:
           --seed-count 3
           --ticks 300
           --output-dir results/automated-experiments/phase-three-ci-smoke
+
+      - name: Run Phase Three movement-actuation smoke campaign
+        if: github.event_name != 'workflow_dispatch'
+        run: >-
+          melakat-experiment run
+          experiments/phase-three/movement-actuation.json
+          --seed-count 3
+          --ticks 300
+          --output-dir results/automated-experiments/phase-three-movement-actuation-ci-smoke
+
+      - name: Verify movement-actuation execution gate
+        if: github.event_name != 'workflow_dispatch'
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("results/automated-experiments/phase-three-movement-actuation-ci-smoke/campaign.json")
+          campaign = json.loads(path.read_text(encoding="utf-8"))
+          runs = campaign["runs"]
+
+          def totals(condition: str) -> dict[str, float]:
+              selected = [run for run in runs if run["condition"] == condition]
+              if not selected:
+                  raise SystemExit(f"missing movement-actuation condition: {condition}")
+              return {
+                  metric: sum(float(run.get(metric, 0.0)) for run in selected)
+                  for metric in (
+                      "movement_operations",
+                      "movement_nonzero_operations",
+                      "movement_zero_step_operations",
+                      "movement_distance",
+                  )
+              }
+
+          control = totals("movement-actuation-execution-off")
+          treatment = totals("movement-actuation-execution-on")
+          print({"control": control, "treatment": treatment})
+
+          if any(value != 0.0 for value in control.values()):
+              raise SystemExit(
+                  "movement-actuation gate failed: execution-off control recorded movement"
+              )
+          if treatment["movement_operations"] <= 0.0:
+              raise SystemExit(
+                  "movement-actuation gate failed: execution-on treatment executed no MOVE instructions"
+              )
+          if treatment["movement_nonzero_operations"] <= 0.0:
+              raise SystemExit(
+                  "movement-actuation gate failed: calibrated treatment produced no nonzero movement"
+              )
+          if treatment["movement_distance"] <= 0.0:
+              raise SystemExit(
+                  "movement-actuation gate failed: calibrated treatment produced no realized distance"
+              )
+          PY
+
+      - name: Run Phase Three movement-step calibration smoke campaign
+        if: github.event_name != 'workflow_dispatch'
+        run: >-
+          melakat-experiment run
+          experiments/phase-three/movement-step-rate-calibration.json
+          --seed-count 3
+          --ticks 300
+          --output-dir results/automated-experiments/phase-three-movement-step-calibration-ci-smoke
+
+      - name: Verify movement-step channel produces realized locomotion
+        if: github.event_name != 'workflow_dispatch'
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("results/automated-experiments/phase-three-movement-step-calibration-ci-smoke/campaign.json")
+          campaign = json.loads(path.read_text(encoding="utf-8"))
+          runs = campaign["runs"]
+
+          def total_for(suffix: str, metric: str) -> float:
+              selected = [run for run in runs if str(run["condition"]).endswith(suffix)]
+              if not selected:
+                  raise SystemExit(f"missing calibration condition: {suffix}")
+              return sum(float(run.get(metric, 0.0)) for run in selected)
+
+          zero_nonzero = total_for("movement_step_rate=0.0", "movement_nonzero_operations")
+          maximal_nonzero = total_for("movement_step_rate=1.0", "movement_nonzero_operations")
+          maximal_distance = total_for("movement_step_rate=1.0", "movement_distance")
+
+          print({
+              "zero_rate_nonzero_operations": zero_nonzero,
+              "maximal_rate_nonzero_operations": maximal_nonzero,
+              "maximal_rate_movement_distance": maximal_distance,
+          })
+          if maximal_nonzero <= 0.0 or maximal_distance <= 0.0:
+              raise SystemExit(
+                  "movement-step calibration failed: maximal mutation rate did not produce realized locomotion"
+              )
+          if maximal_nonzero <= zero_nonzero:
+              raise SystemExit(
+                  "movement-step calibration failed: maximal mutation rate did not improve nonzero movement over zero rate"
+              )
+          PY
 
       - name: Run requested research campaign
         if: github.event_name == 'workflow_dispatch'

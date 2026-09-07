@@ -1,25 +1,82 @@
 from __future__ import annotations
 
+import random
 from typing import Any, Callable
 
 from .phase_three_contract import (
     PHASE_THREE_ENGINE_VERSION,
     PHASE_THREE_MEASUREMENT_VERSION,
+    PHASE_THREE_MOVEMENT_ENCODING_ENGINE_VERSION,
     PHASE_THREE_WORLD_CONTRACT_VERSION,
 )
 from .phase_two_engine import PhaseTwoEngine
+from .phase_two_vm import PhaseTwoOpcode, mutate_phase_two_genome
+from .phase_zero_engine import PhaseZeroOrganism
 from .protocol import make_event
+from .vm import Instruction
 
 SUPPORTED_RESOURCE_DISTRIBUTIONS = {"uniform", "center_patch"}
+MOVEMENT_OPCODES = {PhaseTwoOpcode.MOVE_X, PhaseTwoOpcode.MOVE_Y}
+
+
+def mutate_phase_three_genome(
+    genome: tuple[Instruction, ...],
+    rng: random.Random,
+    substitution_rate: float,
+    *,
+    sensing_enabled: bool,
+    movement_enabled: bool,
+    movement_step_rate: float,
+) -> tuple[Instruction, ...]:
+    """Phase Three mutation with an optional movement-step channel.
+
+    Opcode substitution remains exactly the Phase Two implementation. When
+    ``movement_step_rate`` is greater than zero, an instruction whose resulting
+    opcode is ``MOVE_X`` or ``MOVE_Y`` can independently mutate its signed
+    immediate to a unit step of -1 or +1. This intervention is disabled by
+    default so accepted Phase Two and Phase Three 0.1 experiments retain their
+    historical hereditary representation.
+    """
+
+    if not 0.0 <= movement_step_rate <= 1.0:
+        raise ValueError("movement_step_rate must be between 0 and 1")
+
+    mutated = mutate_phase_two_genome(
+        genome,
+        rng,
+        substitution_rate,
+        sensing_enabled=sensing_enabled,
+        movement_enabled=movement_enabled,
+    )
+    if movement_step_rate <= 0.0:
+        return mutated
+
+    result: list[Instruction] = []
+    for instruction in mutated:
+        if (
+            instruction.opcode in MOVEMENT_OPCODES
+            and rng.random() < movement_step_rate
+        ):
+            current = int(instruction.b)
+            choices = tuple(step for step in (-1, 1) if step != current)
+            step = rng.choice(choices or (-1, 1))
+            instruction = Instruction(
+                opcode=instruction.opcode,  # type: ignore[arg-type]
+                a=instruction.a,
+                b=step,
+            )
+        result.append(instruction)
+    return tuple(result)
 
 
 class PhaseThreeEngine(PhaseTwoEngine):
-    """First Phase Three reference engine.
+    """Phase Three reference engine.
 
     Phase Three preserves the Phase Two VM, reproduction, spatial topology,
     resource capture, movement and accounting rules. The first intervention
     changes only how the same total initial and incoming local resource is
-    allocated across the existing grid.
+    allocated across the existing grid. Later optional interventions remain
+    gated and default-off so earlier accepted experiments stay reproducible.
     """
 
     engine_version = PHASE_THREE_ENGINE_VERSION
@@ -50,6 +107,28 @@ class PhaseThreeEngine(PhaseTwoEngine):
         if self.resource_patch_contrast < 1.0:
             raise ValueError("resource_patch_contrast_must_be_at_least_one")
 
+        self.movement_step_mutation_configured = (
+            "mutation.movement_step_rate" in config
+        )
+        self.movement_step_mutation_rate = float(
+            config.get("mutation.movement_step_rate", 0.0)
+        )
+        if not 0.0 <= self.movement_step_mutation_rate <= 1.0:
+            raise ValueError("movement_step_rate must be between 0 and 1")
+        if self.movement_step_mutation_rate > 0.0:
+            movement_alphabet_enabled = bool(
+                config.get("world.movement_mutation_enabled", False)
+                or config.get("world.movement_enabled", False)
+                or config.get("world.organism_actions_enabled", False)
+            )
+            if not movement_alphabet_enabled:
+                raise ValueError(
+                    "movement_step_mutation_requires_movement_mutation"
+                )
+            if not bool(config.get("world.spatial_enabled", False)):
+                raise ValueError("movement_step_mutation_requires_spatial")
+            self.engine_version = PHASE_THREE_MOVEMENT_ENCODING_ENGINE_VERSION
+
         self.resource_weights: list[float] = []
         super().__init__(config, emit)
 
@@ -64,6 +143,29 @@ class PhaseThreeEngine(PhaseTwoEngine):
             # the actual Phase Three starting state. No Phase Two code is changed.
             self.history = []
             self._record_history(force=True)
+
+    def _try_reproduction(self, parent: PhaseZeroOrganism) -> bool:
+        # Phase Two owns the accepted reproduction implementation. For the new
+        # Phase Three representation intervention we precompute only the pending
+        # child genome, then delegate every memory/energy/lineage/birth rule back
+        # to the unchanged Phase Two path.
+        if (
+            self.movement_step_mutation_rate > 0.0
+            and self.spatial_enabled
+            and self.movement_mutation_enabled
+            and bool(self.config["reproduction.enabled"])
+            and parent.pending_child_genome is None
+            and self.phase_two_vm_enabled
+        ):
+            parent.pending_child_genome = mutate_phase_three_genome(
+                parent.genome,
+                self.rng,
+                float(self.config["mutation.substitution_rate"]),
+                sensing_enabled=self.resource_sensing_mutation_enabled,
+                movement_enabled=self.movement_mutation_enabled,
+                movement_step_rate=self.movement_step_mutation_rate,
+            )
+        return super()._try_reproduction(parent)
 
     def _build_center_patch_weights(self) -> list[float]:
         if self.resource_field is None:
@@ -159,6 +261,10 @@ class PhaseThreeEngine(PhaseTwoEngine):
     def snapshot(self) -> dict[str, Any]:
         snapshot = super().snapshot()
         snapshot["resource_distribution_mode"] = self.resource_distribution_mode
+        if self.movement_step_mutation_configured:
+            snapshot["movement_step_mutation_rate"] = round(
+                self.movement_step_mutation_rate, 6
+            )
         if self.resource_field is not None:
             snapshot["resource_distribution"] = {
                 "mode": self.resource_distribution_mode,
@@ -174,6 +280,10 @@ class PhaseThreeEngine(PhaseTwoEngine):
         metrics["resource_allocation_cv"] = round(
             self._resource_allocation_cv(), 6
         )
+        if self.movement_step_mutation_configured:
+            metrics["movement_step_mutation_rate"] = round(
+                self.movement_step_mutation_rate, 6
+            )
         if self.resource_field is not None:
             # This is the observed resource-field state after organism capture,
             # death release and renewal. It is distinct from allocation_cv.

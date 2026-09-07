@@ -14,17 +14,24 @@ PHASE_THREE_PARAMETER_DEFAULTS: dict[str, Any] = {
     "world.resource_patch_fraction": 0.30,
     "world.resource_patch_contrast": 4.0,
 }
-PHASE_THREE_PARAMETERS = frozenset(PHASE_THREE_PARAMETER_DEFAULTS)
+# The movement-step mutation channel is recognized only while Phase Three
+# experiment support is active, but it is intentionally NOT injected into
+# historical Phase Three specs. This preserves their accepted config hashes and
+# provenance when the new intervention remains absent/default-off.
+PHASE_THREE_OPTIONAL_PARAMETERS = frozenset({"mutation.movement_step_rate"})
+PHASE_THREE_PARAMETERS = frozenset(PHASE_THREE_PARAMETER_DEFAULTS) | PHASE_THREE_OPTIONAL_PARAMETERS
 PHASE_THREE_COMPACT_METRICS = (
     "resource_distribution_mode",
     "resource_allocation_cv",
     "resource_heterogeneity_cv",
     "local_resource_maximum",
+    "movement_step_mutation_rate",
 )
 PHASE_THREE_SUMMARY_METRICS = (
     "resource_allocation_cv",
     "resource_heterogeneity_cv",
     "local_resource_maximum",
+    "movement_step_mutation_rate",
 )
 
 
@@ -77,6 +84,25 @@ def validate_phase_three_config(config: Mapping[str, Any]) -> None:
     if float(contrast) < 1.0:
         raise ValueError("resource_patch_contrast_must_be_at_least_one")
 
+    movement_step_rate = config.get("mutation.movement_step_rate", 0.0)
+    if isinstance(movement_step_rate, bool) or not isinstance(
+        movement_step_rate, (int, float)
+    ):
+        raise ValueError("movement_step_rate_must_be_numeric")
+    movement_step_rate = float(movement_step_rate)
+    if not 0.0 <= movement_step_rate <= 1.0:
+        raise ValueError("movement_step_rate must be between 0 and 1")
+    if movement_step_rate > 0.0:
+        movement_alphabet_enabled = bool(
+            config.get("world.movement_mutation_enabled", False)
+            or config.get("world.movement_enabled", False)
+            or config.get("world.organism_actions_enabled", False)
+        )
+        if not movement_alphabet_enabled:
+            raise ValueError("movement_step_mutation_requires_movement_mutation")
+        if not bool(config.get("world.spatial_enabled", False)):
+            raise ValueError("movement_step_mutation_requires_spatial")
+
     if mode != "uniform" and not bool(config.get("world.local_resources_enabled", False)):
         raise ValueError("heterogeneous_resource_distribution_requires_local_resources")
     if mode != "uniform" and not bool(config.get("world.spatial_enabled", False)):
@@ -89,7 +115,9 @@ def phase_three_experiment_support() -> Iterator[None]:
 
     The extension is scoped to a context so Phase Two globals/defaults are not
     permanently modified in-process. Phase Three-only defaults are injected
-    only for Phase Three specs before plan/config hashing.
+    only for Phase Three specs before plan/config hashing. Optional later
+    intervention parameters are recognized without being injected, preserving
+    historical Phase Three config hashes when those interventions are absent.
     """
 
     original_known = experiment_runner.KNOWN_PARAMETERS

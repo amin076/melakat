@@ -50,6 +50,7 @@ class PhaseThreeExperimentRunnerTests(unittest.TestCase):
 
         with phase_three_experiment_support():
             self.assertTrue(PHASE_THREE_PARAMETERS <= experiment_runner.KNOWN_PARAMETERS)
+            self.assertIn("mutation.movement_step_rate", experiment_runner.KNOWN_PARAMETERS)
             self.assertIn("phase-three-vm", experiment_runner.SUPPORTED_ENGINES)
             self.assertEqual(
                 experiment_runner.WORLD_CONTRACT_VERSION,
@@ -57,6 +58,7 @@ class PhaseThreeExperimentRunnerTests(unittest.TestCase):
             )
 
         self.assertEqual(experiment_runner.KNOWN_PARAMETERS, original_known)
+        self.assertNotIn("mutation.movement_step_rate", experiment_runner.KNOWN_PARAMETERS)
         self.assertEqual(experiment_runner.SUPPORTED_ENGINES, original_supported)
         self.assertEqual(experiment_runner.WORLD_CONTRACT_VERSION, original_world_contract)
 
@@ -72,9 +74,53 @@ class PhaseThreeExperimentRunnerTests(unittest.TestCase):
         self.assertEqual(plan["base_config"]["world.resource_patch_fraction"], 0.30)
         self.assertEqual(plan["base_config"]["world.resource_patch_contrast"], 4.0)
         self.assertNotIn(
+            "mutation.movement_step_rate",
+            plan["base_config"],
+            "Later intervention parameters must not be injected into historical Phase Three specs.",
+        )
+        self.assertNotIn(
             "world.resource_distribution_mode",
             experiment_runner.CORE_SCHEMA.defaults(),
         )
+        self.assertNotIn(
+            "mutation.movement_step_rate",
+            experiment_runner.CORE_SCHEMA.defaults(),
+        )
+
+    def test_movement_step_parameter_is_accepted_only_in_phase_three_support(self) -> None:
+        spec = self._spec()
+        spec["base_config"].update(
+            {
+                "world.movement_mutation_enabled": True,
+                "mutation.movement_step_rate": 0.1,
+            }
+        )
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "base_config_contains_unknown_parameters:mutation.movement_step_rate",
+        ):
+            experiment_runner.build_experiment_plan(spec)
+
+        with phase_three_experiment_support():
+            plan = experiment_runner.build_experiment_plan(spec)
+
+        self.assertEqual(plan["base_config"]["mutation.movement_step_rate"], 0.1)
+
+    def test_invalid_movement_step_parameter_fails_phase_three_validation(self) -> None:
+        spec = self._spec()
+        spec["base_config"].update(
+            {
+                "world.movement_mutation_enabled": True,
+                "mutation.movement_step_rate": 1.1,
+            }
+        )
+        with phase_three_experiment_support():
+            with self.assertRaisesRegex(
+                ValueError,
+                "movement_step_rate must be between 0 and 1",
+            ):
+                experiment_runner.build_experiment_plan(spec)
 
     def test_phase_three_campaign_is_reproducible_conservative_and_measured(self) -> None:
         with phase_three_experiment_support():
