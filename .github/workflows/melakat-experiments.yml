@@ -84,6 +84,14 @@ jobs:
           --seed-count 3
           --ticks 300
 
+      - name: Validate Phase Three movement-actuation specification
+        if: github.event_name != 'workflow_dispatch'
+        run: >-
+          melakat-experiment validate
+          experiments/phase-three/movement-actuation.json
+          --seed-count 3
+          --ticks 300
+
       - name: Run frozen Phase Two smoke campaign
         if: github.event_name != 'workflow_dispatch'
         run: >-
@@ -101,6 +109,15 @@ jobs:
           --seed-count 3
           --ticks 300
           --output-dir results/automated-experiments/phase-three-ci-smoke
+
+      - name: Run Phase Three movement-actuation smoke campaign
+        if: github.event_name != 'workflow_dispatch'
+        run: >-
+          melakat-experiment run
+          experiments/phase-three/movement-actuation.json
+          --seed-count 3
+          --ticks 300
+          --output-dir results/automated-experiments/phase-three-movement-actuation-ci-smoke
 
       - name: Run requested research campaign
         if: github.event_name == 'workflow_dispatch'
