@@ -1,0 +1,66 @@
+{
+  "format": "melakat-experiment-spec-0.1",
+  "name": "phase-four-resource-sensing-with-movement-smoke",
+  "description": "Matched-seed Phase Four smoke campaign for the sensing-with-movement causal gate. Both conditions inherit sensing and movement opcodes, execute calibrated atomic locomotion in the same center-patch world, and differ only in whether SENSE_RESOURCE executes. This is a mechanism/exposure smoke test, not evidence of navigation or adaptation.",
+  "base_config": {
+    "run.engine_backend": "phase-three-vm",
+    "run.max_ticks": 800,
+    "world.width": 96,
+    "world.height": 70,
+    "world.spatial_enabled": true,
+    "world.boundary_model": "reflective",
+    "world.offspring_dispersion_radius": 1.4,
+    "world.neighborhood_radius": 2.0,
+    "world.initial_energy": 1000.0,
+    "world.energy_input_per_tick": 20.0,
+    "world.local_resources_enabled": true,
+    "world.resource_grid_cols": 10,
+    "world.resource_grid_rows": 7,
+    "world.local_capture_limit": 1.0,
+    "world.organism_actions_enabled": false,
+    "world.resource_sensing_enabled": false,
+    "world.resource_sensing_mutation_enabled": true,
+    "world.movement_enabled": true,
+    "world.movement_mutation_enabled": true,
+    "world.movement_max_step": 1.0,
+    "world.movement_cost_per_unit": 0.1,
+    "world.atomic_movement_payment_enabled": true,
+    "world.resource_distribution_mode": "center_patch",
+    "world.resource_patch_fraction": 0.30,
+    "world.resource_patch_contrast": 4.0,
+    "population.initial_size": 12,
+    "population.initial_energy": 25.0,
+    "population.memory_per_organism": 8,
+    "world.memory_capacity": 500,
+    "execution.instructions_per_tick": 8,
+    "execution.instruction_cost": 0.05,
+    "execution.maintenance_cost": 0.2,
+    "reproduction.enabled": true,
+    "reproduction.cost": 12.0,
+    "reproduction.offspring_energy": 8.0,
+    "mutation.substitution_rate": 0.01,
+    "mutation.movement_step_rate": 0.5
+  },
+  "seeds": {
+    "start": 1,
+    "count": 8
+  },
+  "conditions": [
+    {
+      "name": "sensing-execution-off-movement-on",
+      "overrides": {
+        "world.resource_sensing_enabled": false
+      }
+    },
+    {
+      "name": "sensing-execution-on-movement-on",
+      "overrides": {
+        "world.resource_sensing_enabled": true
+      }
+    }
+  ],
+  "reproducibility": {
+    "condition": "sensing-execution-off-movement-on",
+    "seed": 1
+  }
+}
