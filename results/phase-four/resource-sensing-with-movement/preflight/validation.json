@@ -1,0 +1,16 @@
+{
+  "completed_runs": 16,
+  "energy_tolerance": 1e-07,
+  "expected_runs": 16,
+  "failure_count": 0,
+  "failures": [],
+  "passed": true,
+  "reproducibility": {
+    "condition": "sensing-execution-off-movement-on",
+    "identical": true,
+    "reference_checksum": "6b978704867cc9d7494dd912c2a2f15e330afe9ff4284ce8579c93c68a655ca0",
+    "repeat_checksum": "6b978704867cc9d7494dd912c2a2f15e330afe9ff4284ce8579c93c68a655ca0",
+    "seed": 1
+  },
+  "resource_tolerance": 1e-07
+}

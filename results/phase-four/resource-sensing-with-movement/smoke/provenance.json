@@ -1,0 +1,14 @@
+{
+  "experiment": "phase-four-resource-sensing-with-movement-smoke",
+  "format": "melakat-experiment-provenance-0.1",
+  "generated_at_utc": "2026-09-07T17:16:33.492600+00:00",
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "python_version": "3.12.14",
+  "repository": "amin076/melakat",
+  "source_branch": "28/merge",
+  "source_commit": "64d90c646d8dc354f1eb4f9aa12d4e997898624d",
+  "source_spec": "experiments/phase-four/resource-sensing-with-movement-smoke.json",
+  "source_spec_sha256": "5c8d6ba867dc382de7c052817ed7cc5153d0cf3ff574eb0c83e51449873e44b0",
+  "workflow": "Phase Four sensing movement smoke evidence",
+  "workflow_run_id": "34146888276"
+}
