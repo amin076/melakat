@@ -1,0 +1,14 @@
+{
+  "experiment": "phase-three-movement-actuation-atomic",
+  "format": "melakat-experiment-provenance-0.1",
+  "generated_at_utc": "2026-09-07T12:30:03.577649+00:00",
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "python_version": "3.12.14",
+  "repository": "amin076/melakat",
+  "source_branch": "phase3/full-atomic-movement-actuation-evidence",
+  "source_commit": "d315f6c087fb62b4a18aacf285f58e65656916d0",
+  "source_spec": "experiments/phase-three/movement-actuation-atomic.json",
+  "source_spec_sha256": "b22f6497f036d1642d8d910917071677226561c6631ac5d55685601617ef33c6",
+  "workflow": "Phase Three full atomic movement evidence",
+  "workflow_run_id": "34121925056"
+}
