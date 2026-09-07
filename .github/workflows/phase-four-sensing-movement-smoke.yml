@@ -1,0 +1,162 @@
+name: Phase Four sensing movement smoke evidence
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/phase-four-sensing-movement-smoke.yml"
+      - "experiments/phase-four/**"
+      - "desktop/src/melakat_desktop/phase_three_*.py"
+      - "desktop/src/melakat_desktop/phase_two_*.py"
+      - "desktop/src/melakat_desktop/experiment_*.py"
+      - "desktop/tests/test_phase_four_sensing_movement_gate.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install headless Melakat package
+        run: python -m pip install -e desktop --no-deps
+
+      - name: Validate Phase Four smoke specification
+        run: >-
+          melakat-experiment validate
+          experiments/phase-four/resource-sensing-with-movement-smoke.json
+
+      - name: Run Phase Four smoke campaign
+        run: >-
+          melakat-experiment run
+          experiments/phase-four/resource-sensing-with-movement-smoke.json
+          --output-dir results/phase-four/resource-sensing-with-movement/smoke
+
+      - name: Verify Phase Four sensing-with-movement smoke gate
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          output = Path("results/phase-four/resource-sensing-with-movement/smoke")
+          campaign = json.loads((output / "campaign.json").read_text(encoding="utf-8"))
+          runs = campaign["runs"]
+          control_name = "sensing-execution-off-movement-on"
+          treatment_name = "sensing-execution-on-movement-on"
+          control = [run for run in runs if run["condition"] == control_name]
+          treatment = [run for run in runs if run["condition"] == treatment_name]
+
+          if len(control) != 8 or len(treatment) != 8:
+              raise SystemExit(
+                  f"Phase Four smoke failed: expected 8 runs per condition, got {len(control)} and {len(treatment)}"
+              )
+          if not campaign["validation"]["passed"]:
+              raise SystemExit("Phase Four smoke failed: campaign validation failed")
+          if not campaign["validation"]["reproducibility"]["identical"]:
+              raise SystemExit("Phase Four smoke failed: reproducibility replay differs")
+
+          def total(selected, metric):
+              return sum(float(run.get(metric, 0.0)) for run in selected)
+
+          control_senses = total(control, "resource_sense_operations")
+          treatment_senses = total(treatment, "resource_sense_operations")
+          control_nonzero = total(control, "movement_nonzero_operations")
+          treatment_nonzero = total(treatment, "movement_nonzero_operations")
+
+          if control_senses != 0.0:
+              raise SystemExit(
+                  f"Phase Four smoke failed: sensing-off control executed SENSE_RESOURCE {control_senses} times"
+              )
+          if treatment_senses <= 0.0:
+              raise SystemExit("Phase Four smoke failed: sensing-on treatment had no sensing exposure")
+          if control_nonzero <= 0.0 or treatment_nonzero <= 0.0:
+              raise SystemExit(
+                  "Phase Four smoke failed: both conditions must exhibit realized non-zero locomotion"
+              )
+
+          max_energy_error = 0.0
+          max_resource_error = 0.0
+          for run in runs:
+              if run.get("engine_version") != "phase-three-vm-0.3":
+                  raise SystemExit(
+                      f"Phase Four smoke failed: unexpected engine version {run.get('engine_version')}"
+                  )
+              if run.get("measurement_version") != "phase-three-measurement-0.3":
+                  raise SystemExit(
+                      f"Phase Four smoke failed: unexpected measurement version {run.get('measurement_version')}"
+                  )
+              if run.get("atomic_movement_payment_enabled") is not True:
+                  raise SystemExit("Phase Four smoke failed: atomic payment flag missing")
+              distance = float(run.get("movement_distance", 0.0))
+              paid = float(run.get("movement_energy_cost", 0.0))
+              minimum_required = distance * 0.1
+              if paid + 1e-9 < minimum_required:
+                  raise SystemExit(
+                      f"Phase Four smoke failed: realized distance {distance} underpaid ({paid} < {minimum_required})"
+                  )
+              max_energy_error = max(
+                  max_energy_error,
+                  abs(float(run.get("energy_balance_error", 0.0))),
+              )
+              max_resource_error = max(
+                  max_resource_error,
+                  abs(float(run.get("local_resource_balance_error", 0.0))),
+              )
+
+          if max_energy_error > 1e-7 or max_resource_error > 1e-7:
+              raise SystemExit(
+                  f"Phase Four smoke failed: conservation error too large ({max_energy_error}, {max_resource_error})"
+              )
+
+          verification = {
+              "status": "PASS",
+              "experiment": campaign["experiment"],
+              "runs": len(runs),
+              "matched_seeds": 8,
+              "ticks": 800,
+              "causal_difference": "world.resource_sensing_enabled",
+              "hereditary_sensing_both_conditions": True,
+              "hereditary_movement_both_conditions": True,
+              "movement_execution_both_conditions": True,
+              "atomic_movement_payment_both_conditions": True,
+              "resource_distribution": "center_patch",
+              "control_resource_sense_operations": int(control_senses),
+              "treatment_resource_sense_operations": int(treatment_senses),
+              "control_movement_operations": int(total(control, "movement_operations")),
+              "treatment_movement_operations": int(total(treatment, "movement_operations")),
+              "control_movement_nonzero_operations": int(control_nonzero),
+              "treatment_movement_nonzero_operations": int(treatment_nonzero),
+              "control_movement_distance": total(control, "movement_distance"),
+              "treatment_movement_distance": total(treatment, "movement_distance"),
+              "control_movement_energy_cost": total(control, "movement_energy_cost"),
+              "treatment_movement_energy_cost": total(treatment, "movement_energy_cost"),
+              "control_uncommitted_movement_distance": total(control, "movement_uncommitted_distance"),
+              "treatment_uncommitted_movement_distance": total(treatment, "movement_uncommitted_distance"),
+              "max_abs_energy_balance_error": max_energy_error,
+              "max_abs_local_resource_balance_error": max_resource_error,
+              "reproducibility_identical": True,
+              "interpretation": "Mechanism/exposure smoke only; no navigation or adaptation claim.",
+          }
+          (output / "smoke-verification.json").write_text(
+              json.dumps(verification, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps(verification, indent=2, sort_keys=True))
+          PY
+
+      - name: Upload Phase Four smoke evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-four-sensing-movement-smoke-${{ github.run_id }}
+          path: results/phase-four/resource-sensing-with-movement/smoke
+          if-no-files-found: error
