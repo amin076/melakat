@@ -6,6 +6,7 @@ from pathlib import Path
 
 from melakat_desktop.artifacts import (
     RUN_ARTIFACT_FORMAT,
+    SUMMARY_FIELDS,
     config_hash,
     load_run_artifact,
     make_run_artifact,
@@ -137,6 +138,51 @@ class ArtifactTests(unittest.TestCase):
                 history_rows = list(csv.DictReader(handle))
             self.assertEqual(len(history_rows), 2)
             self.assertEqual(history_rows[-1]["tick"], "5")
+
+    def test_summary_csv_preserves_dynamic_experiment_metrics(self) -> None:
+        run = {
+            "condition": "atomic-treatment",
+            "seed": 7,
+            "movement_operations": 4,
+            "movement_nonzero_operations": 3,
+            "movement_zero_step_operations": 1,
+            "movement_uncommitted_operations": 2,
+            "movement_uncommitted_distance": 2.0,
+            "atomic_movement_payment_enabled": True,
+            "result_checksum": "abc123",
+        }
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "runs.csv"
+            write_summary_csv(path, [run])
+
+            with path.open(encoding="utf-8", newline="") as handle:
+                reader = csv.DictReader(handle)
+                row = next(reader)
+                fieldnames = reader.fieldnames
+
+        self.assertIsNotNone(fieldnames)
+        assert fieldnames is not None
+        self.assertEqual(fieldnames[: len(SUMMARY_FIELDS)], list(SUMMARY_FIELDS))
+        self.assertEqual(
+            fieldnames[len(SUMMARY_FIELDS) :],
+            sorted(
+                {
+                    "atomic_movement_payment_enabled",
+                    "movement_nonzero_operations",
+                    "movement_uncommitted_distance",
+                    "movement_uncommitted_operations",
+                    "movement_zero_step_operations",
+                    "result_checksum",
+                }
+            ),
+        )
+        self.assertEqual(row["movement_nonzero_operations"], "3")
+        self.assertEqual(row["movement_zero_step_operations"], "1")
+        self.assertEqual(row["movement_uncommitted_operations"], "2")
+        self.assertEqual(row["movement_uncommitted_distance"], "2.0")
+        self.assertEqual(row["atomic_movement_payment_enabled"], "True")
+        self.assertEqual(row["result_checksum"], "abc123")
 
     def test_spatial_csv_exports_keep_p2_2_measurements(self) -> None:
         config = CORE_SCHEMA.defaults()
