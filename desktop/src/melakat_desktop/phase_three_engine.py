@@ -107,6 +107,9 @@ class PhaseThreeEngine(PhaseTwoEngine):
         if self.resource_patch_contrast < 1.0:
             raise ValueError("resource_patch_contrast_must_be_at_least_one")
 
+        self.movement_step_mutation_configured = (
+            "mutation.movement_step_rate" in config
+        )
         self.movement_step_mutation_rate = float(
             config.get("mutation.movement_step_rate", 0.0)
         )
@@ -258,9 +261,10 @@ class PhaseThreeEngine(PhaseTwoEngine):
     def snapshot(self) -> dict[str, Any]:
         snapshot = super().snapshot()
         snapshot["resource_distribution_mode"] = self.resource_distribution_mode
-        snapshot["movement_step_mutation_rate"] = round(
-            self.movement_step_mutation_rate, 6
-        )
+        if self.movement_step_mutation_configured:
+            snapshot["movement_step_mutation_rate"] = round(
+                self.movement_step_mutation_rate, 6
+            )
         if self.resource_field is not None:
             snapshot["resource_distribution"] = {
                 "mode": self.resource_distribution_mode,
@@ -276,9 +280,10 @@ class PhaseThreeEngine(PhaseTwoEngine):
         metrics["resource_allocation_cv"] = round(
             self._resource_allocation_cv(), 6
         )
-        metrics["movement_step_mutation_rate"] = round(
-            self.movement_step_mutation_rate, 6
-        )
+        if self.movement_step_mutation_configured:
+            metrics["movement_step_mutation_rate"] = round(
+                self.movement_step_mutation_rate, 6
+            )
         if self.resource_field is not None:
             # This is the observed resource-field state after organism capture,
             # death release and renewal. It is distinct from allocation_cv.
