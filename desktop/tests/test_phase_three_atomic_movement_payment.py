@@ -83,7 +83,7 @@ class PhaseThreeAtomicMovementPaymentTests(unittest.TestCase):
         self.assertEqual(engine.movement_uncommitted_distance, 1.0)
         self.assertEqual(engine.movement_uncommitted_execution_energy_batches, 1)
         self.assertFalse(
-            any(event.get("type") == "organism_moved" for event in events)
+            any(event.get("name") == "organism_moved" for event in events)
         )
 
     def test_movement_energy_failure_cannot_commit_staged_movement(self) -> None:
@@ -104,7 +104,7 @@ class PhaseThreeAtomicMovementPaymentTests(unittest.TestCase):
         self.assertEqual(engine.movement_uncommitted_operations, 1)
         self.assertEqual(engine.movement_uncommitted_movement_energy_batches, 1)
         self.assertFalse(
-            any(event.get("type") == "organism_moved" for event in events)
+            any(event.get("name") == "organism_moved" for event in events)
         )
 
     def test_fully_paid_movement_commits_position_counters_and_event(self) -> None:
@@ -122,10 +122,10 @@ class PhaseThreeAtomicMovementPaymentTests(unittest.TestCase):
         self.assertEqual(engine.movement_distance, 1.0)
         self.assertAlmostEqual(engine.ledger["energy_execution"], 2.0)
         self.assertAlmostEqual(engine.ledger["energy_movement"], 0.1)
-        moved = [event for event in events if event.get("type") == "organism_moved"]
+        moved = [event for event in events if event.get("name") == "organism_moved"]
         self.assertEqual(len(moved), 1)
-        self.assertEqual(moved[0]["from_x"], 10.0)
-        self.assertEqual(moved[0]["x"], 11.0)
+        self.assertEqual(moved[0]["payload"]["from_x"], 10.0)
+        self.assertEqual(moved[0]["payload"]["x"], 11.0)
         self.assertEqual(engine.movement_uncommitted_operations, 0)
 
     def test_atomic_flag_is_phase_three_scoped_and_type_checked(self) -> None:
@@ -139,6 +139,7 @@ class PhaseThreeAtomicMovementPaymentTests(unittest.TestCase):
 
     def test_atomic_flag_requires_spatial_movement_availability(self) -> None:
         config = self.config()
+        config["mutation.movement_step_rate"] = 0.0
         config["world.spatial_enabled"] = False
         with self.assertRaisesRegex(
             ValueError,
