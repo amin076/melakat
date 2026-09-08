@@ -1,0 +1,14 @@
+{
+  "experiment": "phase-five-structural-event-rate-calibration",
+  "format": "melakat-experiment-provenance-0.1",
+  "generated_at_utc": "2026-09-08T17:24:20.149891+00:00",
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "python_version": "3.12.14",
+  "repository": "amin076/melakat",
+  "source_branch": "phase5/gates5c5d-evidence",
+  "source_commit": "66e1478a4c1a837a146c584f2d8f1a6907bd38c8",
+  "source_spec": "experiments/phase-five/structural-event-rate-calibration.json",
+  "source_spec_sha256": "88ea5f4200509e40527fa96d7a6c1b1ccc8a428776efb8fa57a57c0edc87df1c",
+  "workflow": "Phase Five complete evolvability evidence",
+  "workflow_run_id": "34256529053"
+}

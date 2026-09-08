@@ -1,0 +1,59 @@
+{
+  "candidate_rates": [
+    0.01,
+    0.025,
+    0.05,
+    0.1
+  ],
+  "experiment": "phase-five-structural-event-rate-calibration",
+  "forbidden_selection_criteria_used": false,
+  "format": "melakat-phase-five-calibration-decision-0.1",
+  "reproducibility_identical": true,
+  "rows": [
+    {
+      "committed_events": 11,
+      "deletions": 5,
+      "duplications": 6,
+      "exposed_runs": 6,
+      "passes_exposure_gate": false,
+      "rate": 0.01,
+      "run_count": 8
+    },
+    {
+      "committed_events": 26,
+      "deletions": 14,
+      "duplications": 12,
+      "exposed_runs": 7,
+      "passes_exposure_gate": true,
+      "rate": 0.025,
+      "run_count": 8
+    },
+    {
+      "committed_events": 50,
+      "deletions": 27,
+      "duplications": 23,
+      "exposed_runs": 8,
+      "passes_exposure_gate": true,
+      "rate": 0.05,
+      "run_count": 8
+    },
+    {
+      "committed_events": 83,
+      "deletions": 46,
+      "duplications": 37,
+      "exposed_runs": 8,
+      "passes_exposure_gate": true,
+      "rate": 0.1,
+      "run_count": 8
+    }
+  ],
+  "selected_structural_event_rate": 0.025,
+  "selection_basis": "exposure_only",
+  "thresholds": {
+    "committed_events": 16,
+    "deletions": 4,
+    "duplications": 4,
+    "exposed_runs": 6
+  },
+  "validation_passed": true
+}

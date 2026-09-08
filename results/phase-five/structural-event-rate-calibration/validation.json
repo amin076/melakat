@@ -1,0 +1,16 @@
+{
+  "completed_runs": 32,
+  "energy_tolerance": 1e-07,
+  "expected_runs": 32,
+  "failure_count": 0,
+  "failures": [],
+  "passed": true,
+  "reproducibility": {
+    "condition": "structural-rate-0.01",
+    "identical": true,
+    "reference_checksum": "fa2f4fbfaa5884f2b9695e0e4d921380789d5f7f7c351e4f54d48211ab932ffe",
+    "repeat_checksum": "fa2f4fbfaa5884f2b9695e0e4d921380789d5f7f7c351e4f54d48211ab932ffe",
+    "seed": 1
+  },
+  "resource_tolerance": 1e-07
+}
