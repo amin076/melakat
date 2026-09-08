@@ -1,0 +1,67 @@
+{
+  "base_config": {
+    "execution.instruction_cost": 0.05,
+    "execution.instructions_per_tick": 12,
+    "execution.maintenance_cost": 0.2,
+    "mutation.structural_duplication_probability": 0.5,
+    "mutation.structural_event_rate": 0.025,
+    "mutation.substitution_rate": 0.01,
+    "population.initial_energy": 25.0,
+    "population.initial_size": 12,
+    "population.max_age": 500,
+    "population.memory_per_organism": 8,
+    "reproduction.cost": 12.0,
+    "reproduction.enabled": true,
+    "reproduction.interval": 25,
+    "reproduction.offspring_energy": 8.0,
+    "reproduction.threshold": 35.0,
+    "run.engine_backend": "phase-five-vm",
+    "run.max_ticks": 250000,
+    "run.seed": 1,
+    "run.snapshot_interval": 5000,
+    "visual.max_rendered_organisms": 200,
+    "visual.show_boundaries": true,
+    "visual.show_organisms": true,
+    "visual.show_resources": true,
+    "world.boundary_model": "reflective",
+    "world.energy_input_per_tick": 20.0,
+    "world.height": 70,
+    "world.initial_energy": 1000.0,
+    "world.local_capture_limit": 1.0,
+    "world.local_resources_enabled": false,
+    "world.memory_capacity": 1000000,
+    "world.movement_cost_per_unit": 0.1,
+    "world.movement_enabled": false,
+    "world.movement_max_step": 1.0,
+    "world.movement_mutation_enabled": false,
+    "world.neighborhood_radius": 2.0,
+    "world.offspring_dispersion_radius": 1.0,
+    "world.organism_actions_enabled": false,
+    "world.resource_grid_cols": 10,
+    "world.resource_grid_rows": 7,
+    "world.resource_sensing_enabled": false,
+    "world.resource_sensing_mutation_enabled": false,
+    "world.spatial_enabled": false,
+    "world.width": 100
+  },
+  "conditions": [
+    {
+      "name": "structural-balanced-on-long-run",
+      "overrides": {
+        "mutation.structural_duplication_probability": 0.5,
+        "mutation.structural_event_rate": 0.025
+      }
+    }
+  ],
+  "description": "Exploratory one-seed long-horizon Phase Five stress run. This is not an accepted evidence gate. It keeps the Phase Five full-campaign ecology and mutation rates while raising run length to 250000 ticks and world structural memory capacity to 1000000 so long-run lineage/genome dynamics are not prematurely capped by memory.",
+  "format": "melakat-experiment-spec-0.1",
+  "name": "phase-five-stress-250k-one-run",
+  "reproducibility": {
+    "condition": "structural-balanced-on-long-run",
+    "seed": 1
+  },
+  "seeds": {
+    "count": 1,
+    "start": 1
+  }
+}
