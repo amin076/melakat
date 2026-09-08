@@ -1,0 +1,96 @@
+name: Phase Five 250k long-horizon stress
+
+on:
+  push:
+    branches:
+      - stress/phase5-250k-long-run
+    paths:
+      - ".github/workflows/phase-five-250k-stress.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  stress:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Check out stress branch
+        uses: actions/checkout@v4
+        with:
+          ref: stress/phase5-250k-long-run
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install headless Melakat package
+        run: python -m pip install -e desktop --no-deps
+
+      - name: Validate stress specification
+        run: melakat-experiment validate experiments/phase-five/stress-250k-one-run.json
+
+      - name: Run one 250000-tick stress experiment
+        run: >-
+          melakat-experiment run
+          experiments/phase-five/stress-250k-one-run.json
+          --output-dir results/phase-five/stress-250k-one-run
+          --quiet
+
+      - name: Build concise stress report
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path("results/phase-five/stress-250k-one-run")
+          campaign = json.loads((root / "campaign.json").read_text(encoding="utf-8"))
+          runs = campaign["runs"]
+          if len(runs) != 1:
+              raise SystemExit(f"expected one primary run, got {len(runs)}")
+          r = runs[0]
+          keys = [
+              "condition", "seed", "ticks_completed", "active_population", "max_population",
+              "births", "deaths", "faults", "max_generation", "historical_genotypes",
+              "active_genotypes", "active_lineages", "memory_used", "free_memory",
+              "genome_memory_used", "genome_length_mean", "genome_length_median",
+              "genome_length_minimum", "genome_length_maximum", "genome_length_variance",
+              "distinct_genome_lengths", "structural_mutation_operations",
+              "structural_mutation_committed_operations", "structural_mutation_rejected_operations",
+              "instruction_duplication_operations", "instruction_deletion_operations",
+              "structural_length_delta_total", "variable_length_births",
+              "variable_length_reproducing_offspring", "variable_length_active_population",
+              "replication_copy_operations", "template_jump_operations", "instructions_executed",
+              "blocked_divisions", "waiting_for_memory", "waiting_for_energy",
+              "energy_pool", "energy_balance_error"
+          ]
+          report = {
+              "purpose": "exploratory_long_horizon_stress_only_not_phase_five_evidence",
+              "configured_ticks": 250000,
+              "configured_world_memory_capacity": 1000000,
+              "configured_structural_event_rate": 0.025,
+              "configured_structural_duplication_probability": 0.5,
+              "configured_substitution_rate": 0.01,
+              "validation": campaign["validation"],
+              "run": {k: r.get(k) for k in keys},
+          }
+          (root / "stress-report.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          print(json.dumps(report, indent=2, sort_keys=True))
+          PY
+
+      - name: Commit stress result to stress branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results/phase-five/stress-250k-one-run
+          git commit -m "Stress: archive Phase 5 250k one-run result"
+          git push origin HEAD:stress/phase5-250k-long-run
+
+      - name: Upload stress artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-five-250k-one-run-${{ github.run_id }}
+          path: results/phase-five/stress-250k-one-run
