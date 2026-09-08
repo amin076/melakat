@@ -2,34 +2,17 @@
 
 [فارسی](README.fa.md) | English
 
-This directory contains the canonical project documentation. Major scientific documents are maintained in parallel English and Farsi versions.
+This directory contains the canonical scientific and technical documentation for Melakat. Major research records are maintained in parallel English/Farsi versions.
 
 ## Current research status
 
-**Phase Zero, Phase One, and Phase Two are complete. Phase Two is frozen as the accepted spatial/local-resource reference. The Phase Three environmental/sensing/movement mechanism sequence and the Phase Four sensing-with-movement causal evidence gate are complete.**
+**Phases Zero through Five are complete.** Phase Two remains a formally frozen spatial/local-resource reference. Later phases use separate versioned contracts and evidence archives.
 
-Accepted historical evidence:
+The newest accepted milestone is **Phase Five genome evolvability**: length-robust self-replication plus blind single-instruction tandem duplication/deletion produced heritable variable genome lengths under finite energy/memory costs. The accepted full campaign contains 60 primary runs with zero validation failures and deterministic replay PASS. Variable-length organisms were born and some later reproduced. This is structural evolvability evidence, not evidence of increasing complexity or open-ended evolution.
 
-- Phase One homogeneous evidence: 990 runs;
-- Phase Two spatial/environment evidence: 360 runs;
-- Phase Three contains the first full heterogeneous-resource campaign plus sensing-only, movement-only, movement-step and corrected atomic-movement causal evidence;
-- Phase Four contains registered smoke, full-duration preflight, and a completed 30-matched-seed × 2-condition × 2000-tick full campaign.
+## Core phase documents
 
-Frozen Phase Two versions:
-
-- world contract: `phase-two-spatial-0.7`;
-- engine: `phase-two-vm-0.7`;
-- measurement: `phase-two-measurement-0.1`.
-
-Current execution evidence used by Phase Four:
-
-- world contract: `phase-three-environment-0.1`;
-- engine: `phase-three-vm-0.3`;
-- measurement: `phase-three-measurement-0.3`.
-
-The Phase One homogeneous model remains the permanent homogeneous control. Phase Two remains the frozen spatial/local-resource reference. Later evidence is versioned separately and does not replace those accepted baselines.
-
-## Core documents
+### Phase Zero / One
 
 - [Phase Zero results — English](doc-english/phase-zero-results.md)
 - [نتایج مرحلهٔ صفر — فارسی](doc-farsi/phase-zero-results.md)
@@ -37,77 +20,65 @@ The Phase One homogeneous model remains the permanent homogeneous control. Phase
 - [نقشهٔ راه مرحلهٔ یک — فارسی](doc-farsi/phase-one-roadmap.md)
 - [Phase One evidence report — English](doc-english/phase-one-evidence-report.md)
 - [گزارش شواهد مرحلهٔ یک — فارسی](doc-farsi/phase-one-evidence-report.md)
-- [Phase One evidence archive](../results/phase-one/evidence-gate/README.md)
-- [Phase Two roadmap — English](doc-english/phase-two-roadmap.md)
-- [نقشهٔ راه مرحلهٔ دو — فارسی](doc-farsi/phase-two-roadmap.md)
-- [Phase Two completion and evidence report — English](phase-2/phase-two-completion-report.md)
-- [گزارش تکمیل و شواهد مرحلهٔ دو — فارسی](phase-2/phase-two-completion-report.fa.md)
-- [Phase Two frozen baseline — English](phase-2/phase-two-frozen-baseline.md)
-- [خط پایهٔ منجمد مرحلهٔ دو — فارسی](phase-2/phase-two-frozen-baseline.fa.md)
-- [Phase Three roadmap — English](phase-3/phase-three-roadmap.md)
-- [نقشهٔ راه مرحلهٔ سه — فارسی](phase-3/phase-three-roadmap.fa.md)
-- [Phase Four pre-registered sensing/movement gate — English](phase-4/phase-four-sensing-movement-gate.md)
-- [گیت sensing/movement مرحلهٔ چهار — فارسی](phase-4/phase-four-sensing-movement-gate.fa.md)
-- [Phase Four full-duration preflight report — English](phase-4/phase-four-sensing-movement-preflight-report.md)
-- [گزارش preflight مرحلهٔ چهار — فارسی](phase-4/phase-four-sensing-movement-preflight-report.fa.md)
-- [Phase Four completion report — English](phase-4/phase-four-completion-report.md)
-- [گزارش تکمیل مرحلهٔ چهار — فارسی](phase-4/phase-four-completion-report.fa.md)
-- [Phase Two user test guide — English](phase-2/phase-two-user-test-guide.md)
-- [راهنمای تست کاربر مرحلهٔ دو — فارسی](phase-2/phase-two-user-test-guide.fa.md)
-
-Historical Phase Two contract milestones remain available:
-
-- [World contract 0.1 — English](phase-2/phase-two-world-contract-0.1.md)
-- [قرارداد جهان ۰.۱ — فارسی](phase-2/phase-two-world-contract-0.1.fa.md)
-- [Spatial topology 0.2 — English](phase-2/phase-two-spatial-topology-0.2.md)
-- [توپولوژی فضایی ۰.۲ — فارسی](phase-2/phase-two-spatial-topology-0.2.fa.md)
-
-## Accepted evidence summary
-
-### Phase One
-
-The accepted Phase One evidence archive contains 990 runs and remains the homogeneous baseline.
 
 ### Phase Two
 
-The final Phase Two evidence gate records:
+- [Phase Two roadmap — English](doc-english/phase-two-roadmap.md)
+- [نقشهٔ راه مرحلهٔ دو — فارسی](doc-farsi/phase-two-roadmap.md)
+- [Phase Two completion report — English](phase-2/phase-two-completion-report.md)
+- [گزارش تکمیل مرحلهٔ دو — فارسی](phase-2/phase-two-completion-report.fa.md)
+- [Phase Two frozen baseline — English](phase-2/phase-two-frozen-baseline.md)
+- [خط پایهٔ منجمد مرحلهٔ دو — فارسی](phase-2/phase-two-frozen-baseline.fa.md)
+- [Phase Two user test guide — English](phase-2/phase-two-user-test-guide.md)
+- [راهنمای تست کاربر مرحلهٔ دو — فارسی](phase-2/phase-two-user-test-guide.fa.md)
 
-- 12 conditions;
-- 30 seeds per condition;
-- 360 completed runs;
-- zero validation failures;
-- maximum absolute energy-balance error `1.02e-08` under tolerance `1e-07`;
-- maximum absolute local-resource error `4.2e-09` under tolerance `1e-07`;
-- deterministic repeat PASS;
-- source commit `ad5e21159baf0d6bd79a028799b9318ba144fed7`;
-- workflow run `33969619473`.
+### Phase Three
 
-Evidence is stored in `results/phase-two/evidence-gate/`.
+- [Phase Three roadmap — English](phase-3/phase-three-roadmap.md)
+- [نقشهٔ راه مرحلهٔ سه — فارسی](phase-3/phase-three-roadmap.fa.md)
 
 ### Phase Four
 
-The completed Phase Four full campaign records:
+- [Phase Four pre-registered sensing/movement gate — English](phase-4/phase-four-sensing-movement-gate.md)
+- [گیت ثبت‌شدهٔ sensing/movement مرحلهٔ چهار — فارسی](phase-4/phase-four-sensing-movement-gate.fa.md)
+- [Phase Four preflight report — English](phase-4/phase-four-sensing-movement-preflight-report.md)
+- [گزارش preflight مرحلهٔ چهار — فارسی](phase-4/phase-four-sensing-movement-preflight-report.fa.md)
+- [Phase Four completion report — English](phase-4/phase-four-completion-report.md)
+- [گزارش تکمیل مرحلهٔ چهار — فارسی](phase-4/phase-four-completion-report.fa.md)
 
-- 30 matched seeds × 2 conditions × 2000 ticks = 60 primary runs;
-- validation failures: `0`;
-- deterministic replay: PASS;
-- control sensing operations: `0`;
-- treatment sensing operations: `508`;
-- treatment sensing-exposed runs: `15/30`;
-- treatment joint sensing + non-zero movement runs: `7/30`;
-- no underpaid realized movement;
-- maximum absolute energy-balance error: `4.8e-09`;
-- maximum absolute local-resource error: `6.3e-09`.
+### Phase Five
 
-All registered movement-execution paired intervals included zero. Three registered spatial/resource outcomes excluded zero: mean local neighbors decreased, mean nearest-neighbor distance increased, and local resource remaining increased in treatment. A secondary active-population endpoint was also lower in treatment.
+- [Phase Five evolvability roadmap — English](phase-5/phase-five-evolvability-roadmap.md)
+- [نقشهٔ راه evolvability مرحلهٔ پنج — فارسی](phase-5/phase-five-evolvability-roadmap.fa.md)
+- [Phase Five completion report — English](phase-5/phase-five-completion-report.md)
+- [گزارش تکمیل مرحلهٔ پنج — فارسی](phase-5/phase-five-completion-report.fa.md)
 
-The accepted interpretation is that local scalar sensing causally altered downstream ecological/spatial state in this model, consistent with resource-conditioned dynamics. It did not resolve an effect on locomotor execution and does not establish directional navigation, resource seeking, adaptation, fitness advantage or intelligence.
+## Accepted evidence archives
 
-Canonical Phase Four evidence is stored in:
+- `results/phase-one/evidence-gate/` — Phase One homogeneous evidence
+- `results/phase-two/evidence-gate/` — frozen Phase Two evidence
+- `results/phase-four/resource-sensing-with-movement/full/` — Phase Four full causal evidence
+- `results/phase-five/structural-event-rate-calibration/` — Phase Five exposure-only calibration
+- `results/phase-five/variable-genome-full/` — Phase Five full matched-seed evidence
 
-`results/phase-four/resource-sensing-with-movement/full/`
+## Phase Five evidence summary
 
-## Technical documents
+Gate 5C selected `mutation.structural_event_rate = 0.025` as the lowest candidate passing the pre-registered exposure-only threshold.
+
+Gate 5D then ran 30 matched seeds × 2 conditions × 2000 ticks:
+
+- `60/60` primary runs completed;
+- validation failures `0`;
+- deterministic replay PASS;
+- maximum absolute energy error `4.36e-08` under tolerance `1e-07`;
+- control structural events `0`;
+- treatment structural events `97` (`42` duplications, `55` deletions);
+- variable-length births `61`;
+- variable-length organisms that later reproduced `12`.
+
+The ancestor length is 14. Control active genomes remained length 14; treatment generated active lengths 13–15. Mean length stayed approximately 14. Thus Phase Five establishes a heritable genome-length dimension without demonstrating monotonic genome expansion or increased complexity.
+
+## Technical architecture documents
 
 - [Desktop lab architecture — English](desktop/desktop-lab-architecture.md)
 - [معماری آزمایشگاه دسکتاپ — فارسی](desktop/desktop-lab-architecture.fa.md)
@@ -116,4 +87,4 @@ Canonical Phase Four evidence is stored in:
 
 ## Documentation policy
 
-English and Farsi scientific documents are maintained as parallel records. Any change to a rule, measurement contract, experiment protocol, or acceptance criterion must be reflected in both languages or explicitly tracked as documentation follow-up.
+English and Farsi scientific documents are maintained as parallel records. A change to a scientific rule, measurement contract, experiment protocol, acceptance criterion, or claim boundary must be documented in both languages or explicitly tracked as follow-up work.
