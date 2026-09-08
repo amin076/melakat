@@ -2,27 +2,32 @@
 
 [English](README.md)
 
-این پوشه مستندات اصلی پروژه را نگهداری می‌کند. اسناد علمی مهم به‌صورت موازی در نسخه‌های فارسی و انگلیسی نگهداری می‌شوند.
+این پوشه مستندات canonical پروژه را نگهداری می‌کند. اسناد علمی مهم به‌صورت موازی در نسخه‌های فارسی و انگلیسی نگهداری می‌شوند.
 
 ## وضعیت پژوهشی فعلی
 
-**مرحلهٔ صفر، مرحلهٔ یک و مرحلهٔ دو کامل شده‌اند. مرحلهٔ دو به‌عنوان مرجع پذیرفته‌شده منجمد است و مرحلهٔ سه آغاز شده است.**
+**مرحلهٔ صفر، مرحلهٔ یک و مرحلهٔ دو کامل شده‌اند. مرحلهٔ دو به‌عنوان مرجع پذیرفته‌شدهٔ spatial/local-resource منجمد است. زنجیرهٔ mechanism/evidence مرحلهٔ سه برای محیط، sensing و movement و نیز evidence gate مرحلهٔ چهار برای sensing در حضور movement کامل شده‌اند.**
 
-آرشیو پذیرفته‌شدهٔ مرحلهٔ یک شامل ۹۹۰ اجرای جهان همگن است. آرشیو پذیرفته‌شدهٔ مرحلهٔ دو شامل ۳۶۰ اجرای فضایی/محیطی است: ۳۰ `seed` در ۱۲ وضعیت تطبیقی، با `2000 tick` برای هر اجرا و صفر شکست validation.
+Evidence تاریخی پذیرفته‌شده:
+
+- مرحلهٔ یک: ۹۹۰ اجرای جهان همگن؛
+- مرحلهٔ دو: ۳۶۰ اجرای spatial/environment؛
+- مرحلهٔ سه: کارزار کامل ناهمگنی resource، sensing-only، movement-only، movement-step و evidence اصلاح‌شدهٔ atomic movement؛
+- مرحلهٔ چهار: smoke ثبت‌شده، preflight تمام‌مدت و full campaign کامل با ۳۰ seed matched × ۲ condition × `2000 tick`.
 
 نسخه‌های منجمد مرحلهٔ دو:
 
-- قرارداد جهان: `phase-two-spatial-0.7`
-- موتور: `phase-two-vm-0.7`
-- اندازه‌گیری: `phase-two-measurement-0.1`
+- قرارداد جهان: `phase-two-spatial-0.7`؛
+- موتور: `phase-two-vm-0.7`؛
+- اندازه‌گیری: `phase-two-measurement-0.1`.
 
-نسخه‌های آغازین مرحلهٔ سه:
+نسخه‌های execution evidence استفاده‌شده در مرحلهٔ چهار:
 
-- قرارداد جهان: `phase-three-environment-0.1`
-- موتور: `phase-three-vm-0.1`
-- اندازه‌گیری: `phase-three-measurement-0.1`
+- قرارداد جهان: `phase-three-environment-0.1`؛
+- موتور: `phase-three-vm-0.3`؛
+- اندازه‌گیری: `phase-three-measurement-0.3`.
 
-مدل همگن مرحلهٔ یک کنترل دائمی باقی می‌ماند. مرحلهٔ دو مرجع منجمد spatial/local-resource است. مرحلهٔ سه با یک intervention جداشده شروع می‌شود: ناهمگنی deterministic در تخصیص فضایی منابع، در حالی که مقدار کل منابع ثابت می‌ماند.
+مدل همگن مرحلهٔ یک کنترل دائمی باقی می‌ماند. مرحلهٔ دو مرجع منجمد فضا و resource محلی است. Evidenceهای بعدی به‌صورت versioned نگهداری می‌شوند و baselineهای پذیرفته‌شده را جایگزین نمی‌کنند.
 
 ## اسناد اصلی
 
@@ -41,39 +46,66 @@
 - [Phase Two frozen baseline — English](phase-2/phase-two-frozen-baseline.md)
 - [نقشهٔ راه مرحلهٔ سه — فارسی](phase-3/phase-three-roadmap.fa.md)
 - [Phase Three roadmap — English](phase-3/phase-three-roadmap.md)
+- [گیت sensing/movement مرحلهٔ چهار — فارسی](phase-4/phase-four-sensing-movement-gate.fa.md)
+- [Phase Four pre-registered sensing/movement gate — English](phase-4/phase-four-sensing-movement-gate.md)
+- [گزارش preflight مرحلهٔ چهار — فارسی](phase-4/phase-four-sensing-movement-preflight-report.fa.md)
+- [Phase Four full-duration preflight report — English](phase-4/phase-four-sensing-movement-preflight-report.md)
+- [گزارش تکمیل مرحلهٔ چهار — فارسی](phase-4/phase-four-completion-report.fa.md)
+- [Phase Four completion report — English](phase-4/phase-four-completion-report.md)
 - [راهنمای تست کاربر مرحلهٔ دو — فارسی](phase-2/phase-two-user-test-guide.fa.md)
 - [Phase Two user test guide — English](phase-2/phase-two-user-test-guide.md)
 
-اسناد تاریخی قرارداد مرحلهٔ دو نیز برای ردیابی تکامل طراحی حفظ شده‌اند:
+اسناد تاریخی قرارداد مرحلهٔ دو نیز حفظ شده‌اند:
 
 - [قرارداد جهان ۰.۱ — فارسی](phase-2/phase-two-world-contract-0.1.fa.md)
 - [World contract 0.1 — English](phase-2/phase-two-world-contract-0.1.md)
 - [توپولوژی فضایی ۰.۲ — فارسی](phase-2/phase-two-spatial-topology-0.2.fa.md)
 - [Spatial topology 0.2 — English](phase-2/phase-two-spatial-topology-0.2.md)
 
-قرارداد منجمد مرحلهٔ دو همچنان در `desktop/src/melakat_desktop/world_contract.py` پیاده‌سازی شده است. قرارداد جدید مرحلهٔ سه به‌صورت جداگانه در `desktop/src/melakat_desktop/phase_three_contract.py` قرار دارد تا پژوهش‌های بعدی baseline پذیرفته‌شدهٔ مرحلهٔ دو را بی‌صدا بازتعریف نکنند.
+## خلاصهٔ evidence پذیرفته‌شده
 
-## شواهد پذیرفته‌شدهٔ مرحلهٔ دو
+### مرحلهٔ یک
 
-گیت نهایی شواهد مرحلهٔ دو ثبت می‌کند:
+آرشیو پذیرفته‌شدهٔ مرحلهٔ یک شامل ۹۹۰ اجراست و baseline همگن باقی می‌ماند.
 
-- ۱۲ وضعیت؛
-- ۳۰ `seed` در هر وضعیت؛
+### مرحلهٔ دو
+
+گیت نهایی مرحلهٔ دو ثبت می‌کند:
+
+- ۱۲ condition؛
+- ۳۰ seed در هر condition؛
 - ۳۶۰ اجرای کامل؛
 - صفر شکست validation؛
-- بیشترین خطای مطلق تراز انرژی `1.02e-08` با تلورانس `1e-07`؛
-- بیشترین خطای مطلق منبع محلی `4.2e-09` با تلورانس `1e-07`؛
-- تکرار قطعی PASS؛
-- commit منبع `ad5e21159baf0d6bd79a028799b9318ba144fed7`؛
-- اجرای workflow شمارهٔ `33969619473`.
+- بیشترین خطای مطلق energy balance برابر `1.02e-08` زیر tolerance `1e-07`؛
+- بیشترین خطای مطلق local-resource برابر `4.2e-09` زیر tolerance `1e-07`؛
+- deterministic repeat: PASS؛
+- source commit: `ad5e21159baf0d6bd79a028799b9318ba144fed7`؛
+- workflow run: `33969619473`.
 
-شواهد در `results/phase-two/evidence-gate/` همراه با validation، performance، provenance و checksumهای SHA-256 ذخیره شده‌اند. آزمایش‌های مرحلهٔ سه جایگزین این archive نمی‌شوند.
+Evidence در `results/phase-two/evidence-gate/` نگهداری می‌شود.
 
-## نخستین گیت مرحلهٔ سه
+### مرحلهٔ چهار
 
-اولین evidence gate مرحلهٔ سه، کنترل `uniform` را با توزیع deterministic به شکل `center_patch` مقایسه خواهد کرد، در حالی که seedها، منبع اولیه، ورودی منبع در هر tick، VM، mutation، reproduction، memory، topology و local capture matched باقی می‌مانند.
+Full campaign تکمیل‌شدهٔ مرحلهٔ چهار ثبت می‌کند:
 
-اگر تفاوتی دیده شود، می‌توان دربارهٔ اثر ناهمگنی فضایی منابع بر دینامیک ثبت‌شدهٔ همین مدل صحبت کرد؛ اما آن نتیجه به‌تنهایی adaptation، cooperation، competition یا niche formation را اثبات نمی‌کند.
+- ۳۰ seed matched × ۲ condition × `2000 tick` = ۶۰ اجرای اصلی؛
+- شکست validation: `0`؛
+- deterministic replay: PASS؛
+- sensing operation در control: `0`؛
+- sensing operation در treatment: `508`؛
+- runهای treatment دارای sensing: `15/30`؛
+- runهای treatment دارای sensing + movement غیرصفر: `7/30`؛
+- هیچ realized movement کم‌پرداخت‌شده‌ای وجود ندارد؛
+- بیشترین خطای مطلق energy balance: `4.8e-09`؛
+- بیشترین خطای مطلق local-resource: `6.3e-09`.
+
+تمام intervalهای paired ثبت‌شدهٔ movement execution صفر را شامل کردند. سه outcome ثبت‌شدهٔ spatial/resource صفر را شامل نکردند: `mean_local_neighbors` کاهش یافت، `mean_nearest_neighbor_distance` افزایش یافت و `local_resource_total` در treatment بیشتر بود. یک endpoint ثانویهٔ `active_population` نیز در treatment کمتر بود.
+
+تفسیر پذیرفته‌شده این است که sensing اسکالر محلی downstream ecological/spatial state را در این مدل به‌طور causal تغییر داد و نتیجه با `resource-conditioned dynamics` سازگار است. این campaign اثر حل‌شده‌ای بر locomotor execution نشان نداد و navigation جهت‌دار، resource seeking، adaptation، fitness advantage یا intelligence را اثبات نمی‌کند.
+
+آرشیو canonical مرحلهٔ چهار:
+
+`results/phase-four/resource-sensing-with-movement/full/`
 
 ## اسناد فنی
 
@@ -84,4 +116,4 @@
 
 ## سیاست نگهداری مستندات
 
-اسناد علمی فارسی و انگلیسی به‌صورت موازی نگهداری می‌شوند. هر تغییر در قانون، قرارداد اندازه‌گیری، پروتکل آزمایش یا معیار پذیرش باید در هر دو زبان منعکس شود یا صریحاً به‌عنوان کار مستندسازی بعدی ثبت شود.
+اسناد علمی فارسی و انگلیسی به‌صورت موازی نگهداری می‌شوند. هر تغییر در rule، measurement contract، experiment protocol یا acceptance criterion باید در هر دو زبان منعکس شود یا صریحاً به‌عنوان documentation follow-up ثبت شود.
