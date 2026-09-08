@@ -1,0 +1,350 @@
+name: Phase Four full sensing-movement evidence
+
+on:
+  push:
+    branches:
+      - phase4/full-sensing-movement-evidence
+    paths:
+      - ".github/workflows/phase-four-full-evidence.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  full-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Check out evidence branch
+        uses: actions/checkout@v4
+        with:
+          ref: phase4/full-sensing-movement-evidence
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install headless Melakat package
+        run: python -m pip install -e desktop --no-deps
+
+      - name: Validate registered full Phase Four specification
+        run: >-
+          melakat-experiment validate
+          experiments/phase-four/resource-sensing-with-movement.json
+          --seed-count 30
+          --ticks 2000
+
+      - name: Run registered full Phase Four campaign
+        run: >-
+          melakat-experiment run
+          experiments/phase-four/resource-sensing-with-movement.json
+          --seed-count 30
+          --ticks 2000
+          --output-dir results/phase-four/resource-sensing-with-movement/full
+
+      - name: Build paired analysis and evidence verification
+        shell: bash
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import hashlib
+          import json
+          import math
+          import statistics
+          from pathlib import Path
+
+          root = Path("results/phase-four/resource-sensing-with-movement/full")
+          campaign = json.loads((root / "campaign.json").read_text(encoding="utf-8"))
+          validation = json.loads((root / "validation.json").read_text(encoding="utf-8"))
+          runs = campaign["runs"]
+
+          control_name = "sensing-execution-off-movement-on"
+          treatment_name = "sensing-execution-on-movement-on"
+          controls = {int(r["seed"]): r for r in runs if r["condition"] == control_name}
+          treatments = {int(r["seed"]): r for r in runs if r["condition"] == treatment_name}
+          expected_seeds = list(range(1, 31))
+
+          if sorted(controls) != expected_seeds or sorted(treatments) != expected_seeds:
+              raise SystemExit("Phase Four full gate failed: expected matched seeds 1..30 in both conditions")
+          if len(runs) != 60:
+              raise SystemExit(f"Phase Four full gate failed: expected 60 runs, got {len(runs)}")
+          if not validation.get("passed") or validation.get("failure_count") != 0:
+              raise SystemExit("Phase Four full gate failed: campaign validation did not pass")
+          if validation.get("completed_runs") != 60 or validation.get("expected_runs") != 60:
+              raise SystemExit("Phase Four full gate failed: validation run count mismatch")
+          if not validation.get("reproducibility", {}).get("identical"):
+              raise SystemExit("Phase Four full gate failed: deterministic replay mismatch")
+
+          for run in runs:
+              if int(run.get("tick", -1)) != 2000:
+                  raise SystemExit(f"Phase Four full gate failed: incomplete run seed={run.get('seed')} condition={run.get('condition')}")
+              if run.get("engine_version") != "phase-three-vm-0.3":
+                  raise SystemExit(f"Phase Four full gate failed: unexpected engine version {run.get('engine_version')}")
+              if run.get("measurement_version") != "phase-three-measurement-0.3":
+                  raise SystemExit(f"Phase Four full gate failed: unexpected measurement version {run.get('measurement_version')}")
+              if run.get("atomic_movement_payment_enabled") is not True:
+                  raise SystemExit("Phase Four full gate failed: atomic movement payment is not enabled")
+
+          control_sensing_total = sum(float(r.get("resource_sense_operations", 0.0)) for r in controls.values())
+          treatment_sensing_total = sum(float(r.get("resource_sense_operations", 0.0)) for r in treatments.values())
+          if control_sensing_total != 0.0:
+              raise SystemExit("Phase Four full gate failed: sensing-off control executed SENSE_RESOURCE")
+          if treatment_sensing_total <= 0.0:
+              raise SystemExit("Phase Four full gate failed: sensing-on treatment executed no SENSE_RESOURCE")
+
+          underpaid_realized = []
+          for run in runs:
+              distance = float(run.get("movement_distance", 0.0))
+              paid = float(run.get("movement_energy_cost", 0.0))
+              required = distance * 0.1
+              if paid + 1e-9 < required:
+                  underpaid_realized.append({
+                      "condition": run["condition"],
+                      "seed": int(run["seed"]),
+                      "distance": distance,
+                      "paid": paid,
+                      "required": required,
+                  })
+          if underpaid_realized:
+              raise SystemExit(f"Phase Four full gate failed: underpaid realized movement {underpaid_realized}")
+
+          max_energy_error = max(abs(float(r.get("energy_balance_error", 0.0))) for r in runs)
+          max_resource_error = max(abs(float(r.get("local_resource_balance_error", 0.0))) for r in runs)
+          if max_energy_error > 1e-7:
+              raise SystemExit(f"Phase Four full gate failed: energy error {max_energy_error} exceeds tolerance")
+          if max_resource_error > 1e-7:
+              raise SystemExit(f"Phase Four full gate failed: local-resource error {max_resource_error} exceeds tolerance")
+
+          def total(name: str, metric: str) -> float:
+              selected = controls.values() if name == control_name else treatments.values()
+              return sum(float(r.get(metric, 0.0)) for r in selected)
+
+          exposure = {
+              "control_resource_sense_operations": control_sensing_total,
+              "treatment_resource_sense_operations": treatment_sensing_total,
+              "control_sensing_exposed_runs": sum(float(r.get("resource_sense_operations", 0.0)) > 0 for r in controls.values()),
+              "treatment_sensing_exposed_runs": sum(float(r.get("resource_sense_operations", 0.0)) > 0 for r in treatments.values()),
+              "control_any_move_exposed_runs": sum(float(r.get("movement_operations", 0.0)) > 0 for r in controls.values()),
+              "treatment_any_move_exposed_runs": sum(float(r.get("movement_operations", 0.0)) > 0 for r in treatments.values()),
+              "control_nonzero_movement_exposed_runs": sum(float(r.get("movement_nonzero_operations", 0.0)) > 0 for r in controls.values()),
+              "treatment_nonzero_movement_exposed_runs": sum(float(r.get("movement_nonzero_operations", 0.0)) > 0 for r in treatments.values()),
+              "treatment_joint_sensing_and_any_move_runs": sum(
+                  float(r.get("resource_sense_operations", 0.0)) > 0 and float(r.get("movement_operations", 0.0)) > 0
+                  for r in treatments.values()
+              ),
+              "treatment_joint_sensing_and_nonzero_movement_runs": sum(
+                  float(r.get("resource_sense_operations", 0.0)) > 0 and float(r.get("movement_nonzero_operations", 0.0)) > 0
+                  for r in treatments.values()
+              ),
+              "control_movement_operations": total(control_name, "movement_operations"),
+              "treatment_movement_operations": total(treatment_name, "movement_operations"),
+              "control_nonzero_movement_operations": total(control_name, "movement_nonzero_operations"),
+              "treatment_nonzero_movement_operations": total(treatment_name, "movement_nonzero_operations"),
+              "control_zero_step_movement_operations": total(control_name, "movement_zero_step_operations"),
+              "treatment_zero_step_movement_operations": total(treatment_name, "movement_zero_step_operations"),
+              "control_movement_distance": total(control_name, "movement_distance"),
+              "treatment_movement_distance": total(treatment_name, "movement_distance"),
+              "control_movement_energy_cost": total(control_name, "movement_energy_cost"),
+              "treatment_movement_energy_cost": total(treatment_name, "movement_energy_cost"),
+              "control_uncommitted_movement_distance": total(control_name, "movement_uncommitted_distance"),
+              "treatment_uncommitted_movement_distance": total(treatment_name, "movement_uncommitted_distance"),
+          }
+
+          def paired(metric: str) -> dict:
+              control_values = [float(controls[s].get(metric, 0.0)) for s in expected_seeds]
+              treatment_values = [float(treatments[s].get(metric, 0.0)) for s in expected_seeds]
+              deltas = [t - c for c, t in zip(control_values, treatment_values)]
+              n = len(deltas)
+              mean_delta = statistics.fmean(deltas)
+              sd = statistics.stdev(deltas) if n > 1 else 0.0
+              se = sd / math.sqrt(n) if n else 0.0
+              margin = 1.96 * se
+              lo = mean_delta - margin
+              hi = mean_delta + margin
+              eps = 1e-12
+              return {
+                  "n": n,
+                  "control_mean": statistics.fmean(control_values),
+                  "treatment_mean": statistics.fmean(treatment_values),
+                  "mean_treatment_minus_control": mean_delta,
+                  "paired_sample_sd": sd,
+                  "standard_error": se,
+                  "approx_95_interval": [lo, hi],
+                  "interval_crosses_zero": lo <= 0.0 <= hi,
+                  "positive_pairs": sum(d > eps for d in deltas),
+                  "zero_pairs": sum(abs(d) <= eps for d in deltas),
+                  "negative_pairs": sum(d < -eps for d in deltas),
+                  "deltas_by_seed": {str(s): deltas[i] for i, s in enumerate(expected_seeds)},
+              }
+
+          manipulation_metrics = [
+              "resource_sense_operations",
+          ]
+          movement_metrics = [
+              "movement_operations",
+              "movement_nonzero_operations",
+              "movement_zero_step_operations",
+              "movement_distance",
+              "movement_energy_cost",
+              "movement_uncommitted_operations",
+              "movement_uncommitted_nonzero_operations",
+              "movement_uncommitted_distance",
+          ]
+          spatial_resource_metrics = [
+              "mean_local_neighbors",
+              "mean_nearest_neighbor_distance",
+              "occupied_spatial_bins",
+              "spatial_occupancy_fraction",
+              "local_resource_total",
+              "local_resource_minimum",
+              "local_resource_maximum",
+              "resource_heterogeneity_cv",
+          ]
+          population_metrics = [
+              "active_population",
+              "births",
+              "deaths",
+              "historical_genotypes",
+              "blocked_divisions",
+              "active_genotypes",
+              "active_lineages",
+              "max_generation",
+          ]
+
+          analysis = {
+              "format": "melakat-phase-four-sensing-movement-paired-analysis-0.1",
+              "experiment": campaign.get("experiment"),
+              "scientific_question": "Does executing local scalar resource sensing alter evolved movement execution and spatial/resource outcomes when locomotion is available, while hereditary sensing/movement availability, movement execution, resource geography, mutation parameters, and resource budget are held fixed?",
+              "causal_contrast": {
+                  "control": control_name,
+                  "treatment": treatment_name,
+                  "only_intended_difference": "world.resource_sensing_enabled",
+                  "sensor_semantics": "scalar resource at current location only; no gradient or direction",
+                  "movement_execution_enabled_both_conditions": True,
+                  "hereditary_resource_sensing_enabled_both_conditions": True,
+                  "hereditary_movement_enabled_both_conditions": True,
+                  "movement_step_mutation_rate_both_conditions": 0.5,
+                  "atomic_movement_payment_enabled_both_conditions": True,
+                  "resource_distribution_both_conditions": "center_patch",
+              },
+              "n_matched_seeds": 30,
+              "ticks_per_run": 2000,
+              "completed_runs": 60,
+              "engine_version": "phase-three-vm-0.3",
+              "measurement_version": "phase-three-measurement-0.3",
+              "interval_method": "paired mean treatment-minus-control +/- 1.96 * sample_SD(delta)/sqrt(n); same approximate normal interval convention used in prior Phase Three evidence",
+              "exposure_diagnostics": exposure,
+              "manipulation_check": {m: paired(m) for m in manipulation_metrics},
+              "movement_execution_outcomes": {m: paired(m) for m in movement_metrics},
+              "spatial_resource_outcomes": {m: paired(m) for m in spatial_resource_metrics},
+              "secondary_population_outcomes": {m: paired(m) for m in population_metrics},
+          }
+
+          resolved_behavioral = [
+              m for m, result in analysis["movement_execution_outcomes"].items()
+              if m not in {"movement_uncommitted_operations", "movement_uncommitted_nonzero_operations", "movement_uncommitted_distance"}
+              and not result["interval_crosses_zero"]
+          ]
+          resolved_spatial_resource = [
+              m for m, result in analysis["spatial_resource_outcomes"].items()
+              if not result["interval_crosses_zero"]
+          ]
+          analysis["interpretation_gate"] = {
+              "resolved_movement_execution_metrics": resolved_behavioral,
+              "resolved_spatial_resource_metrics": resolved_spatial_resource,
+              "behavioral_or_spatial_effect_resolved": bool(resolved_behavioral or resolved_spatial_resource),
+              "allowed_positive_language_if_resolved": "local resource sensing altered evolved movement execution and/or spatial-resource outcomes in this model, consistent with resource-conditioned behavior",
+              "allowed_null_language_if_unresolved": "sensing and movement mechanisms were exposed, but the preregistered behavioral/spatial effect remains unresolved",
+              "prohibited_claims": [
+                  "directional navigation",
+                  "resource seeking",
+                  "adaptation",
+                  "fitness advantage",
+                  "intelligence",
+              ],
+              "reason_navigation_is_not_tested": "SENSE_RESOURCE returns only the scalar resource value at the organism's current location and does not provide direction or a gradient.",
+              "exposure_limitation": "Joint sensing and realized non-zero movement exposure must be reported because sparse co-exposure limits mechanism attribution even when a paired outcome interval excludes zero.",
+          }
+
+          verification = {
+              "format": "melakat-phase-four-full-campaign-verification-0.1",
+              "experiment": campaign.get("experiment"),
+              "expected_runs": 60,
+              "completed_runs": len(runs),
+              "matched_seeds_per_condition": len(controls),
+              "validation_passed": bool(validation.get("passed")),
+              "validation_failure_count": int(validation.get("failure_count", -1)),
+              "reproducibility_identical": bool(validation.get("reproducibility", {}).get("identical")),
+              "control_sensing_operations": control_sensing_total,
+              "treatment_sensing_operations": treatment_sensing_total,
+              "maximum_absolute_energy_balance_error": max_energy_error,
+              "maximum_absolute_local_resource_balance_error": max_resource_error,
+              "underpaid_realized_movement_runs": underpaid_realized,
+              "atomic_movement_payment_all_runs": all(r.get("atomic_movement_payment_enabled") is True for r in runs),
+              "engine_versions": sorted({str(r.get("engine_version")) for r in runs}),
+              "measurement_versions": sorted({str(r.get("measurement_version")) for r in runs}),
+              "exposure_diagnostics": exposure,
+              "passed": True,
+          }
+
+          readiness = {
+              "format": "melakat-phase-four-merge-readiness-0.1",
+              "experiment": campaign.get("experiment"),
+              "structural_integrity_pass": True,
+              "accounting_pass": max_energy_error <= 1e-7 and max_resource_error <= 1e-7 and not underpaid_realized,
+              "reproducibility_pass": bool(validation.get("reproducibility", {}).get("identical")),
+              "causal_manipulation_exposed": control_sensing_total == 0.0 and treatment_sensing_total > 0.0,
+              "paired_analysis_completed": True,
+              "evidence_mergeable_even_if_effect_unresolved": True,
+              "behavioral_or_spatial_effect_resolved": analysis["interpretation_gate"]["behavioral_or_spatial_effect_resolved"],
+              "resolved_movement_execution_metrics": resolved_behavioral,
+              "resolved_spatial_resource_metrics": resolved_spatial_resource,
+              "scientific_boundary": "A resolved treatment effect can support resource-conditioned behavior only. This scalar local sensor cannot establish directional navigation/resource seeking, and no adaptation/fitness/intelligence claim is authorized by this campaign.",
+              "passed": True,
+          }
+
+          (root / "paired-analysis.json").write_text(json.dumps(analysis, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          (root / "campaign-verification.json").write_text(json.dumps(verification, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          (root / "merge-readiness.json").write_text(json.dumps(readiness, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+          readme = f"""# Phase Four full sensing-with-movement evidence\n\nThis directory archives the registered 30-matched-seed × 2-condition × 2000-tick Phase Four campaign.\n\n- validation: PASS\n- reproducibility: PASS\n- control sensing operations: {control_sensing_total:g}\n- treatment sensing operations: {treatment_sensing_total:g}\n- treatment sensing-exposed runs: {exposure['treatment_sensing_exposed_runs']}/30\n- treatment joint sensing + non-zero movement runs: {exposure['treatment_joint_sensing_and_nonzero_movement_runs']}/30\n- control non-zero movement operations: {exposure['control_nonzero_movement_operations']:g}\n- treatment non-zero movement operations: {exposure['treatment_nonzero_movement_operations']:g}\n- maximum absolute energy-balance error: {max_energy_error:.3g}\n- maximum absolute local-resource-balance error: {max_resource_error:.3g}\n- behavioral/spatial paired effect resolved: {analysis['interpretation_gate']['behavioral_or_spatial_effect_resolved']}\n\nInterpretation must use `paired-analysis.json` and preserve the registered scientific boundary: the sensor is scalar and local only, so this campaign does not test directional navigation or resource seeking.\n"""
+          (root / "README.md").write_text(readme, encoding="utf-8")
+
+          manifest_lines = []
+          for path in sorted(p for p in root.iterdir() if p.is_file() and p.name != "SHA256SUMS.txt"):
+              digest = hashlib.sha256(path.read_bytes()).hexdigest()
+              manifest_lines.append(f"{digest}  {path.name}")
+          (root / "SHA256SUMS.txt").write_text("\n".join(manifest_lines) + "\n", encoding="utf-8")
+
+          print(json.dumps({
+              "exposure": exposure,
+              "resolved_movement_execution_metrics": resolved_behavioral,
+              "resolved_spatial_resource_metrics": resolved_spatial_resource,
+              "max_energy_error": max_energy_error,
+              "max_resource_error": max_resource_error,
+              "reproducibility": validation.get("reproducibility", {}).get("identical"),
+          }, indent=2))
+          PY
+
+      - name: Verify archived checksum manifest
+        shell: bash
+        working-directory: results/phase-four/resource-sensing-with-movement/full
+        run: sha256sum -c SHA256SUMS.txt
+
+      - name: Commit full Phase Four evidence
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results/phase-four/resource-sensing-with-movement/full
+          git commit -m "Phase 4: archive full sensing movement evidence"
+          git push origin HEAD:phase4/full-sensing-movement-evidence
+
+      - name: Upload full evidence artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-four-full-sensing-movement-evidence-${{ github.run_id }}
+          path: results/phase-four/resource-sensing-with-movement/full
+          if-no-files-found: error
