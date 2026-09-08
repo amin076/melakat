@@ -1,0 +1,68 @@
+{
+  "format": "melakat-experiment-spec-0.1",
+  "name": "phase-five-structural-event-rate-calibration",
+  "description": "Gate 5C exposure-only calibration. Candidate structural event rates are compared with balanced duplication/deletion. The selected rate is the lowest candidate meeting the pre-registered exposure threshold; outcome direction, genome expansion, persistence, population and ecological performance are forbidden selection criteria.",
+  "base_config": {
+    "run.engine_backend": "phase-five-vm",
+    "run.max_ticks": 1000,
+    "world.spatial_enabled": false,
+    "world.local_resources_enabled": false,
+    "world.resource_sensing_enabled": false,
+    "world.resource_sensing_mutation_enabled": false,
+    "world.movement_enabled": false,
+    "world.movement_mutation_enabled": false,
+    "world.organism_actions_enabled": false,
+    "world.initial_energy": 1000.0,
+    "world.energy_input_per_tick": 20.0,
+    "world.memory_capacity": 1200,
+    "population.initial_size": 12,
+    "population.initial_energy": 25.0,
+    "population.memory_per_organism": 8,
+    "execution.instructions_per_tick": 12,
+    "execution.instruction_cost": 0.05,
+    "execution.maintenance_cost": 0.2,
+    "reproduction.enabled": true,
+    "reproduction.cost": 12.0,
+    "reproduction.offspring_energy": 8.0,
+    "mutation.substitution_rate": 0.01,
+    "mutation.structural_event_rate": 0.0,
+    "mutation.structural_duplication_probability": 0.5
+  },
+  "seeds": {
+    "start": 1,
+    "count": 8
+  },
+  "conditions": [
+    {
+      "name": "structural-rate-0.01",
+      "overrides": {"mutation.structural_event_rate": 0.01}
+    },
+    {
+      "name": "structural-rate-0.025",
+      "overrides": {"mutation.structural_event_rate": 0.025}
+    },
+    {
+      "name": "structural-rate-0.05",
+      "overrides": {"mutation.structural_event_rate": 0.05}
+    },
+    {
+      "name": "structural-rate-0.10",
+      "overrides": {"mutation.structural_event_rate": 0.10}
+    }
+  ],
+  "reproducibility": {
+    "condition": "structural-rate-0.01",
+    "seed": 1
+  },
+  "calibration_gate": {
+    "selection_rule": "Choose the lowest candidate rate that passes all integrity checks and records at least 16 committed structural mutation events in total, at least 6 of 8 runs with at least one committed event, at least 4 committed duplications, and at least 4 committed deletions.",
+    "forbidden_selection_criteria": [
+      "genome length increase",
+      "population increase",
+      "lineage persistence",
+      "higher reproduction",
+      "lower mortality",
+      "any desirable ecological or evolutionary outcome"
+    ]
+  }
+}
