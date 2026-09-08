@@ -1,0 +1,14 @@
+{
+  "experiment": "phase-five-variable-genome-full",
+  "format": "melakat-experiment-provenance-0.1",
+  "generated_at_utc": "2026-09-08T17:34:35.676562+00:00",
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "python_version": "3.12.14",
+  "repository": "amin076/melakat",
+  "source_branch": "phase5/gates5c5d-evidence",
+  "source_commit": "66e1478a4c1a837a146c584f2d8f1a6907bd38c8",
+  "source_spec": "experiments/phase-five/variable-genome-full.json",
+  "source_spec_sha256": "e8b28a83e18b7c9b7fc6df56ca1a5f830233506b187ef71fa3cfe56c56a32112",
+  "workflow": "Phase Five complete evolvability evidence",
+  "workflow_run_id": "34256529053"
+}
