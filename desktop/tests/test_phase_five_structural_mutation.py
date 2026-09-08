@@ -162,10 +162,17 @@ class PhaseFiveStructuralMutationTests(unittest.TestCase):
         self.assertGreater(summary["variable_length_births"], 0)
         self.assertGreater(summary["genome_length_maximum"], 14)
         self.assertLessEqual(abs(summary["energy_balance_error"]), 1e-7)
-        proposed = [event for event in events if event["type"] == "structural_mutation_proposed"]
-        born = [event for event in events if event["type"] == "organism_born"]
+        proposed = [
+            event for event in events if event["name"] == "structural_mutation_proposed"
+        ]
+        born = [event for event in events if event["name"] == "organism_born"]
         self.assertTrue(proposed)
-        self.assertTrue(any(event.get("structural_mutation_committed") for event in born))
+        self.assertTrue(
+            any(
+                bool(event["payload"].get("structural_mutation_committed"))
+                for event in born
+            )
+        )
 
     def test_structural_replay_is_deterministic(self) -> None:
         config = CORE_SCHEMA.defaults()
