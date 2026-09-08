@@ -1,0 +1,14 @@
+{
+  "experiment": "phase-five-structural-rate-calibration",
+  "format": "melakat-experiment-provenance-0.1",
+  "generated_at_utc": "2026-09-08T17:17:18.748724+00:00",
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "python_version": "3.12.14",
+  "repository": "amin076/melakat",
+  "source_branch": "phase5/gate5c-structural-calibration",
+  "source_commit": "f7e71f58d406aebb38e80d2cb968bea83bfe6d47",
+  "source_spec": "experiments/phase-five/structural-rate-calibration.json",
+  "source_spec_sha256": "f7103706a3458e397befe48fd6e6e5bb27838288720b48a5c14cb983ed220d98",
+  "workflow": "Phase Five structural calibration evidence",
+  "workflow_run_id": "34255875105"
+}
