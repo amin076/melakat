@@ -1,13 +1,20 @@
 from __future__ import annotations
 
+import hashlib
 import random
 import statistics
-from typing import Any, Callable
+from dataclasses import dataclass
+from typing import Any, Callable, Literal
 
 from .phase_five_contract import (
     PHASE_FIVE_ENGINE_VERSION,
     PHASE_FIVE_MEASUREMENT_VERSION,
+    PHASE_FIVE_STRUCTURAL_RNG_VERSION,
     PHASE_FIVE_WORLD_CONTRACT_VERSION,
+)
+from .phase_five_structural_contract import (
+    PHASE_FIVE_STRUCTURAL_ENGINE_VERSION,
+    PHASE_FIVE_STRUCTURAL_MEASUREMENT_VERSION,
 )
 from .phase_five_vm import (
     PhaseFiveOpcode,
@@ -17,6 +24,26 @@ from .phase_five_vm import (
 from .phase_zero_engine import PhaseZeroEngine, PhaseZeroOrganism
 from .protocol import make_event
 from .vm import Instruction, Opcode
+
+
+StructuralKind = Literal["duplication", "deletion"]
+
+
+@dataclass(frozen=True)
+class StructuralMutationResult:
+    genome: tuple[Instruction, ...]
+    attempted: bool
+    committed: bool
+    rejected: bool
+    kind: StructuralKind | None
+    index: int | None
+    length_delta: int
+
+
+def derive_structural_seed(seed: int) -> int:
+    payload = f"{PHASE_FIVE_STRUCTURAL_RNG_VERSION}:{int(seed)}".encode("utf-8")
+    digest = hashlib.sha256(payload).digest()
+    return int.from_bytes(digest[:8], "big", signed=False)
 
 
 def mutate_phase_five_genome(
@@ -42,13 +69,46 @@ def mutate_phase_five_genome(
     return tuple(result)
 
 
-class PhaseFiveEngine(PhaseZeroEngine):
-    """Phase Five length-robust self-replication engine.
+def apply_structural_mutation(
+    genome: tuple[Instruction, ...],
+    rng: random.Random,
+    *,
+    event_rate: float,
+    duplication_probability: float,
+) -> StructuralMutationResult:
+    """Apply at most one blind length-changing event to one daughter proposal."""
 
-    Gate 5A intentionally inherits the homogeneous finite-energy/finite-memory
-    world so representation robustness is isolated from spatial/sensing effects.
-    Structural mutation is not implemented in this gate.
-    """
+    if not genome:
+        raise ValueError("structural_mutation_requires_nonempty_genome")
+    if not 0.0 <= event_rate <= 1.0:
+        raise ValueError("structural_event_rate must be between 0 and 1")
+    if not 0.0 <= duplication_probability <= 1.0:
+        raise ValueError("structural_duplication_probability must be between 0 and 1")
+    if event_rate <= 0.0 or rng.random() >= event_rate:
+        return StructuralMutationResult(genome, False, False, False, None, None, 0)
+
+    if rng.random() < duplication_probability:
+        index = rng.randrange(len(genome))
+        result = list(genome)
+        result.insert(index + 1, genome[index])
+        return StructuralMutationResult(
+            tuple(result), True, True, False, "duplication", index, 1
+        )
+
+    if len(genome) == 1:
+        return StructuralMutationResult(
+            genome, True, False, True, "deletion", 0, 0
+        )
+    index = rng.randrange(len(genome))
+    result = list(genome)
+    del result[index]
+    return StructuralMutationResult(
+        tuple(result), True, True, False, "deletion", index, -1
+    )
+
+
+class PhaseFiveEngine(PhaseZeroEngine):
+    """Phase Five length-robust replication plus opt-in structural variation."""
 
     engine_version = PHASE_FIVE_ENGINE_VERSION
     measurement_version = PHASE_FIVE_MEASUREMENT_VERSION
@@ -62,20 +122,44 @@ class PhaseFiveEngine(PhaseZeroEngine):
         self.replication_copy_operations = 0
         self.template_jump_operations = 0
         self.ancestor_genome_length = len(self.default_genome())
+
+        self.structural_mutation_configured = (
+            "mutation.structural_event_rate" in config
+            or "mutation.structural_duplication_probability" in config
+        )
+        self.structural_event_rate = float(
+            config.get("mutation.structural_event_rate", 0.0)
+        )
+        self.structural_duplication_probability = float(
+            config.get("mutation.structural_duplication_probability", 0.5)
+        )
+        if not 0.0 <= self.structural_event_rate <= 1.0:
+            raise ValueError("structural_event_rate must be between 0 and 1")
+        if not 0.0 <= self.structural_duplication_probability <= 1.0:
+            raise ValueError(
+                "structural_duplication_probability must be between 0 and 1"
+            )
+        self.structural_rng_seed = derive_structural_seed(int(config["run.seed"]))
+        self.structural_rng = random.Random(self.structural_rng_seed)
+        self.structural_mutation_operations = 0
+        self.structural_mutation_committed_operations = 0
+        self.structural_mutation_rejected_operations = 0
+        self.instruction_duplication_operations = 0
+        self.instruction_deletion_operations = 0
+        self.structural_length_delta_total = 0
+        self.variable_length_births = 0
+        self.variable_length_reproducing_offspring = 0
+        self._credited_variable_length_reproducers: set[int] = set()
+        self._pending_structural_events: dict[int, StructuralMutationResult] = {}
+
+        if self.structural_mutation_configured:
+            self.engine_version = PHASE_FIVE_STRUCTURAL_ENGINE_VERSION
+            self.measurement_version = PHASE_FIVE_STRUCTURAL_MEASUREMENT_VERSION
         super().__init__(config, emit)
 
     @staticmethod
     def default_genome() -> tuple[Instruction, ...]:
-        """Length-independent ancestor using sequential copy + template jumps.
-
-        The two initial NOP_A instructions are the loop marker. COPY_NEXT sets
-        register 0 to zero exactly when the current genome has been fully copied.
-        The conditional A/B template exits to the complementary B/A marker; the
-        unconditional B/B template loops to the complementary A/A marker. A
-        neutral base NOP separates the inline B/B template from the later B/A
-        target marker so template parsing is unambiguous. No genome length or
-        absolute jump address is encoded.
-        """
+        """Length-independent ancestor using sequential copy + template jumps."""
 
         return (
             Instruction(PhaseFiveOpcode.NOP_A),  # type: ignore[arg-type]
@@ -102,12 +186,58 @@ class PhaseFiveEngine(PhaseZeroEngine):
             replication_read_position=0,
         )
 
-    def _copied_parent_genome(self, parent: PhaseZeroOrganism) -> tuple[Instruction, ...] | None:
+    def _copied_parent_genome(
+        self, parent: PhaseZeroOrganism
+    ) -> tuple[Instruction, ...] | None:
         state = parent.vm_state
         if not isinstance(state, PhaseFiveVMState):
             return None
         vm = PhaseFiveVirtualMachine(parent.genome, self.vm_config, state)
         return vm.copied_genome()
+
+    def _prepare_pending_child(self, parent: PhaseZeroOrganism) -> None:
+        copied = self._copied_parent_genome(parent)
+        if copied is None:
+            self._kill(parent, "vm_fault:division_without_complete_copy")
+            return
+        substituted = mutate_phase_five_genome(
+            copied,
+            self.rng,
+            float(self.config["mutation.substitution_rate"]),
+        )
+        structural = apply_structural_mutation(
+            substituted,
+            self.structural_rng,
+            event_rate=self.structural_event_rate,
+            duplication_probability=self.structural_duplication_probability,
+        )
+        parent.pending_child_genome = structural.genome
+        self._pending_structural_events[parent.organism_id] = structural
+        if structural.attempted:
+            self.structural_mutation_operations += 1
+        if structural.committed:
+            self.structural_mutation_committed_operations += 1
+            self.structural_length_delta_total += structural.length_delta
+            if structural.kind == "duplication":
+                self.instruction_duplication_operations += 1
+            elif structural.kind == "deletion":
+                self.instruction_deletion_operations += 1
+        if structural.rejected:
+            self.structural_mutation_rejected_operations += 1
+        if structural.attempted:
+            self.emit(
+                make_event(
+                    "structural_mutation_proposed",
+                    organism_id=parent.organism_id,
+                    mutation_type=structural.kind,
+                    committed=structural.committed,
+                    rejected=structural.rejected,
+                    instruction_index=structural.index,
+                    parent_genome_length=len(parent.genome),
+                    child_genome_length=len(structural.genome),
+                    genome_length_delta=structural.length_delta,
+                )
+            )
 
     def _try_reproduction(self, parent: PhaseZeroOrganism) -> bool:
         if not bool(self.config["reproduction.enabled"]):
@@ -115,17 +245,17 @@ class PhaseFiveEngine(PhaseZeroEngine):
             return False
 
         if parent.pending_child_genome is None:
-            copied = self._copied_parent_genome(parent)
-            if copied is None:
-                self._kill(parent, "vm_fault:division_without_complete_copy")
+            self._prepare_pending_child(parent)
+            if not parent.alive or parent.pending_child_genome is None:
                 return False
-            parent.pending_child_genome = mutate_phase_five_genome(
-                copied,
-                self.rng,
-                float(self.config["mutation.substitution_rate"]),
-            )
 
         child_genome = parent.pending_child_genome
+        structural = self._pending_structural_events.get(
+            parent.organism_id,
+            StructuralMutationResult(
+                child_genome, False, False, False, None, None, 0
+            ),
+        )
         allocation = self._allocation_for_genome(child_genome)
         free_memory = self._free_memory()
         if free_memory < allocation:
@@ -167,16 +297,28 @@ class PhaseFiveEngine(PhaseZeroEngine):
             vm_state=self._new_vm_state(child_genome),
         )
         self.organisms.append(child)
+        if len(child_genome) != self.ancestor_genome_length:
+            self.variable_length_births += 1
+        if (
+            len(parent.genome) != self.ancestor_genome_length
+            and parent.organism_id not in self._credited_variable_length_reproducers
+        ):
+            self._credited_variable_length_reproducers.add(parent.organism_id)
+            self.variable_length_reproducing_offspring += 1
+
         parent.offspring_count += 1
         parent.pending_child_genome = None
         parent.reproduction_block_reason = None
+        self._pending_structural_events.pop(parent.organism_id, None)
         self._record_genealogy(parent)
         self._record_genealogy(child)
         self.next_id += 1
         self.births += 1
         self.max_population = max(self.max_population, len(self._active()))
 
-        parent_vm = PhaseFiveVirtualMachine(parent.genome, self.vm_config, parent.vm_state)
+        parent_vm = PhaseFiveVirtualMachine(
+            parent.genome, self.vm_config, parent.vm_state  # type: ignore[arg-type]
+        )
         parent_vm.reset_for_next_lifecycle()
         parent.vm_state = parent_vm.state
 
@@ -188,12 +330,21 @@ class PhaseFiveEngine(PhaseZeroEngine):
                 generation=child.generation,
                 lineage_id=child.lineage_id,
                 mutated=mutated,
+                parent_genome_hash=parent_hash,
                 genome_hash=child_hash,
                 parent_genome_length=len(parent.genome),
                 child_genome_length=len(child_genome),
+                genome_length_delta=len(child_genome) - len(parent.genome),
+                structural_mutation_type=structural.kind,
+                structural_mutation_index=structural.index,
+                structural_mutation_committed=structural.committed,
             )
         )
         return True
+
+    def _kill(self, organism: PhaseZeroOrganism, reason: str) -> None:
+        self._pending_structural_events.pop(organism.organism_id, None)
+        super()._kill(organism, reason)
 
     def _execute_one(self, organism: PhaseZeroOrganism) -> None:
         captured = min(self.energy_pool, 1.0)
@@ -235,12 +386,13 @@ class PhaseFiveEngine(PhaseZeroEngine):
 
     def snapshot(self) -> dict[str, Any]:
         snapshot = super().snapshot()
+        active_by_id = {item.organism_id: item for item in self._active()}
         for row in snapshot["organisms"]:
-            organism = next(
-                item for item in self._active() if item.organism_id == row["id"]
-            )
+            organism = active_by_id[row["id"]]
             if isinstance(organism.vm_state, PhaseFiveVMState):
-                row["replication_read_position"] = organism.vm_state.replication_read_position
+                row["replication_read_position"] = (
+                    organism.vm_state.replication_read_position
+                )
                 row["replication_progress"] = sum(
                     item is not None for item in organism.vm_state.replication_buffer
                 )
@@ -261,8 +413,35 @@ class PhaseFiveEngine(PhaseZeroEngine):
                 "genome_length_median": statistics.median(lengths) if lengths else 0.0,
                 "genome_length_minimum": min(lengths) if lengths else 0,
                 "genome_length_maximum": max(lengths) if lengths else 0,
-                "genome_length_variance": statistics.pvariance(lengths) if lengths else 0.0,
+                "genome_length_variance": (
+                    statistics.pvariance(lengths) if lengths else 0.0
+                ),
                 "distinct_genome_lengths": len(set(lengths)),
+                "structural_event_rate": self.structural_event_rate,
+                "structural_duplication_probability": (
+                    self.structural_duplication_probability
+                ),
+                "structural_rng_version": PHASE_FIVE_STRUCTURAL_RNG_VERSION,
+                "structural_rng_seed": self.structural_rng_seed,
+                "structural_mutation_operations": self.structural_mutation_operations,
+                "structural_mutation_committed_operations": (
+                    self.structural_mutation_committed_operations
+                ),
+                "structural_mutation_rejected_operations": (
+                    self.structural_mutation_rejected_operations
+                ),
+                "instruction_duplication_operations": (
+                    self.instruction_duplication_operations
+                ),
+                "instruction_deletion_operations": self.instruction_deletion_operations,
+                "structural_length_delta_total": self.structural_length_delta_total,
+                "variable_length_births": self.variable_length_births,
+                "variable_length_reproducing_offspring": (
+                    self.variable_length_reproducing_offspring
+                ),
+                "variable_length_active_population": sum(
+                    length != self.ancestor_genome_length for length in lengths
+                ),
             }
         )
         return metrics

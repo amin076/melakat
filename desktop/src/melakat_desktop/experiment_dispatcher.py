@@ -4,6 +4,10 @@ import sys
 from pathlib import Path
 
 from . import experiment_runner
+from .phase_five_experiment_support import (
+    is_phase_five_spec,
+    phase_five_experiment_support,
+)
 from .phase_three_experiment_support import (
     is_phase_three_spec,
     phase_three_experiment_support,
@@ -25,12 +29,15 @@ def main() -> None:
         return
 
     spec = experiment_runner.load_experiment_spec(spec_path)
-    if not is_phase_three_spec(spec):
-        experiment_runner.main()
+    if is_phase_five_spec(spec):
+        with phase_five_experiment_support():
+            experiment_runner.main()
         return
-
-    with phase_three_experiment_support():
-        experiment_runner.main()
+    if is_phase_three_spec(spec):
+        with phase_three_experiment_support():
+            experiment_runner.main()
+        return
+    experiment_runner.main()
 
 
 if __name__ == "__main__":
