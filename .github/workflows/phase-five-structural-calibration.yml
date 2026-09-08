@@ -1,0 +1,146 @@
+name: Phase Five structural calibration evidence
+
+on:
+  push:
+    branches:
+      - phase5/gate5c-structural-calibration
+    paths:
+      - ".github/workflows/phase-five-structural-calibration.yml"
+      - "experiments/phase-five/structural-rate-calibration.json"
+
+permissions:
+  contents: write
+
+jobs:
+  calibration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Check out calibration branch
+        uses: actions/checkout@v4
+        with:
+          ref: phase5/gate5c-structural-calibration
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install headless Melakat package
+        run: python -m pip install -e desktop --no-deps
+
+      - name: Validate pre-registered calibration
+        run: melakat-experiment validate experiments/phase-five/structural-rate-calibration.json
+
+      - name: Run pre-registered calibration
+        run: >-
+          melakat-experiment run
+          experiments/phase-five/structural-rate-calibration.json
+          --output-dir results/phase-five/structural-rate-calibration
+
+      - name: Apply pre-registered promotion rule
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path("results/phase-five/structural-rate-calibration")
+          campaign = json.loads((root / "campaign.json").read_text(encoding="utf-8"))
+          validation = json.loads((root / "validation.json").read_text(encoding="utf-8"))
+          runs = campaign["runs"]
+          rates = [0.01, 0.05, 0.10, 0.20]
+          rows = []
+          selected_rate = None
+          for rate in rates:
+              condition = f"structural-rate-{rate:.2f}"
+              chosen = [run for run in runs if run["condition"] == condition]
+              committed = sum(int(run.get("structural_mutation_committed_operations", 0)) for run in chosen)
+              exposed = sum(int(run.get("structural_mutation_committed_operations", 0)) > 0 for run in chosen)
+              variable_births = sum(int(run.get("variable_length_births", 0)) for run in chosen)
+              max_energy_error = max((abs(float(run.get("energy_balance_error", 0.0))) for run in chosen), default=0.0)
+              passed = (
+                  len(chosen) == 8
+                  and committed >= 20
+                  and exposed >= 6
+                  and variable_births >= 10
+                  and max_energy_error <= 1e-7
+              )
+              row = {
+                  "rate": rate,
+                  "condition": condition,
+                  "completed_runs": len(chosen),
+                  "committed_structural_events": committed,
+                  "event_exposed_runs": exposed,
+                  "variable_length_births": variable_births,
+                  "maximum_absolute_energy_balance_error": max_energy_error,
+                  "promotion_rule_passed": passed,
+              }
+              rows.append(row)
+              if selected_rate is None and passed:
+                  selected_rate = rate
+
+          decision = {
+              "format": "melakat-phase-five-structural-calibration-decision-0.1",
+              "pre_registered_candidates": rates,
+              "selection_rule": "lowest non-zero candidate with 8/8 complete, >=20 committed structural events, >=6/8 event-exposed runs, >=10 variable-length births, energy error <=1e-7, campaign validation PASS and deterministic replay PASS",
+              "validation_passed": bool(validation.get("passed")),
+              "validation_failure_count": int(validation.get("failure_count", -1)),
+              "reproducibility_identical": bool(validation.get("reproducibility", {}).get("identical")),
+              "empty_genome_commit_guard": "mechanically rejected by apply_structural_mutation for length-one deletion and covered by Gate 5B unit test",
+              "candidates": rows,
+              "selected_rate": selected_rate,
+              "passed": bool(validation.get("passed")) and bool(validation.get("reproducibility", {}).get("identical")) and selected_rate is not None,
+              "forbidden_selection_outcomes_used": False,
+          }
+          if not decision["passed"]:
+              raise SystemExit(json.dumps(decision, indent=2))
+          (root / "calibration-decision.json").write_text(
+              json.dumps(decision, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          lines = [
+              "# Phase Five structural-rate calibration evidence",
+              "",
+              "This archive was generated from the pre-registered Gate 5C design.",
+              "The selected rate is the lowest candidate satisfying exposure/integrity thresholds; no ecological or genome-size direction was used for selection.",
+              "",
+              f"Selected structural event rate: `{selected_rate}`",
+              "",
+              "| rate | runs | committed events | exposed runs | variable-length births | max |energy error| | pass |",
+              "| ---: | ---: | ---: | ---: | ---: | ---: | :---: |",
+          ]
+          for row in rows:
+              lines.append(
+                  f"| {row['rate']:.2f} | {row['completed_runs']} | {row['committed_structural_events']} | {row['event_exposed_runs']}/8 | {row['variable_length_births']} | {row['maximum_absolute_energy_balance_error']:.3g} | {'PASS' if row['promotion_rule_passed'] else 'NO'} |"
+              )
+          (root / "README.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+          print(json.dumps(decision, indent=2))
+          PY
+
+      - name: Build calibration checksum manifest
+        shell: bash
+        run: |
+          cd results/phase-five/structural-rate-calibration
+          sha256sum campaign.json comparison.csv provenance.json runs.csv summary.json validation.json calibration-decision.json README.md > CALIBRATION_SHA256SUMS.txt
+          sha256sum -c CALIBRATION_SHA256SUMS.txt
+
+      - name: Commit calibration evidence
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add results/phase-five/structural-rate-calibration
+          if git diff --cached --quiet; then
+            echo "No calibration evidence changes to commit"
+          else
+            git commit -m "Phase 5C: archive structural-rate calibration evidence"
+            git push origin HEAD:phase5/gate5c-structural-calibration
+          fi
+
+      - name: Upload calibration artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-five-structural-calibration-${{ github.run_id }}
+          path: results/phase-five/structural-rate-calibration
+          if-no-files-found: error
