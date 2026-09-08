@@ -71,8 +71,10 @@ class PhaseFiveEngine(PhaseZeroEngine):
         The two initial NOP_A instructions are the loop marker. COPY_NEXT sets
         register 0 to zero exactly when the current genome has been fully copied.
         The conditional A/B template exits to the complementary B/A marker; the
-        unconditional B/B template loops to the complementary A/A marker.
-        No genome length or absolute jump address is encoded.
+        unconditional B/B template loops to the complementary A/A marker. A
+        neutral base NOP separates the inline B/B template from the later B/A
+        target marker so template parsing is unambiguous. No genome length or
+        absolute jump address is encoded.
         """
 
         return (
@@ -86,6 +88,7 @@ class PhaseFiveEngine(PhaseZeroEngine):
             Instruction(PhaseFiveOpcode.JUMP_TEMPLATE),  # type: ignore[arg-type]
             Instruction(PhaseFiveOpcode.NOP_B),  # type: ignore[arg-type]
             Instruction(PhaseFiveOpcode.NOP_B),  # type: ignore[arg-type]
+            Instruction(Opcode.NOP),
             Instruction(PhaseFiveOpcode.NOP_B),  # type: ignore[arg-type]
             Instruction(PhaseFiveOpcode.NOP_A),  # type: ignore[arg-type]
             Instruction(Opcode.DIVIDE),
