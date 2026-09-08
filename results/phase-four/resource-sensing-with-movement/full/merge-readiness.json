@@ -1,0 +1,19 @@
+{
+  "accounting_pass": true,
+  "behavioral_or_spatial_effect_resolved": true,
+  "causal_manipulation_exposed": true,
+  "evidence_mergeable_even_if_effect_unresolved": true,
+  "experiment": "phase-four-resource-sensing-with-movement",
+  "format": "melakat-phase-four-merge-readiness-0.1",
+  "paired_analysis_completed": true,
+  "passed": true,
+  "reproducibility_pass": true,
+  "resolved_movement_execution_metrics": [],
+  "resolved_spatial_resource_metrics": [
+    "mean_local_neighbors",
+    "mean_nearest_neighbor_distance",
+    "local_resource_total"
+  ],
+  "scientific_boundary": "A resolved treatment effect can support resource-conditioned behavior only. This scalar local sensor cannot establish directional navigation/resource seeking, and no adaptation/fitness/intelligence claim is authorized by this campaign.",
+  "structural_integrity_pass": true
+}

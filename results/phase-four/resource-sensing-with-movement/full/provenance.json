@@ -1,0 +1,14 @@
+{
+  "experiment": "phase-four-resource-sensing-with-movement",
+  "format": "melakat-experiment-provenance-0.1",
+  "generated_at_utc": "2026-09-08T12:03:30.412196+00:00",
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "python_version": "3.12.14",
+  "repository": "amin076/melakat",
+  "source_branch": "phase4/full-sensing-movement-evidence",
+  "source_commit": "ebe8cdd5a201fe5f78a685661ffbc89f77ba11f4",
+  "source_spec": "experiments/phase-four/resource-sensing-with-movement.json",
+  "source_spec_sha256": "94559fd4d1d1ee3d3eef836d8ec33b7268f977762488ac73c2d99392a5f2f43c",
+  "workflow": "Phase Four full sensing-movement evidence",
+  "workflow_run_id": "34223603940"
+}
