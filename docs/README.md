@@ -6,23 +6,28 @@ This directory contains the canonical project documentation. Major scientific do
 
 ## Current research status
 
-**Phase Zero, Phase One, and Phase Two are complete. Phase Two is frozen as an accepted reference. Phase Three has started.**
+**Phase Zero, Phase One, and Phase Two are complete. Phase Two is frozen as the accepted spatial/local-resource reference. The Phase Three environmental/sensing/movement mechanism sequence and the Phase Four sensing-with-movement causal evidence gate are complete.**
 
-The accepted Phase One homogeneous evidence archive contains 990 runs. The accepted Phase Two spatial/environment evidence archive contains 360 runs: 30 seeds across 12 matched conditions, each for 2000 ticks, with zero validation failures.
+Accepted historical evidence:
+
+- Phase One homogeneous evidence: 990 runs;
+- Phase Two spatial/environment evidence: 360 runs;
+- Phase Three contains the first full heterogeneous-resource campaign plus sensing-only, movement-only, movement-step and corrected atomic-movement causal evidence;
+- Phase Four contains registered smoke, full-duration preflight, and a completed 30-matched-seed × 2-condition × 2000-tick full campaign.
 
 Frozen Phase Two versions:
 
-- world contract: `phase-two-spatial-0.7`
-- engine: `phase-two-vm-0.7`
-- measurement: `phase-two-measurement-0.1`
+- world contract: `phase-two-spatial-0.7`;
+- engine: `phase-two-vm-0.7`;
+- measurement: `phase-two-measurement-0.1`.
 
-Initial Phase Three versions:
+Current execution evidence used by Phase Four:
 
-- world contract: `phase-three-environment-0.1`
-- engine: `phase-three-vm-0.1`
-- measurement: `phase-three-measurement-0.1`
+- world contract: `phase-three-environment-0.1`;
+- engine: `phase-three-vm-0.3`;
+- measurement: `phase-three-measurement-0.3`.
 
-The Phase One homogeneous model remains the permanent control. Phase Two remains the frozen spatial/local-resource reference. Phase Three begins by introducing one isolated intervention: deterministic spatial heterogeneity in resource allocation while holding total resource input constant.
+The Phase One homogeneous model remains the permanent homogeneous control. Phase Two remains the frozen spatial/local-resource reference. Later evidence is versioned separately and does not replace those accepted baselines.
 
 ## Core documents
 
@@ -41,6 +46,12 @@ The Phase One homogeneous model remains the permanent control. Phase Two remains
 - [خط پایهٔ منجمد مرحلهٔ دو — فارسی](phase-2/phase-two-frozen-baseline.fa.md)
 - [Phase Three roadmap — English](phase-3/phase-three-roadmap.md)
 - [نقشهٔ راه مرحلهٔ سه — فارسی](phase-3/phase-three-roadmap.fa.md)
+- [Phase Four pre-registered sensing/movement gate — English](phase-4/phase-four-sensing-movement-gate.md)
+- [گیت sensing/movement مرحلهٔ چهار — فارسی](phase-4/phase-four-sensing-movement-gate.fa.md)
+- [Phase Four full-duration preflight report — English](phase-4/phase-four-sensing-movement-preflight-report.md)
+- [گزارش preflight مرحلهٔ چهار — فارسی](phase-4/phase-four-sensing-movement-preflight-report.fa.md)
+- [Phase Four completion report — English](phase-4/phase-four-completion-report.md)
+- [گزارش تکمیل مرحلهٔ چهار — فارسی](phase-4/phase-four-completion-report.fa.md)
 - [Phase Two user test guide — English](phase-2/phase-two-user-test-guide.md)
 - [راهنمای تست کاربر مرحلهٔ دو — فارسی](phase-2/phase-two-user-test-guide.fa.md)
 
@@ -51,9 +62,13 @@ Historical Phase Two contract milestones remain available:
 - [Spatial topology 0.2 — English](phase-2/phase-two-spatial-topology-0.2.md)
 - [توپولوژی فضایی ۰.۲ — فارسی](phase-2/phase-two-spatial-topology-0.2.fa.md)
 
-The frozen Phase Two contract remains implemented in `desktop/src/melakat_desktop/world_contract.py`. The new Phase Three contract is implemented separately in `desktop/src/melakat_desktop/phase_three_contract.py`; this separation is intentional so later work does not silently redefine the accepted Phase Two baseline.
+## Accepted evidence summary
 
-## Accepted Phase Two evidence
+### Phase One
+
+The accepted Phase One evidence archive contains 990 runs and remains the homogeneous baseline.
+
+### Phase Two
 
 The final Phase Two evidence gate records:
 
@@ -67,13 +82,30 @@ The final Phase Two evidence gate records:
 - source commit `ad5e21159baf0d6bd79a028799b9318ba144fed7`;
 - workflow run `33969619473`.
 
-Evidence is stored in `results/phase-two/evidence-gate/` with validation, performance, provenance, and SHA-256 checksums. Later Phase Three experiments do not replace this archive.
+Evidence is stored in `results/phase-two/evidence-gate/`.
 
-## Phase Three first gate
+### Phase Four
 
-The first Phase Three evidence gate will compare a `uniform` control against a deterministic `center_patch` resource distribution while preserving matched seeds, total initial resource, total per-tick resource input, VM rules, mutation, reproduction, memory, topology and local capture semantics.
+The completed Phase Four full campaign records:
 
-A difference between the two conditions may support a statement about the effect of spatial resource heterogeneity on recorded model dynamics. It is not by itself evidence of adaptation, cooperation, competition or niche formation.
+- 30 matched seeds × 2 conditions × 2000 ticks = 60 primary runs;
+- validation failures: `0`;
+- deterministic replay: PASS;
+- control sensing operations: `0`;
+- treatment sensing operations: `508`;
+- treatment sensing-exposed runs: `15/30`;
+- treatment joint sensing + non-zero movement runs: `7/30`;
+- no underpaid realized movement;
+- maximum absolute energy-balance error: `4.8e-09`;
+- maximum absolute local-resource error: `6.3e-09`.
+
+All registered movement-execution paired intervals included zero. Three registered spatial/resource outcomes excluded zero: mean local neighbors decreased, mean nearest-neighbor distance increased, and local resource remaining increased in treatment. A secondary active-population endpoint was also lower in treatment.
+
+The accepted interpretation is that local scalar sensing causally altered downstream ecological/spatial state in this model, consistent with resource-conditioned dynamics. It did not resolve an effect on locomotor execution and does not establish directional navigation, resource seeking, adaptation, fitness advantage or intelligence.
+
+Canonical Phase Four evidence is stored in:
+
+`results/phase-four/resource-sensing-with-movement/full/`
 
 ## Technical documents
 
