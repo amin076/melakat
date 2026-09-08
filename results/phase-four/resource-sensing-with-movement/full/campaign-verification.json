@@ -1,0 +1,47 @@
+{
+  "atomic_movement_payment_all_runs": true,
+  "completed_runs": 60,
+  "control_sensing_operations": 0.0,
+  "engine_versions": [
+    "phase-three-vm-0.3"
+  ],
+  "expected_runs": 60,
+  "experiment": "phase-four-resource-sensing-with-movement",
+  "exposure_diagnostics": {
+    "control_any_move_exposed_runs": 21,
+    "control_movement_distance": 138.0,
+    "control_movement_energy_cost": 13.8,
+    "control_movement_operations": 168.0,
+    "control_nonzero_movement_exposed_runs": 17,
+    "control_nonzero_movement_operations": 138.0,
+    "control_resource_sense_operations": 0.0,
+    "control_sensing_exposed_runs": 0,
+    "control_uncommitted_movement_distance": 9.0,
+    "control_zero_step_movement_operations": 30.0,
+    "treatment_any_move_exposed_runs": 18,
+    "treatment_joint_sensing_and_any_move_runs": 8,
+    "treatment_joint_sensing_and_nonzero_movement_runs": 7,
+    "treatment_movement_distance": 124.0,
+    "treatment_movement_energy_cost": 12.490909,
+    "treatment_movement_operations": 155.0,
+    "treatment_nonzero_movement_exposed_runs": 15,
+    "treatment_nonzero_movement_operations": 124.0,
+    "treatment_resource_sense_operations": 508.0,
+    "treatment_sensing_exposed_runs": 15,
+    "treatment_uncommitted_movement_distance": 11.0,
+    "treatment_zero_step_movement_operations": 31.0
+  },
+  "format": "melakat-phase-four-full-campaign-verification-0.1",
+  "matched_seeds_per_condition": 30,
+  "maximum_absolute_energy_balance_error": 4.8e-09,
+  "maximum_absolute_local_resource_balance_error": 6.3e-09,
+  "measurement_versions": [
+    "phase-three-measurement-0.3"
+  ],
+  "passed": true,
+  "reproducibility_identical": true,
+  "treatment_sensing_operations": 508.0,
+  "underpaid_realized_movement_runs": [],
+  "validation_failure_count": 0,
+  "validation_passed": true
+}
