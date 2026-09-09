@@ -10,6 +10,12 @@
 
 جدیدترین milestone پذیرفته‌شده **Phase Five genome evolvability** است: self-replication مقاوم به تغییر طول همراه با single-instruction tandem duplication/deletion کور، genomeهای variable-length وراثتی را تحت هزینه‌های محدود energy/memory ایجاد کرد. Full campaign شامل ۶۰ run اصلی، صفر validation failure و deterministic replay موفق بود. organismهای variable-length متولد شدند و تعدادی از آنها خودشان بعداً reproduction کردند. این evidence برای structural evolvability است، نه برای افزایش complexity یا open-ended evolution.
 
+## پژوهش تطبیقی برای Phaseهای آینده
+
+- [بررسی تطبیقی ۲۰ پروژهٔ مهم Artificial Life و Digital Evolution — فارسی](doc-farsi/artificial-life-similar-projects-review.md)
+
+این سند یک مرجع طراحی برای مراحل بعدی است و تجربهٔ پروژه‌هایی مانند `Tierra`، `Avida`، `Aevol`، `Polyworld`، `DISHTINY`، `SignalGP`، `EvoEvo` و `Flow-Lenia` را از نظر هدف، substrate، نتایج، محدودیت‌ها، stagnation، fitness/reward leakage و hard-coded capability مقایسه می‌کند. proposalهای آینده دربارهٔ `memory`، `morphology`، `communication`، `multicellularity`، `learning`، `cognition` یا کاربرد نرم‌افزاری باید پیش از implementation با این مرجع بررسی شوند.
+
 ## اسناد اصلی مراحل
 
 ### Phase Zero / One
