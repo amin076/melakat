@@ -1,0 +1,73 @@
+{
+  "format": "melakat-experiment-spec-0.1",
+  "name": "phase-five-structural-rate-calibration",
+  "description": "Pre-registered Phase Five exposure calibration. Candidate structural event rates are compared only to select the lowest non-zero rate that provides adequate event exposure while preserving integrity and deterministic replay. Ecological, population, genome-size direction, and variant persistence outcomes are explicitly forbidden as selection criteria.",
+  "base_config": {
+    "run.engine_backend": "phase-five-vm",
+    "run.max_ticks": 1000,
+    "world.width": 96,
+    "world.height": 70,
+    "world.initial_energy": 1500.0,
+    "world.energy_input_per_tick": 20.0,
+    "world.memory_capacity": 1000,
+    "world.spatial_enabled": false,
+    "world.local_resources_enabled": false,
+    "world.organism_actions_enabled": false,
+    "world.resource_sensing_enabled": false,
+    "world.resource_sensing_mutation_enabled": false,
+    "world.movement_enabled": false,
+    "world.movement_mutation_enabled": false,
+    "population.initial_size": 6,
+    "population.initial_energy": 35.0,
+    "population.memory_per_organism": 8,
+    "execution.instructions_per_tick": 8,
+    "execution.instruction_cost": 0.05,
+    "execution.maintenance_cost": 0.2,
+    "reproduction.enabled": true,
+    "reproduction.cost": 12.0,
+    "reproduction.offspring_energy": 8.0,
+    "mutation.substitution_rate": 0.01,
+    "mutation.structural_event_rate": 0.0,
+    "mutation.structural_duplication_probability": 0.5
+  },
+  "seeds": {
+    "start": 1,
+    "count": 8
+  },
+  "conditions": [
+    {
+      "name": "structural-rate-0.00",
+      "overrides": {
+        "mutation.structural_event_rate": 0.0
+      }
+    },
+    {
+      "name": "structural-rate-0.01",
+      "overrides": {
+        "mutation.structural_event_rate": 0.01
+      }
+    },
+    {
+      "name": "structural-rate-0.05",
+      "overrides": {
+        "mutation.structural_event_rate": 0.05
+      }
+    },
+    {
+      "name": "structural-rate-0.10",
+      "overrides": {
+        "mutation.structural_event_rate": 0.1
+      }
+    },
+    {
+      "name": "structural-rate-0.20",
+      "overrides": {
+        "mutation.structural_event_rate": 0.2
+      }
+    }
+  ],
+  "reproducibility": {
+    "condition": "structural-rate-0.00",
+    "seed": 1
+  }
+}

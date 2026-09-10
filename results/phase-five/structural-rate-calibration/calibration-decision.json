@@ -1,0 +1,59 @@
+{
+  "candidates": [
+    {
+      "committed_structural_events": 10,
+      "completed_runs": 8,
+      "condition": "structural-rate-0.01",
+      "event_exposed_runs": 6,
+      "maximum_absolute_energy_balance_error": 3.2e-09,
+      "promotion_rule_passed": false,
+      "rate": 0.01,
+      "variable_length_births": 6
+    },
+    {
+      "committed_structural_events": 48,
+      "completed_runs": 8,
+      "condition": "structural-rate-0.05",
+      "event_exposed_runs": 8,
+      "maximum_absolute_energy_balance_error": 3.2e-09,
+      "promotion_rule_passed": true,
+      "rate": 0.05,
+      "variable_length_births": 34
+    },
+    {
+      "committed_structural_events": 74,
+      "completed_runs": 8,
+      "condition": "structural-rate-0.10",
+      "event_exposed_runs": 8,
+      "maximum_absolute_energy_balance_error": 3.2e-09,
+      "promotion_rule_passed": true,
+      "rate": 0.1,
+      "variable_length_births": 43
+    },
+    {
+      "committed_structural_events": 152,
+      "completed_runs": 8,
+      "condition": "structural-rate-0.20",
+      "event_exposed_runs": 8,
+      "maximum_absolute_energy_balance_error": 3.3e-09,
+      "promotion_rule_passed": true,
+      "rate": 0.2,
+      "variable_length_births": 104
+    }
+  ],
+  "empty_genome_commit_guard": "mechanically rejected by apply_structural_mutation for length-one deletion and covered by Gate 5B unit test",
+  "forbidden_selection_outcomes_used": false,
+  "format": "melakat-phase-five-structural-calibration-decision-0.1",
+  "passed": true,
+  "pre_registered_candidates": [
+    0.01,
+    0.05,
+    0.1,
+    0.2
+  ],
+  "reproducibility_identical": true,
+  "selected_rate": 0.05,
+  "selection_rule": "lowest non-zero candidate with 8/8 complete, >=20 committed structural events, >=6/8 event-exposed runs, >=10 variable-length births, energy error <=1e-7, campaign validation PASS and deterministic replay PASS",
+  "validation_failure_count": 0,
+  "validation_passed": true
+}
