@@ -1,7 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
-from typing import Iterable
+from dataclasses import dataclass, field, replace
+from typing import Callable, Iterable, Mapping
+
+
+OffspringFactory = Callable[
+    ["GareenMathematicalObject", str, float],
+    "GareenMathematicalObject | None",
+]
 
 
 @dataclass(frozen=True)
@@ -16,6 +22,8 @@ class GareenMathematicalObject:
     mathematical_value: float
     proof_status: str
     energy: float
+    research_accepted: bool = True
+    value_components: Mapping[str, float | int | None] = field(default_factory=dict)
     age: int = 0
     alive: bool = True
 
@@ -31,6 +39,8 @@ class GareenMathematicalObject:
         parent_id: str | None = None,
         lineage_id: str | None = None,
         energy: float = 10.0,
+        research_accepted: bool = True,
+        value_components: Mapping[str, float | int | None] | None = None,
     ) -> "GareenMathematicalObject":
         return cls(
             object_id=object_id,
@@ -41,14 +51,18 @@ class GareenMathematicalObject:
             mathematical_value=float(mathematical_value),
             proof_status=proof_status,
             energy=float(energy),
+            research_accepted=research_accepted,
+            value_components=dict(value_components or {}),
         )
 
     def reproduce_clone(
         self, child_id: str, offspring_energy: float
     ) -> "GareenMathematicalObject":
-        """Create a lifecycle child without changing mathematical meaning.
+        """Legacy lifecycle helper.
 
-        Mathematical mutation belongs to Gareen and is not invented by Melakat.
+        Evolution runs should supply an offspring_factory so Gareen creates a
+        mathematically distinct child. This method remains only for backwards
+        compatibility with old lifecycle tests.
         """
         return replace(
             self,
@@ -63,10 +77,12 @@ class GareenMathematicalObject:
 
 
 class GareenPopulationEngine:
-    """Melakat population dynamics for Gareen mathematical objects.
+    """Resource selection for Gareen mathematical objects inside Melakat.
 
-    Gareen owns mathematical meaning and research-value scoring.
-    Melakat owns population resources, age, reproduction, death, and lineage.
+    Gareen owns conjecture generation and research-value assessment. Melakat
+    turns that assessment into scarce resource allocation and population
+    pressure. Reproduction can call back into Gareen through offspring_factory;
+    when no factory is supplied, legacy clone reproduction is used.
     """
 
     def __init__(
@@ -81,6 +97,8 @@ class GareenPopulationEngine:
         offspring_energy: float = 3.0,
         max_age: int = 6,
         max_population: int = 40,
+        rejected_resource_weight: float = 0.10,
+        offspring_factory: OffspringFactory | None = None,
     ) -> None:
         self.organisms = list(population)
         self.energy_pool = float(initial_energy)
@@ -91,64 +109,127 @@ class GareenPopulationEngine:
         self.offspring_energy = float(offspring_energy)
         self.max_age = int(max_age)
         self.max_population = int(max_population)
+        self.rejected_resource_weight = float(rejected_resource_weight)
+        self.offspring_factory = offspring_factory
         self.tick = 0
         self.next_id = len(self.organisms) + 1
         self.births = 0
         self.deaths = 0
         self.events: list[dict[str, object]] = []
 
+    def _fitness_weight(self, organism: GareenMathematicalObject) -> float:
+        """Convert Gareen research value into a positive resource weight.
+
+        Rejected/trivial candidates retain a small non-zero share, preserving
+        diversity without letting them consume the main research budget.
+        """
+        base = max(0.25, organism.mathematical_value)
+        if not organism.research_accepted:
+            base *= self.rejected_resource_weight
+        return base
+
+    def _resource_allocations(
+        self, active: list[GareenMathematicalObject]
+    ) -> dict[str, float]:
+        available = min(self.energy_pool, self.energy_input_per_tick)
+        if not active or available <= 0:
+            return {item.object_id: 0.0 for item in active}
+
+        weights = {item.object_id: self._fitness_weight(item) for item in active}
+        total = sum(weights.values())
+        if total <= 0:
+            share = available / len(active)
+            return {item.object_id: share for item in active}
+        return {
+            object_id: available * weight / total
+            for object_id, weight in weights.items()
+        }
+
     @staticmethod
     def _reproduction_factor(value: float) -> float:
-        return 1.0 + max(0.0, min(value, 20.0)) / 20.0
+        return 1.0 + max(0.0, min(value, 40.0)) / 40.0
 
-    def _reproduction_threshold(
-        self, organism: GareenMathematicalObject
-    ) -> float:
-        return self.reproduction_threshold / self._reproduction_factor(
+    def _threshold_for(self, organism: GareenMathematicalObject) -> float:
+        threshold = self.reproduction_threshold / self._reproduction_factor(
             organism.mathematical_value
         )
+        if not organism.research_accepted:
+            threshold /= max(self.rejected_resource_weight, 0.01)
+        return threshold
+
+    def _make_child(
+        self, organism: GareenMathematicalObject, child_id: str
+    ) -> GareenMathematicalObject | None:
+        if self.offspring_factory is not None:
+            return self.offspring_factory(
+                organism,
+                child_id,
+                self.offspring_energy,
+            )
+        return organism.reproduce_clone(child_id, self.offspring_energy)
 
     def step(self) -> None:
         self.tick += 1
         self.energy_pool += self.energy_input_per_tick
 
         active = [item for item in self.organisms if item.alive]
-        for organism in active:
-            captured = min(self.energy_pool, 1.0)
+        allocations = self._resource_allocations(active)
+
+        for original in active:
+            captured = min(
+                self.energy_pool,
+                allocations.get(original.object_id, 0.0),
+            )
             organism = replace(
-                organism,
-                energy=organism.energy + captured - self.maintenance_cost,
-                age=organism.age + 1,
+                original,
+                energy=original.energy + captured - self.maintenance_cost,
+                age=original.age + 1,
             )
             self.energy_pool -= captured
+            self.events.append(
+                {
+                    "type": "resource_allocation",
+                    "tick": self.tick,
+                    "object_id": organism.object_id,
+                    "mathematical_value": organism.mathematical_value,
+                    "research_accepted": organism.research_accepted,
+                    "allocated_energy": round(captured, 6),
+                }
+            )
 
-            threshold = self._reproduction_threshold(organism)
+            threshold = self._threshold_for(organism)
             if (
                 organism.energy >= threshold + self.reproduction_cost
                 and len([item for item in self.organisms if item.alive])
                 < self.max_population
             ):
-                organism = replace(
-                    organism,
-                    energy=organism.energy - self.reproduction_cost,
-                )
-                child = organism.reproduce_clone(
-                    f"G{self.next_id}",
-                    self.offspring_energy,
-                )
-                self.next_id += 1
-                self.births += 1
-                self.organisms.append(child)
-                self.events.append(
-                    {
-                        "type": "birth",
-                        "tick": self.tick,
-                        "parent_id": organism.object_id,
-                        "child_id": child.object_id,
-                        "lineage_id": child.lineage_id,
-                        "mathematical_value": child.mathematical_value,
-                    }
-                )
+                child_id = f"G{self.next_id}"
+                child = self._make_child(organism, child_id)
+                if child is not None:
+                    if child.statement == organism.statement and self.offspring_factory is not None:
+                        raise ValueError(
+                            "Gareen offspring_factory returned the parent statement; "
+                            "evolutionary offspring must be mathematically distinct."
+                        )
+                    organism = replace(
+                        organism,
+                        energy=organism.energy - self.reproduction_cost,
+                    )
+                    self.next_id += 1
+                    self.births += 1
+                    self.organisms.append(child)
+                    self.events.append(
+                        {
+                            "type": "birth",
+                            "tick": self.tick,
+                            "parent_id": organism.object_id,
+                            "child_id": child.object_id,
+                            "lineage_id": child.lineage_id,
+                            "parent_mathematical_value": organism.mathematical_value,
+                            "child_mathematical_value": child.mathematical_value,
+                            "statement_changed": child.statement != organism.statement,
+                        }
+                    )
 
             if organism.energy <= 0 or organism.age >= self.max_age:
                 organism = replace(organism, alive=False)
@@ -170,9 +251,11 @@ class GareenPopulationEngine:
     def metrics(self) -> dict[str, object]:
         active = [item for item in self.organisms if item.alive]
         values = [item.mathematical_value for item in active]
+        accepted = [item for item in active if item.research_accepted]
         return {
             "tick": self.tick,
             "active_population": len(active),
+            "research_worthy_population": len(accepted),
             "births": self.births,
             "deaths": self.deaths,
             "mean_mathematical_value": (
@@ -192,6 +275,8 @@ class GareenPopulationEngine:
                 "generation": item.generation,
                 "statement": item.statement,
                 "mathematical_value": item.mathematical_value,
+                "research_accepted": item.research_accepted,
+                "value_components": dict(item.value_components),
                 "proof_status": item.proof_status,
                 "energy": round(item.energy, 4),
                 "age": item.age,
