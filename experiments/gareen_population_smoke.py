@@ -61,7 +61,8 @@ def main() -> int:
         GareenPopulationEngine,
     )
 
-    all_records = load_gareen_candidates(args.gareen_root, None)\n    records = all_records[: args.limit]
+    all_records = load_gareen_candidates(args.gareen_root, None)
+    records = all_records[: args.limit]
     if not records:
         raise SystemExit("No research-worthy Gareen candidates were produced.")
 
