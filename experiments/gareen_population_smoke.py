@@ -116,7 +116,12 @@ def main() -> int:
         engine.step()
         history.append(engine.metrics())
 
-    births = [event for event in engine.events if event["type"] == "birth"]\n    changed_births = [event for event in births if event["statement_changed"]]\n    if not changed_births:\n        raise SystemExit("No distinct Gareen offspring were born.")\n\n    report = {
+    births = [event for event in engine.events if event["type"] == "birth"]
+    changed_births = [event for event in births if event["statement_changed"]]
+    if not changed_births:
+        raise SystemExit("No distinct Gareen offspring were born.")
+
+    report = {
         "integration": "gareen-objects-in-melakat-population",
         "gareen_candidates": records,
         "ticks": args.ticks,
@@ -124,7 +129,9 @@ def main() -> int:
         "history": history,
         "events": engine.events,
         "final_population": engine.snapshot(),
-        "mathematically_distinct_births": len(changed_births),\n        "generator_mode": "gareen_global_generator",\n        "parent_conditioned_mutation": "not_yet_implemented",
+        "mathematically_distinct_births": len(changed_births),
+        "generator_mode": "gareen_global_generator",
+        "parent_conditioned_mutation": "not_yet_implemented",
     }
     print(json.dumps(report, indent=2, ensure_ascii=False))
     return 0
