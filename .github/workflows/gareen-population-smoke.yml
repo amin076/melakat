@@ -1,0 +1,41 @@
+name: Gareen objects in Melakat population
+
+on:
+  pull_request:
+  push:
+    branches:
+      - feat/gareen-math-population
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Melakat
+        uses: actions/checkout@v4
+
+      - name: Checkout Gareen
+        uses: actions/checkout@v4
+        with:
+          repository: amin076/gareen
+          ref: phase19-ecosystem-strategies
+          path: gareen
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Melakat desktop package
+        run: pip install -e desktop pytest
+
+      - name: Run unit tests
+        run: pytest -q desktop/tests/test_gareen_population.py
+
+      - name: Run Gareen population smoke
+        run: |
+          python experiments/gareen_population_smoke.py \
+            --gareen-root gareen \
+            --limit 2 \
+            --ticks 6
