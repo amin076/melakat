@@ -28,7 +28,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install Melakat desktop package
-        run: pip install -e desktop
+        run: pip install -e desktop pytest
 
       - name: Run unit tests
         run: pytest -q desktop/tests/test_gareen_population.py
