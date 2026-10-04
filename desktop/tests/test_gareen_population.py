@@ -26,13 +26,13 @@ def test_mathematical_value_changes_population_dynamics():
         object_id="T-low",
         statement="low",
         mathematical_value=0,
-        energy=0,
+        energy=3,
     )
     high = GareenMathematicalObject.from_gareen(
         object_id="T-high",
         statement="high",
         mathematical_value=20,
-        energy=0,
+        energy=3,
     )
 
     engine = GareenPopulationEngine(
