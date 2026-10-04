@@ -30,14 +30,14 @@ def load_gareen_candidates(gareen_root: Path, limit: int | None = None):
         min_score=14,
     )
 
-    accepted = [item for item in ranked if item.assessment.accepted]
-    selected = accepted[:limit]
+    selected = list(ranked) if limit is None else list(ranked)[:limit]
     return [
         {
             "id": f"T{i + 1}",
             "statement": str(item.conjecture.statement),
             "mathematical_value": float(item.assessment.score),
             "proof_status": "unproved",
+            "research_accepted": item.assessment.accepted,
             "value_components": {
                 "generality": item.assessment.variable_count,
                 "reuse_potential": item.assessment.reuse_potential,
@@ -96,6 +96,7 @@ def main() -> int:
                 lineage_id=parent.lineage_id,
                 energy=offspring_energy,
                 value_components=item["value_components"],
+                research_accepted=item["research_accepted"],
             )
         return None
 
