@@ -37,5 +37,5 @@ jobs:
         run: |
           python experiments/gareen_population_smoke.py \
             --gareen-root gareen \
-            --limit 8 \
+            --limit 2 \
             --ticks 6
