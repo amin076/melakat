@@ -72,6 +72,8 @@ def main() -> int:
             statement=item["statement"],
             mathematical_value=item["mathematical_value"],
             proof_status=item["proof_status"],
+            research_accepted=item["research_accepted"],
+            value_components=item["value_components"],
         )
         for item in records
     ]
@@ -110,6 +112,7 @@ def main() -> int:
         offspring_energy=3,
         max_age=6,
         max_population=40,
+        offspring_factory=gareen_offspring_factory,
     )
 
     history = [engine.metrics()]
