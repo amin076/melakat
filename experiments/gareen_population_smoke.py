@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 
-def load_gareen_candidates(gareen_root: Path, limit: int):
+def load_gareen_candidates(gareen_root: Path, limit: int | None = None):
     root = str(gareen_root.resolve())
     if root not in sys.path:
         sys.path.insert(0, root)
@@ -61,7 +61,7 @@ def main() -> int:
         GareenPopulationEngine,
     )
 
-    records = load_gareen_candidates(args.gareen_root, args.limit)
+    all_records = load_gareen_candidates(args.gareen_root, None)\n    records = all_records[: args.limit]
     if not records:
         raise SystemExit("No research-worthy Gareen candidates were produced.")
 
@@ -74,6 +74,29 @@ def main() -> int:
         )
         for item in records
     ]
+
+    unused_records = all_records[args.limit :]
+    used_statements = {item.statement for item in population}
+
+    def gareen_offspring_factory(parent, child_id, offspring_energy):
+        for item in unused_records:
+            if item["statement"] == parent.statement:
+                continue
+            if item["statement"] in used_statements:
+                continue
+            used_statements.add(item["statement"])
+            return GareenMathematicalObject.from_gareen(
+                object_id=child_id,
+                statement=item["statement"],
+                mathematical_value=item["mathematical_value"],
+                proof_status=item["proof_status"],
+                generation=parent.generation + 1,
+                parent_id=parent.object_id,
+                lineage_id=parent.lineage_id,
+                energy=offspring_energy,
+                value_components=item["value_components"],
+            )
+        return None
 
     engine = GareenPopulationEngine(
         population,
@@ -92,7 +115,7 @@ def main() -> int:
         engine.step()
         history.append(engine.metrics())
 
-    report = {
+    births = [event for event in engine.events if event["type"] == "birth"]\n    changed_births = [event for event in births if event["statement_changed"]]\n    if not changed_births:\n        raise SystemExit("No distinct Gareen offspring were born.")\n\n    report = {
         "integration": "gareen-objects-in-melakat-population",
         "gareen_candidates": records,
         "ticks": args.ticks,
@@ -100,7 +123,7 @@ def main() -> int:
         "history": history,
         "events": engine.events,
         "final_population": engine.snapshot(),
-        "mathematical_mutation": "not_yet_enabled",
+        "mathematically_distinct_births": len(changed_births),\n        "generator_mode": "gareen_global_generator",\n        "parent_conditioned_mutation": "not_yet_implemented",
     }
     print(json.dumps(report, indent=2, ensure_ascii=False))
     return 0
