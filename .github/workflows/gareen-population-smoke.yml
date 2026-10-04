@@ -20,7 +20,7 @@ jobs:
         with:
           repository: amin076/gareen
           ref: phase19-ecosystem-strategies
-          path: ../gareen
+          path: gareen
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -36,6 +36,6 @@ jobs:
       - name: Run Gareen population smoke
         run: |
           python experiments/gareen_population_smoke.py \
-            --gareen-root ../gareen \
+            --gareen-root gareen \
             --limit 8 \
             --ticks 6
