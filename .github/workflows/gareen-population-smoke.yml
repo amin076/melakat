@@ -1,6 +1,7 @@
 name: Gareen objects in Melakat population
 
 on:
+  pull_request:
   push:
     branches:
       - feat/gareen-math-population
