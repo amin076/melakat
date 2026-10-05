@@ -1,0 +1,48 @@
+name: Gareen to Melakat generation handoff
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - experiment/gareen-chatgpt-five-generations
+    paths:
+      - experiments/gareen_ai_generation_cycle.py
+      - .github/workflows/gareen-to-melakat-generation.yml
+
+jobs:
+  generation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Melakat
+        uses: actions/checkout@v4
+        with:
+          path: melakat
+      - name: Checkout Gareen experiment
+        uses: actions/checkout@v4
+        with:
+          repository: amin076/gareen
+          ref: experiment/ai-parent-conjectures-100
+          path: gareen
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Reproduce Gareen verified generation-1 batch
+        working-directory: gareen
+        run: PYTHONPATH=. python experiments/ai_parent_conjectures_100.py
+      - name: Install Melakat
+        run: pip install -e melakat/desktop
+      - name: Run Melakat selection and emit ChatGPT parent handoff
+        run: |
+          python melakat/experiments/gareen_ai_generation_cycle.py \
+            --verified-batch gareen/outputs/gareen_verified_batch.json \
+            --generation 1 \
+            --max-population 20 \
+            --energy-input 100 \
+            --ticks 5 \
+            --output melakat/outputs/generation_1_melakat_handoff.json
+      - name: Upload ChatGPT-ready parent handoff
+        uses: actions/upload-artifact@v4
+        with:
+          name: melakat-generation-1-chatgpt-handoff
+          path: melakat/outputs/generation_1_melakat_handoff.json
