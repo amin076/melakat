@@ -19,10 +19,10 @@ class GareenMathematicalObject:
     generation: int
     parent_id: str | None
     lineage_id: str
-    parent_ids: tuple[str, ...] = ()
     mathematical_value: float
     proof_status: str
     energy: float
+    parent_ids: tuple[str, ...] = ()
     research_accepted: bool = True
     value_components: Mapping[str, float | int | None] = field(default_factory=dict)
     age: int = 0
