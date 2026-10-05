@@ -71,12 +71,29 @@ def run_generation(records: list[dict], *, generation: int, max_population: int,
             "parent_id": x["id"],
             "statement": x["statement"],
             "generation": generation,
+            "next_generation": generation + 1,
             "mathematical_value": x["mathematical_value"],
             "energy": x["energy"],
-            "request": "Generate one-step mathematical-neighbourhood conjectures around this verified parent.",
+            "children_requested": 20,
+            "request": "Generate exactly 20 distinct one-step mathematical-neighbourhood conjectures around this verified parent. Preserve parent_id and next_generation on every child. Children are conjectures only until Gareen verifies them.",
         }
         for x in survivors
     ]
+    chatgpt_handoff = {
+        "schema": "melakat-chatgpt-parent-handoff-v1",
+        "source_generation": generation,
+        "target_generation": generation + 1,
+        "children_per_parent": 20,
+        "parent_count": len(next_parent_requests),
+        "instructions": [
+            "Treat every item in parents as a verified mathematical parent selected by Melakat.",
+            "Generate exactly 20 distinct conjectural children per parent.",
+            "Prefer small mathematical-neighbourhood mutations; include meaningful generalizations, combinations, consequences, or structural variants.",
+            "Do not mark any generated child as proved or verified; Gareen is the verification authority.",
+            "Preserve parent_id and target_generation in every generated child."
+        ],
+        "parents": next_parent_requests,
+    }
     return {
         "generation": generation,
         "input_verified": len(records),
@@ -84,6 +101,7 @@ def run_generation(records: list[dict], *, generation: int, max_population: int,
         "history": history,
         "survivor_population": survivors,
         "next_ai_parent_requests": next_parent_requests,
+        "chatgpt_handoff": chatgpt_handoff,
     }
 
 
