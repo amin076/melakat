@@ -45,4 +45,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: melakat-generation-2-chatgpt-handoff
-          path: melakat/outputs/generation_1_melakat_handoff.json
+          path: melakat/outputs/generation_2_melakat_handoff.json
