@@ -19,6 +19,7 @@ class GareenMathematicalObject:
     generation: int
     parent_id: str | None
     lineage_id: str
+    parent_ids: tuple[str, ...] = ()
     mathematical_value: float
     proof_status: str
     energy: float
@@ -48,6 +49,7 @@ class GareenMathematicalObject:
             generation=generation,
             parent_id=parent_id,
             lineage_id=lineage_id or object_id,
+            parent_ids=((parent_id,) if parent_id else ()),
             mathematical_value=float(mathematical_value),
             proof_status=proof_status,
             energy=float(energy),
@@ -271,8 +273,10 @@ class GareenPopulationEngine:
             {
                 "id": item.object_id,
                 "parent_id": item.parent_id,
+                "parent_ids": list(item.parent_ids),
                 "lineage_id": item.lineage_id,
                 "generation": item.generation,
+                "alive": item.alive,
                 "statement": item.statement,
                 "mathematical_value": item.mathematical_value,
                 "research_accepted": item.research_accepted,
